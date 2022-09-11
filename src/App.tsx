@@ -1,130 +1,163 @@
 import {
+  CameraIcon,
+  EyeSlashIcon,
+  FlagIcon,
+  LightBulbIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
+import { EyeIcon as EyeFilledIcon } from "@heroicons/react/24/solid";
+import {
   BakeShadows,
   Bounds,
   ContactShadows,
   Environment,
   Lightformer,
   OrbitControls,
-  Stats,
+  PerspectiveCamera,
+  shaderMaterial,
   useGLTF,
+  View,
 } from "@react-three/drei";
-import { applyProps, Canvas } from "@react-three/fiber";
-import { unflatten } from "flat";
-import { button, Leva, useControls } from "leva";
-import { Perf } from "r3f-perf";
-import React, { useCallback, useMemo, useState } from "react";
-import * as THREE from "three";
-import { EyeIcon, EyeSlashIcon, FlagIcon } from "@heroicons/react/24/outline";
-import { EyeIcon as EyeFilledIcon } from "@heroicons/react/24/solid";
+import { applyProps, Canvas, extend, useThree } from "@react-three/fiber";
 import clsx from "clsx";
-import { LayerMaterial, Depth, Color } from "lamina";
+import { Color, Depth, LayerMaterial } from "lamina";
+import { Leva, useControls } from "leva";
+import { Perf } from "r3f-perf";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import * as THREE from "three";
+import create from "zustand";
+import { immer } from "zustand/middleware/immer";
 
-type LightformerProps = React.ComponentPropsWithoutRef<typeof Lightformer>;
+// function generateTexture() {
+//   const width = 1024;
+//   const height = 512;
 
-function generateTexture() {
-  const width = 1024;
-  const height = 512;
+//   const size = width * height;
+//   const data = new Uint8Array(4 * size);
 
-  const size = width * height;
-  const data = new Uint8Array(4 * size);
+//   const s = Math.random();
+//   const t = Math.random();
+//   const u = Math.random();
 
-  const s = Math.random();
-  const t = Math.random();
-  const u = Math.random();
+//   for (let i = 0; i < size; i++) {
+//     const color = new THREE.Color(
+//       Math.sin((i / size) * Math.PI * 2 * s + 0.1) * 0.5 + 0.5,
+//       Math.cos((i / size) * Math.PI * 2 * t + 0.24) * 0.5 + 0.5,
+//       Math.cos((i / size) * Math.PI * 2 * u - 0.538) * 0.5 + 0.5
+//     );
 
-  for (let i = 0; i < size; i++) {
-    const color = new THREE.Color(
-      Math.sin((i / size) * Math.PI * 2 * s + 0.1) * 0.5 + 0.5,
-      Math.cos((i / size) * Math.PI * 2 * t + 0.24) * 0.5 + 0.5,
-      Math.cos((i / size) * Math.PI * 2 * u - 0.538) * 0.5 + 0.5
-    );
+//     const r = Math.floor(color.r * 255);
+//     const g = Math.floor(color.g * 255);
+//     const b = Math.floor(color.b * 255);
 
-    const r = Math.floor(color.r * 255);
-    const g = Math.floor(color.g * 255);
-    const b = Math.floor(color.b * 255);
+//     const stride = i * 4;
 
-    const stride = i * 4;
+//     data[stride] = r;
+//     data[stride + 1] = g;
+//     data[stride + 2] = b;
+//     data[stride + 3] = 255;
+//   }
 
-    data[stride] = r;
-    data[stride + 1] = g;
-    data[stride + 2] = b;
-    data[stride + 3] = 255;
-  }
+//   // used the buffer to create a DataTexture
+//   const texture = new THREE.DataTexture(data, width, height);
+//   texture.needsUpdate = true;
+//   texture.mapping = THREE.EquirectangularReflectionMapping;
 
-  // used the buffer to create a DataTexture
-  const texture = new THREE.DataTexture(data, width, height);
-  texture.needsUpdate = true;
-  texture.mapping = THREE.EquirectangularReflectionMapping;
+//   return texture;
+// }
 
-  return texture;
-}
+type Look = {
+  id: string;
+  name: string;
+};
 
-function App() {
-  const [texture, setTexture] = useState(() => generateTexture());
+type Light = {
+  id: string;
+  name: string;
+  shape: "rect" | "circle" | "ring";
+  color: string;
+  intensity: number;
+  distance: number;
+  scale: number;
+  scaleX: number;
+  scaleY: number;
+  rotation: number;
+  phi: number;
+  theta: number;
+  target: [number, number, number];
+  visible: boolean;
+};
 
-  const regenerate = useCallback(() => setTexture(generateTexture()), []);
+type State = {
+  lights: Light[];
+  selectedLightId: string | null;
+  setSelectedLightId: (id: string) => void;
+  clearSelectedLight: () => void;
+  addLight: (light: Light) => void;
+  updateLight: (light: Partial<Light>) => void;
+  setLightVisibleById: (id: string, visible: boolean) => void;
+  toggleLightVisibilityById: (id: string) => void;
+};
 
-  const [{ background, backgroundColor }] = useControls(() => ({
-    background: true,
-    backgroundColor: "#0000ff",
-    regenerate: button(regenerate),
-    addLight: button(() => {
-      setLightformers((prev) => ({
-        ...prev,
-        [String.fromCharCode(Object.keys(prev).length + 65)]: {
-          intensity: 0.75,
-          position: [5, 0, 0],
-          scale: [5, 5, 1],
-        },
-      }));
+const useStore = create(
+  immer<State>((set, get) => ({
+    lights: [],
+    selectedLightId: null,
+    setSelectedLightId: (id: string) => set({ selectedLightId: id }),
+    clearSelectedLight: () => {
+      set({ selectedLightId: null });
+    },
+    addLight: (light: Light) =>
+      set((state) => ({
+        lights: [...state.lights, light],
+        selectedLightId: light.id,
+      })),
+    updateLight: (light: Partial<Light>) =>
+      set((state) => ({
+        lights: state.lights.map((l: Light) =>
+          l.id === light.id ? { ...l, ...light } : l
+        ),
+      })),
+    setLightVisibleById: (id: string, visible: boolean) => {
+      const light = get().lights.find((l) => l.id === id);
+      if (light) {
+        set((state) => {
+          const light = state.lights.find((l: Light) => l.id === id);
+          if (light) {
+            light.visible = visible;
+          }
+        });
+      }
+    },
+    toggleLightVisibilityById: (id: string) => {
+      const light = get().lights.find((l) => l.id === id);
+      if (light) {
+        get().setLightVisibleById(id, !light.visible);
+      }
+    },
+  }))
+);
+
+export default function App() {
+  const [texture, setTexture] = useState(() => new THREE.Texture());
+
+  const lights = useStore((state) => state.lights);
+  const selectedLightId = useStore((state) => state.selectedLightId);
+
+  const [{ background, backgroundColor }] = useControls(
+    () => ({
+      background: {
+        label: "Show BG",
+        value: true,
+        render: () => selectedLightId === null,
+      },
+      backgroundColor: {
+        label: "BG Color",
+        value: "#0000ff",
+        render: () => selectedLightId === null,
+      },
     }),
-  }));
-
-  const [lightformers, setLightformers] = useState<
-    Record<string, LightformerProps>
-  >({});
-
-  const [value] = useControls(
-    () =>
-      Object.fromEntries(
-        Object.entries(lightformers).flatMap(([key, lightformer]) => [
-          [
-            `${key}.visible`,
-            {
-              value: lightformer.visible ?? true,
-            },
-          ],
-          [
-            `${key}.selected`,
-            {
-              value: lightformer.selected ?? false,
-            },
-          ],
-          [
-            `${key}.form`,
-            {
-              value: lightformer.form ?? "rect",
-              options: ["rect", "ring", "circle"],
-            },
-          ],
-          [
-            `${key}.intensity`,
-            { value: lightformer.intensity, step: 0.1, min: 0 },
-          ],
-          [`${key}.position`, { value: lightformer.position, step: 0.1 }],
-          [
-            `${key}.scale`,
-            { value: lightformer.scale ?? [1, 1, 1], step: 0.1, min: 0 },
-          ],
-          [`${key}.color`, { value: lightformer.color ?? "#fff" }],
-        ])
-      ),
-    [lightformers]
-  );
-
-  const _lightformers: Record<string, LightformerProps> = useMemo(
-    () => unflatten(value),
-    [value]
+    [lights, selectedLightId]
   );
 
   return (
@@ -132,42 +165,32 @@ function App() {
       style={{
         gridTemplateAreas: `
             "outliner scene properties"
-            "outliner editor properties"
+            "outliner scene properties"
           `,
       }}
-      className="bg-neutral-800 grid grid-cols-[250px_1fr_300px] grid-rows-[3fr_2fr] w-full h-full overflow-hidden gap-4 p-4 text-white"
+      className="bg-neutral-800 grid grid-cols-[250px_1fr_340px] grid-rows-[3fr_2fr] w-full h-full overflow-hidden gap-4 p-4 text-white"
     >
       <div
         style={{ gridArea: "outliner" }}
         className="bg-neutral-900 rounded-lg"
       >
-        <Outliner
-          lightformers={_lightformers}
-          setLightformers={setLightformers}
-        />
+        <Outliner />
       </div>
 
       <div
         style={{
-          gridArea: "editor",
+          gridArea: "scene",
           backgroundSize: "20px 20px",
           backgroundImage:
             "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
         }}
         className="bg-neutral-900 rounded-lg overflow-hidden"
       >
-        <EditorCanvas texture={texture} />
-      </div>
-
-      <div
-        style={{ gridArea: "scene" }}
-        className="bg-neutral-900 overflow-hidden rounded-lg"
-      >
         <ScenePreview
           background={background}
           backgroundColor={backgroundColor}
-          lightformers={_lightformers}
           texture={texture}
+          setTexture={setTexture}
         />
       </div>
 
@@ -189,13 +212,6 @@ function App() {
                 elevation1: "transparent",
                 elevation2: "transparent",
                 elevation3: "rgba(255, 255, 255, 0.1)",
-                accent1: "#666",
-                accent2: "#333",
-                accent3: "#666",
-                highlight1: "#fff",
-                highlight2: "#aaa",
-                highlight3: "#fff",
-                vivid1: "#fff",
               },
               sizes: {
                 rootWidth: "100%",
@@ -209,10 +225,17 @@ function App() {
 }
 
 function Porsche(props: any) {
-  const { scene, nodes, materials } = useGLTF("/911-transformed.glb");
+  const {
+    scene,
+    // @ts-ignore
+    nodes,
+    // @ts-ignore
+    materials,
+  } = useGLTF("/911-transformed.glb");
   useMemo(() => {
     Object.values(nodes).forEach(
-      (node) => node.isMesh && (node.receiveShadow = node.castShadow = true)
+      (node: any) =>
+        node.isMesh && (node.receiveShadow = node.castShadow = true)
     );
     applyProps(materials.rubber, {
       color: "#222",
@@ -240,165 +263,456 @@ function Porsche(props: any) {
   return <primitive object={scene} {...props} />;
 }
 
-export default App;
+function Outliner() {
+  const lights = useStore((state) => state.lights);
+  const addLight = useStore((state) => state.addLight);
 
-function Outliner({
-  lightformers,
-  setLightformers,
-}: {
-  lightformers: Record<string, LightformerProps>;
-  setLightformers: (...args: any) => void;
-}) {
   return (
     <div>
       <h2 className="p-4 uppercase font-light text-xs tracking-widest text-gray-300 border-b border-white/10">
-        Lights
+        Looks
       </h2>
       <ul className="m-0 p-2 flex flex-col gap-1">
-        {Object.entries(lightformers).map(([key, props]) => (
-          <li
-            key={key}
-            className={clsx(
-              "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-              props.selected && "bg-white/20",
-              !props.selected && "hover:bg-white/10"
-            )}
-          >
-            <input
-              type="checkbox"
-              hidden
-              checked={props.selected}
-              className="peer"
-            />
-
-            <span className="flex-1 text-xs font-mono text-gray-300">
-              Light {key}
-            </span>
-
-            <button className="text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity">
-              <FlagIcon className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => {
-                setLightformers((prev) => ({
-                  ...prev,
-                  [key]: {
-                    ...prev[key],
-                    visible: !prev[key].visible,
-                  },
-                }));
-              }}
-              className={clsx(
-                "text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
-                !props.visible && "opacity-40"
-              )}
-            >
-              {lightformers[key].visible ? (
-                <EyeFilledIcon className="w-4 h-4" />
-              ) : (
-                <EyeSlashIcon className="w-4 h-4 " />
-              )}
-            </button>
-          </li>
+        <LookListItem id="default" name="Default" />
+      </ul>
+      <div className="flex justify-between items-center p-4 border-b border-white/10">
+        <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
+          Lights
+        </h2>
+        <button
+          className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
+          onClick={() => {
+            addLight({
+              name: `Light ${String.fromCharCode(lights.length + 65)}`,
+              id: THREE.MathUtils.generateUUID(),
+              shape: "rect",
+              color: "#fff",
+              distance: 4,
+              phi: Math.PI / 2,
+              theta: 0,
+              intensity: 1,
+              rotation: 0,
+              scale: 2,
+              scaleX: 1,
+              scaleY: 1,
+              target: [0, 0, 0],
+              visible: true,
+            });
+          }}
+        >
+          <PlusIcon className="w-4 h-4" />
+        </button>
+      </div>
+      <ul className="m-0 p-2 flex flex-col gap-1">
+        {lights.map((light) => (
+          <LightListItem {...light} />
         ))}
       </ul>
     </div>
   );
 }
 
-function EditorCanvas({ texture }: { texture: THREE.Texture }) {
+const CubeMapMaterialImpl = shaderMaterial(
+  {
+    map: new THREE.CubeTexture(),
+  },
+  `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+    `,
+  `
+    precision mediump float;
+    
+    varying vec2 vUv;
+    uniform samplerCube map;
+    
+    #define PI 3.14159
+    
+    void main() {
+      vec2 coord = vUv * 2.0 + vec2(-1.0, -1.0);
+      
+      float a = coord.x * PI;
+      float b = coord.y * PI * 0.5;
+      
+      vec3 rayDirection = vec3(
+        sin(a) * cos(b),
+        sin(b),
+        cos(a) * cos(b)
+      );
+      
+      vec3 color = vec3(textureCube(map, rayDirection));
+
+      gl_FragColor = vec4(color, 1.0);
+
+      #include <tonemapping_fragment>
+      #include <encodings_fragment>
+    }
+  `
+);
+
+// @ts-ignore
+CubeMapMaterialImpl.key = THREE.MathUtils.generateUUID();
+
+extend({ CubeMapMaterial: CubeMapMaterialImpl });
+
+type CubeMapMaterialType = JSX.IntrinsicElements["shaderMaterial"];
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      cubeMapMaterial: CubeMapMaterialType;
+    }
+  }
+}
+
+function CubeMaterial({ map }: { map: THREE.Texture }) {
   return (
-    <Canvas camera={{ near: 0.001 }}>
-      <Bounds fit clip observe damping={6} margin={0.5}>
-        <EnvironmentPlane texture={texture} />
-      </Bounds>
-    </Canvas>
+    <cubeMapMaterial
+      key={(CubeMapMaterialImpl as any).key}
+      attach="material"
+      // @ts-ignore
+      map={map}
+      // map={texture}
+      side={THREE.DoubleSide}
+    />
+  );
+}
+
+function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
+  return (
+    <mesh {...props}>
+      <planeGeometry args={[2, 1, 1, 1]} />
+      <CubeMaterial map={texture} />
+    </mesh>
   );
 }
 
 function ScenePreview({
   background,
   backgroundColor,
-  lightformers,
   texture,
+  setTexture,
 }: {
   background: boolean;
   backgroundColor: string;
-  lightformers: Record<string, LightformerProps>;
   texture: THREE.Texture;
+  setTexture: (texture: THREE.Texture) => void;
 }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const view1Ref = useRef<HTMLDivElement | null>(null);
+  const view2Ref = useRef<HTMLDivElement | null>(null);
+
+  const lights = useStore((state) => state.lights);
+
   return (
-    <Canvas
-      shadows
-      dpr={[1, 2]}
-      camera={{
-        near: 0.001,
-        position: [2, 2, 2],
-      }}
-      style={{ position: "relative" }}
+    <div
+      ref={containerRef}
+      className="flex flex-col w-full h-full overflow-hidden relative"
     >
-      <BakeShadows />
-      <ambientLight intensity={0.2} />
-      {/* <Float floatingRange={[-0.2, 0.2]} speed={4}>
-     <mesh position={[0, 1, 0]} castShadow receiveShadow>
-       <torusKnotGeometry args={[1, 0.3, 128, 128]} />
-       <meshPhysicalMaterial
-         reflectivity={0.6}
-         roughness={0.2}
-         color="black"
-       />
-     </mesh>
-    </Float> */}
+      <div ref={view1Ref} className="w-full h-full" />
+      <div ref={view2Ref} className="w-full h-full" />
+      <Canvas
+        shadows
+        dpr={[1, 2]}
+        eventSource={containerRef as React.MutableRefObject<HTMLDivElement>}
+        className="!absolute top-0 left-0 pointer-events-none w-full h-full"
+      >
+        {/* @ts-ignore */}
+        <View
+          index={1}
+          track={view1Ref as React.MutableRefObject<HTMLDivElement>}
+        >
+          <PerspectiveCamera makeDefault position={[2, 2, 2]} near={0.001} />
 
-      <Porsche
-        scale={1.6}
-        position={[-0.5, 1, 0]}
-        rotation={[0, Math.PI / 5, 0]}
-      />
-      <ContactShadows
-        resolution={1024}
-        frames={1}
-        position={[0, 0, 0]}
-        scale={20}
-        blur={3}
-        opacity={1}
-        far={10}
-      />
+          <SaveBackgroundTexture setTexture={setTexture} />
 
-      <Perf minimal position="bottom-right" style={{ position: "absolute" }} />
-      {/* <gridHelper /> */}
-      <OrbitControls />
-      <Environment background={background} resolution={2048}>
-        {Object.entries(lightformers).map(([key, props]) => (
-          <Lightformer key={key} {...props} target={[0, 0, 0]} />
-        ))}
-        {/* <primitive attach="background" object={texture} /> */}
-        <mesh scale={100}>
-          <sphereGeometry args={[1, 64, 64]} />
-          <LayerMaterial side={THREE.BackSide}>
-            <Color color="#444" alpha={1} mode="normal" />
-            <Depth
-              colorA={backgroundColor}
-              colorB="black"
-              alpha={0.5}
-              mode="normal"
-              near={0}
-              far={300}
-              origin={[100, 100, 100]}
-            />
-          </LayerMaterial>
-        </mesh>
-      </Environment>
-    </Canvas>
+          <BakeShadows />
+
+          <Porsche
+            scale={1.6}
+            position={[-0.5, 1, 0]}
+            rotation={[0, Math.PI / 5, 0]}
+          />
+          <ContactShadows
+            resolution={1024}
+            frames={1}
+            position={[0, 0, 0]}
+            scale={20}
+            blur={3}
+            opacity={1}
+            far={10}
+          />
+
+          <Perf
+            minimal
+            position="bottom-right"
+            style={{ position: "absolute" }}
+          />
+          <OrbitControls />
+          <Environment background={background} resolution={2048}>
+            {lights.map(
+              ({
+                id,
+                color,
+                distance,
+                phi,
+                theta,
+                intensity,
+                shape,
+                scale,
+                scaleX,
+                scaleY,
+                visible,
+              }) => (
+                <Lightformer
+                  key={id}
+                  visible={visible}
+                  form={shape}
+                  intensity={intensity}
+                  color={color}
+                  position={new THREE.Vector3().setFromSphericalCoords(
+                    distance,
+                    phi,
+                    theta
+                  )}
+                  scale={[scale * scaleX, scale * scaleY, scale]}
+                  target={[0, 0, 0]}
+                />
+              )
+            )}
+            <mesh scale={100}>
+              <sphereGeometry args={[1, 64, 64]} />
+              <LayerMaterial side={THREE.BackSide}>
+                <Color color="#444" alpha={1} mode="normal" />
+                <Depth
+                  colorA={backgroundColor}
+                  colorB="black"
+                  alpha={0.5}
+                  mode="normal"
+                  near={0}
+                  far={300}
+                  origin={[100, 100, 100]}
+                />
+              </LayerMaterial>
+            </mesh>
+          </Environment>
+        </View>
+
+        {/* @ts-ignore */}
+        <View
+          index={2}
+          track={view2Ref as React.MutableRefObject<HTMLDivElement>}
+        >
+          <Bounds fit clip observe damping={6} margin={0.5}>
+            <EnvMapPlane texture={texture} />
+          </Bounds>
+        </View>
+      </Canvas>
+    </div>
   );
 }
 
-function EnvironmentPlane({ texture }: { texture: THREE.Texture }) {
+function SaveBackgroundTexture({
+  setTexture,
+}: {
+  setTexture: (texture: THREE.Texture) => void;
+}) {
+  const backgroundTexture = useThree((state) => state.scene.background);
+  useEffect(() => {
+    if (backgroundTexture instanceof THREE.Texture) {
+      setTexture(backgroundTexture);
+    }
+  }, [backgroundTexture]);
+  return null;
+}
+
+function LookListItem({ id, name }: Look) {
+  const selectedLookId = id;
   return (
-    <mesh>
-      <planeGeometry args={[10, 5, 1, 1]} />
-      <meshBasicMaterial map={texture} side={THREE.DoubleSide} />
-    </mesh>
+    <li
+      role="button"
+      className={clsx(
+        "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
+        selectedLookId === id && "bg-white/20",
+        selectedLookId !== id && "hover:bg-white/10"
+      )}
+    >
+      <CameraIcon className="w-4 h-4 text-green-400" />
+      <input
+        type="checkbox"
+        hidden
+        readOnly
+        checked={selectedLookId === id}
+        className="peer"
+      />
+
+      <span className="flex-1 text-xs font-mono text-gray-300">{name}</span>
+    </li>
+  );
+}
+
+function LightListItem({
+  id,
+  name,
+  visible,
+  shape,
+  intensity,
+  color,
+  distance,
+  phi,
+  theta,
+  scale,
+  scaleX,
+  scaleY,
+}: Light) {
+  const selectedLightId = useStore((state) => state.selectedLightId);
+  const toggleLightVisibilityById = useStore(
+    (state) => state.toggleLightVisibilityById
+  );
+  const setSelectedLightId = useStore((state) => state.setSelectedLightId);
+  const clearSelectedLight = useStore((state) => state.clearSelectedLight);
+  const updateLight = useStore((state) => state.updateLight);
+
+  useControls(() => {
+    if (selectedLightId !== id) {
+      return {};
+    } else {
+      return {
+        [`name ~${id}`]: {
+          label: "Name",
+          value: name ?? "Light",
+          onChange: (v) => updateLight({ id, name: v }),
+        },
+        [`shape ~${id}`]: {
+          label: "Shape",
+          value: shape ?? "rect",
+          options: ["rect", "ring", "circle"],
+          onChange: (v) => updateLight({ id, shape: v }),
+        },
+        [`intensity ~${id}`]: {
+          label: "Intensity",
+          value: intensity,
+          step: 0.1,
+          min: 0,
+          onChange: (v) => updateLight({ id, intensity: v }),
+        },
+        [`color ~${id}`]: {
+          label: "Color",
+          value: color ?? "#fff",
+          onChange: (v) => updateLight({ id, color: v }),
+        },
+        [`scaleMultiplier ~${id}`]: {
+          label: "Scale Multiplier",
+          value: scale ?? 1.0,
+          step: 0.1,
+          min: 0,
+          max: 10,
+          onChange: (v) => updateLight({ id, scale: v }),
+        },
+        [`scale ~${id}`]: {
+          label: "Scale",
+          value: [scaleX, scaleY] ?? [1.0, 1.0],
+          step: 0.1,
+          min: 0,
+          joystick: false,
+          onChange: (v) => updateLight({ id, scaleX: v[0], scaleY: v[1] }),
+        },
+        [`distance ~${id}`]: {
+          label: "Distance",
+          value: distance ?? 1.0,
+          step: 0.1,
+          min: 0,
+          onChange: (v) => updateLight({ id, distance: v }),
+        },
+        [`phi ~${id}`]: {
+          label: "Phi",
+          value: phi ?? 1.0,
+          step: 0.1,
+          min: 0,
+          max: Math.PI,
+          onChange: (v) => updateLight({ id, phi: v }),
+        },
+        [`theta ~${id}`]: {
+          label: "Theta",
+          value: theta ?? 1.0,
+          step: 0.1,
+          min: 0,
+          max: Math.PI * 2,
+          onChange: (v) => updateLight({ id, theta: v }),
+        },
+      };
+    }
+  }, [
+    selectedLightId,
+    id,
+    name,
+    shape,
+    intensity,
+    color,
+    distance,
+    phi,
+    theta,
+    scale,
+    scaleX,
+    scaleY,
+  ]);
+
+  return (
+    <li
+      key={id}
+      role="button"
+      className={clsx(
+        "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
+        selectedLightId === id && "bg-white/20",
+        selectedLightId !== id && "hover:bg-white/10"
+      )}
+      onClick={() => {
+        if (selectedLightId === id) {
+          clearSelectedLight();
+        } else {
+          setSelectedLightId(id);
+        }
+      }}
+    >
+      <LightBulbIcon className="w-4 h-4 text-yellow-400" />
+      <input
+        type="checkbox"
+        hidden
+        readOnly
+        checked={selectedLightId === id}
+        className="peer"
+      />
+
+      <span className="flex-1 text-xs font-mono text-gray-300">{name}</span>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        className="text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity"
+      >
+        <FlagIcon className="w-4 h-4" />
+      </button>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleLightVisibilityById(id);
+        }}
+        className={clsx(
+          "text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
+          !visible && "opacity-40"
+        )}
+      >
+        {visible ? (
+          <EyeFilledIcon className="w-4 h-4" />
+        ) : (
+          <EyeSlashIcon className="w-4 h-4 " />
+        )}
+      </button>
+    </li>
   );
 }

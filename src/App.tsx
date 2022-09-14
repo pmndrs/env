@@ -27,44 +27,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import create from "zustand";
 import { immer } from "zustand/middleware/immer";
-
-// function generateTexture() {
-//   const width = 1024;
-//   const height = 512;
-
-//   const size = width * height;
-//   const data = new Uint8Array(4 * size);
-
-//   const s = Math.random();
-//   const t = Math.random();
-//   const u = Math.random();
-
-//   for (let i = 0; i < size; i++) {
-//     const color = new THREE.Color(
-//       Math.sin((i / size) * Math.PI * 2 * s + 0.1) * 0.5 + 0.5,
-//       Math.cos((i / size) * Math.PI * 2 * t + 0.24) * 0.5 + 0.5,
-//       Math.cos((i / size) * Math.PI * 2 * u - 0.538) * 0.5 + 0.5
-//     );
-
-//     const r = Math.floor(color.r * 255);
-//     const g = Math.floor(color.g * 255);
-//     const b = Math.floor(color.b * 255);
-
-//     const stride = i * 4;
-
-//     data[stride] = r;
-//     data[stride + 1] = g;
-//     data[stride + 2] = b;
-//     data[stride + 3] = 255;
-//   }
-
-//   // used the buffer to create a DataTexture
-//   const texture = new THREE.DataTexture(data, width, height);
-//   texture.needsUpdate = true;
-//   texture.mapping = THREE.EquirectangularReflectionMapping;
-
-//   return texture;
-// }
+import * as ContextMenu from "@radix-ui/react-context-menu";
 
 type Look = {
   id: string;
@@ -97,11 +60,32 @@ type State = {
   updateLight: (light: Partial<Light>) => void;
   setLightVisibleById: (id: string, visible: boolean) => void;
   toggleLightVisibilityById: (id: string) => void;
+  duplicateLightById: (id: string) => void;
+  removeLightById: (id: string) => void;
+  removeSelectedLight: () => void;
+  duplicateSelectedLight: () => void;
 };
 
 const useStore = create(
   immer<State>((set, get) => ({
-    lights: [],
+    lights: [
+      {
+        name: `Light A`,
+        id: THREE.MathUtils.generateUUID(),
+        shape: "rect",
+        color: "#fff",
+        distance: 4,
+        phi: Math.PI / 2,
+        theta: 0,
+        intensity: 1,
+        rotation: 0,
+        scale: 2,
+        scaleX: 1,
+        scaleY: 1,
+        target: [0, 0, 0],
+        visible: true,
+      },
+    ],
     selectedLightId: null,
     setSelectedLightId: (id: string) => set({ selectedLightId: id }),
     clearSelectedLight: () => {
@@ -110,7 +94,6 @@ const useStore = create(
     addLight: (light: Light) =>
       set((state) => ({
         lights: [...state.lights, light],
-        selectedLightId: light.id,
       })),
     updateLight: (light: Partial<Light>) =>
       set((state) => ({
@@ -130,19 +113,74 @@ const useStore = create(
       }
     },
     toggleLightVisibilityById: (id: string) => {
-      const light = get().lights.find((l) => l.id === id);
+      const state = get();
+      const light = state.lights.find((l) => l.id === id);
       if (light) {
-        get().setLightVisibleById(id, !light.visible);
+        state.setLightVisibleById(id, !light.visible);
+      }
+    },
+    duplicateLightById: (id: string) => {
+      const state = get();
+      const light = state.lights.find((l) => l.id === id);
+      if (light) {
+        const newLight = {
+          ...light,
+          id: THREE.MathUtils.generateUUID(),
+          name: `${light.name} (copy)`,
+        };
+        state.addLight(newLight);
+      }
+    },
+    removeLightById: (id: string) => {
+      const state = get();
+      const light = state.lights.find((l) => l.id === id);
+      if (light) {
+        set((state) => ({
+          lights: state.lights.filter((l) => l.id !== id),
+          selectedLightId:
+            state.selectedLightId === id ? null : state.selectedLightId,
+        }));
+      }
+    },
+    removeSelectedLight: () => {
+      const state = get();
+      if (state.selectedLightId) {
+        state.removeLightById(state.selectedLightId);
+      }
+    },
+    duplicateSelectedLight: () => {
+      const state = get();
+      if (state.selectedLightId) {
+        state.duplicateLightById(state.selectedLightId);
       }
     },
   }))
 );
 
-export default function App() {
-  const [texture, setTexture] = useState(() => new THREE.Texture());
+function useKeyPress(targetKey: string, handler: () => void) {
+  useEffect(() => {
+    function keyDownHandler(event: KeyboardEvent) {
+      if (event.key === targetKey) {
+        handler();
+      }
+    }
+    window.addEventListener("keypress", keyDownHandler);
+    return () => {
+      window.removeEventListener("keypress", keyDownHandler);
+    };
+  }, []);
+}
 
+export default function App() {
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
+  const removeSelectedLight = useStore((state) => state.removeSelectedLight);
+  const duplicateSelectedLight = useStore(
+    (state) => state.duplicateSelectedLight
+  );
+
+  useKeyPress("x", () => removeSelectedLight());
+  useKeyPress("d", () => duplicateSelectedLight());
 
   const [{ background, backgroundColor }] = useControls(
     () => ({
@@ -189,8 +227,6 @@ export default function App() {
         <ScenePreview
           background={background}
           backgroundColor={backgroundColor}
-          texture={texture}
-          setTexture={setTexture}
         />
       </div>
 
@@ -305,7 +341,7 @@ function Outliner() {
       </div>
       <ul className="m-0 p-2 flex flex-col gap-1">
         {lights.map((light) => (
-          <LightListItem {...light} />
+          <LightListItem key={light.id} {...light} />
         ))}
       </ul>
     </div>
@@ -393,14 +429,12 @@ function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
 function ScenePreview({
   background,
   backgroundColor,
-  texture,
-  setTexture,
 }: {
   background: boolean;
   backgroundColor: string;
-  texture: THREE.Texture;
-  setTexture: (texture: THREE.Texture) => void;
 }) {
+  const [texture, setTexture] = useState(() => new THREE.Texture());
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const view1Ref = useRef<HTMLDivElement | null>(null);
   const view2Ref = useRef<HTMLDivElement | null>(null);
@@ -575,6 +609,8 @@ function LightListItem({
   const setSelectedLightId = useStore((state) => state.setSelectedLightId);
   const clearSelectedLight = useStore((state) => state.clearSelectedLight);
   const updateLight = useStore((state) => state.updateLight);
+  const duplicateLightById = useStore((state) => state.duplicateLightById);
+  const removeLightById = useStore((state) => state.removeLightById);
 
   useControls(() => {
     if (selectedLightId !== id) {
@@ -661,58 +697,81 @@ function LightListItem({
   ]);
 
   return (
-    <li
-      key={id}
-      role="button"
-      className={clsx(
-        "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-        selectedLightId === id && "bg-white/20",
-        selectedLightId !== id && "hover:bg-white/10"
-      )}
-      onClick={() => {
-        if (selectedLightId === id) {
-          clearSelectedLight();
-        } else {
-          setSelectedLightId(id);
-        }
-      }}
-    >
-      <LightBulbIcon className="w-4 h-4 text-yellow-400" />
-      <input
-        type="checkbox"
-        hidden
-        readOnly
-        checked={selectedLightId === id}
-        className="peer"
-      />
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>
+        <li
+          key={id}
+          role="button"
+          className={clsx(
+            "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
+            selectedLightId === id && "bg-white/20",
+            selectedLightId !== id && "hover:bg-white/10"
+          )}
+          onClick={() => {
+            if (selectedLightId === id) {
+              clearSelectedLight();
+            } else {
+              setSelectedLightId(id);
+            }
+          }}
+        >
+          <LightBulbIcon className="w-4 h-4 text-yellow-400" />
+          <input
+            type="checkbox"
+            hidden
+            readOnly
+            checked={selectedLightId === id}
+            className="peer"
+          />
 
-      <span className="flex-1 text-xs font-mono text-gray-300">{name}</span>
+          <span className="flex-1 text-xs font-mono text-gray-300 text-ellipsis overflow-hidden whitespace-nowrap">
+            {name}
+          </span>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        className="text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity"
-      >
-        <FlagIcon className="w-4 h-4" />
-      </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity"
+          >
+            <FlagIcon className="w-4 h-4" />
+          </button>
 
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleLightVisibilityById(id);
-        }}
-        className={clsx(
-          "text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
-          !visible && "opacity-40"
-        )}
-      >
-        {visible ? (
-          <EyeFilledIcon className="w-4 h-4" />
-        ) : (
-          <EyeSlashIcon className="w-4 h-4 " />
-        )}
-      </button>
-    </li>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLightVisibilityById(id);
+            }}
+            className={clsx(
+              "text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
+              !visible && "opacity-40"
+            )}
+          >
+            {visible ? (
+              <EyeFilledIcon className="w-4 h-4" />
+            ) : (
+              <EyeSlashIcon className="w-4 h-4 " />
+            )}
+          </button>
+        </li>
+      </ContextMenu.Trigger>
+
+      <ContextMenu.Portal>
+        <ContextMenu.Content className="flex flex-col gap-1 bg-neutral-800 text-gray-50 font-light p-1.5 rounded-md shadow-xl">
+          <ContextMenu.Item
+            className="outline-none select-none rounded px-2 py-0.5 highlighted:bg-white highlighted:text-gray-900 text-sm"
+            onSelect={() => duplicateLightById(id)}
+          >
+            Duplicate
+          </ContextMenu.Item>
+          <ContextMenu.Item
+            className="outline-none select-none rounded px-2 py-0.5 text-white highlighted:bg-red-500 highlighted:text-white text-sm"
+            onSelect={() => removeLightById(id)}
+          >
+            Delete
+          </ContextMenu.Item>
+        </ContextMenu.Content>
+      </ContextMenu.Portal>
+    </ContextMenu.Root>
   );
 }

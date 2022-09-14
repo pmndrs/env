@@ -5,9 +5,12 @@
   Create, edit, and preview HDR environment maps in the browser. Preview your models in realtime and export lightmaps to use in your React Three Fiber projects or in 3D applications like Blender, Cinema 4D, etc.
 </p>
 
+## Demo
+
+https://user-images.githubusercontent.com/8302959/190044237-7f99cea2-723b-4d7e-b816-7942927abf2f.mp4
+
 ## Features
 
 - Position and style your lights to fit the model
 - Click on a point on your 3D model to position lights so that they illuminate the surface
 - Export to JSX, .png, or .hdr files ready to use in your projects
-

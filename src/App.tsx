@@ -5,7 +5,10 @@ import {
   LightBulbIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { EyeIcon as EyeFilledIcon } from "@heroicons/react/24/solid";
+import {
+  EyeIcon as EyeFilledIcon,
+  FlagIcon as FlagFilledIcon,
+} from "@heroicons/react/24/solid";
 import {
   BakeShadows,
   Bounds,
@@ -49,9 +52,11 @@ type Light = {
   theta: number;
   target: [number, number, number];
   visible: boolean;
+  solo: boolean;
 };
 
 type State = {
+  isSolo: boolean;
   lights: Light[];
   selectedLightId: string | null;
   setSelectedLightId: (id: string) => void;
@@ -64,10 +69,12 @@ type State = {
   removeLightById: (id: string) => void;
   removeSelectedLight: () => void;
   duplicateSelectedLight: () => void;
+  toggleSoloLightById: (id: string) => void;
 };
 
 const useStore = create(
   immer<State>((set, get) => ({
+    isSolo: false,
     lights: [
       {
         name: `Light A`,
@@ -84,6 +91,7 @@ const useStore = create(
         scaleY: 1,
         target: [0, 0, 0],
         visible: true,
+        solo: false,
       },
     ],
     selectedLightId: null,
@@ -153,6 +161,26 @@ const useStore = create(
       if (state.selectedLightId) {
         state.duplicateLightById(state.selectedLightId);
       }
+    },
+    toggleSoloLightById: (id: string) => {
+      set((state) => {
+        const light = state.lights.find((l) => l.id === id);
+        if (light) {
+          light.solo = !light.solo;
+        }
+
+        // Check if any lights are soloed
+        const soloed = state.lights.some((l) => l.solo);
+        if (soloed) {
+          // If so, make all lights invisible except the soloed ones
+          state.lights.forEach((l) => (l.visible = l.solo));
+          state.isSolo = true;
+        } else {
+          // If not, make all lights visible
+          state.lights.forEach((l) => (l.visible = true));
+          state.isSolo = false;
+        }
+      });
     },
   }))
 );
@@ -333,6 +361,7 @@ function Outliner() {
               scaleY: 1,
               target: [0, 0, 0],
               visible: true,
+              solo: false,
             });
           }}
         >
@@ -592,6 +621,7 @@ function LightListItem({
   id,
   name,
   visible,
+  solo,
   shape,
   intensity,
   color,
@@ -611,6 +641,8 @@ function LightListItem({
   const updateLight = useStore((state) => state.updateLight);
   const duplicateLightById = useStore((state) => state.duplicateLightById);
   const removeLightById = useStore((state) => state.removeLightById);
+  const toggleSoloLightById = useStore((state) => state.toggleSoloLightById);
+  const isSolo = useStore((state) => state.isSolo);
 
   useControls(() => {
     if (selectedLightId !== id) {
@@ -715,7 +747,12 @@ function LightListItem({
             }
           }}
         >
-          <LightBulbIcon className="w-4 h-4 text-yellow-400" />
+          <LightBulbIcon
+            className={clsx(
+              "w-4 h-4 text-yellow-400",
+              !visible && "text-gray-300/50"
+            )}
+          />
           <input
             type="checkbox"
             hidden
@@ -724,17 +761,30 @@ function LightListItem({
             className="peer"
           />
 
-          <span className="flex-1 text-xs font-mono text-gray-300 text-ellipsis overflow-hidden whitespace-nowrap">
+          <span
+            className={clsx(
+              "flex-1 text-xs font-mono text-gray-300 text-ellipsis overflow-hidden whitespace-nowrap",
+              !visible && "text-gray-300/50 line-through"
+            )}
+          >
             {name}
           </span>
 
           <button
             onClick={(e) => {
               e.stopPropagation();
+              toggleSoloLightById(id);
             }}
-            className="text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity"
+            className={clsx(
+              "text-white opacity-40 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
+              solo && "opacity-100"
+            )}
           >
-            <FlagIcon className="w-4 h-4" />
+            {solo ? (
+              <FlagFilledIcon className="w-4 h-4" />
+            ) : (
+              <FlagIcon className="w-4 h-4" />
+            )}
           </button>
 
           <button
@@ -743,9 +793,10 @@ function LightListItem({
               toggleLightVisibilityById(id);
             }}
             className={clsx(
-              "text-white opacity-0 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
-              !visible && "opacity-40"
+              "text-white opacity-40 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
+              "disabled:cursor-not-allowed disabled:hover:opacity-0"
             )}
+            disabled={isSolo && !solo}
           >
             {visible ? (
               <EyeFilledIcon className="w-4 h-4" />

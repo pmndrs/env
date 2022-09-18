@@ -244,6 +244,20 @@ const useStore = create(
   }))
 );
 
+function useKeyPress(targetKey: string, handler: () => void) {
+  useEffect(() => {
+    function keyDownHandler(event: KeyboardEvent) {
+      if (event.key === targetKey) {
+        handler();
+      }
+    }
+    window.addEventListener("keypress", keyDownHandler);
+    return () => {
+      window.removeEventListener("keypress", keyDownHandler);
+    };
+  }, []);
+}
+
 export default function App() {
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
@@ -393,8 +407,8 @@ function Outliner() {
       </div>
 
       <ul className="m-0 p-2 flex flex-col gap-1">
-        {cameras.map((camera) => (
-          <CameraListItem key={camera.id} camera={camera} />
+        {cameras.map((camera, index) => (
+          <CameraListItem key={camera.id} index={index} camera={camera} />
         ))}
       </ul>
 
@@ -688,16 +702,19 @@ function SaveBackgroundTexture({
   return null;
 }
 
-function CameraListItem({ camera }: { camera: Camera }) {
+function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
   const { id, name } = camera;
   const selectedCameraId = useStore((state) => state.selectedCameraId);
   const setSelectedCameraId = useStore((state) => state.setSelectedCameraId);
+
+  const key = String(index + 1);
+  useKeyPress(key, () => setSelectedCameraId(id));
 
   return (
     <li
       role="button"
       className={clsx(
-        "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
+        "group flex relative list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
         selectedCameraId === id && "bg-white/20",
         selectedCameraId !== id && "hover:bg-white/10"
       )}
@@ -717,6 +734,15 @@ function CameraListItem({ camera }: { camera: Camera }) {
       />
 
       <span className="flex-1 text-xs font-mono text-gray-300">{name}</span>
+
+      <kbd
+        className={clsx(
+          "absolute right-1.5 top-1.5 text-xs font-mono text-gray-300 bg-white/10 w-5 h-5 flex items-center justify-center rounded",
+          selectedCameraId === id && "bg-white text-gray-900"
+        )}
+      >
+        {key}
+      </kbd>
     </li>
   );
 }

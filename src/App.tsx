@@ -9,6 +9,7 @@ import {
   EyeIcon as EyeFilledIcon,
   FlagIcon as FlagFilledIcon,
 } from "@heroicons/react/24/solid";
+import * as ContextMenu from "@radix-ui/react-context-menu";
 import {
   BakeShadows,
   Bounds,
@@ -19,29 +20,28 @@ import {
   PerspectiveCamera,
   shaderMaterial,
   useGLTF,
+  useTexture,
   View,
 } from "@react-three/drei";
 import { applyProps, Canvas, extend, useThree } from "@react-three/fiber";
 import clsx from "clsx";
-import { Color, Depth, LayerMaterial } from "lamina";
-import { Leva, useControls } from "leva";
+import { Color, Depth, Gradient, LayerMaterial, Noise, Texture } from "lamina";
+import { Leva, LevaInputs, useControls } from "leva";
 import { Perf } from "r3f-perf";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import create from "zustand";
 import { immer } from "zustand/middleware/immer";
-import * as ContextMenu from "@radix-ui/react-context-menu";
 
 type Look = {
   id: string;
   name: string;
 };
 
-type Light = {
+type BaseLight = {
   id: string;
   name: string;
   shape: "rect" | "circle" | "ring";
-  color: string;
   intensity: number;
   distance: number;
   scale: number;
@@ -55,8 +55,36 @@ type Light = {
   solo: boolean;
 };
 
+type SolidLight = BaseLight & {
+  type: "solid";
+  color: string;
+};
+
+type GradientLight = BaseLight & {
+  type: "gradient";
+  colorA: string;
+  colorB: string;
+};
+
+type NoiseLight = BaseLight & {
+  type: "noise";
+  algorithm: "perlin" | "simplex" | "cell" | "curl";
+  colorA: string;
+  colorB: string;
+  scale: number;
+};
+
+type TextureLight = BaseLight & {
+  type: "texture";
+  map: THREE.Texture;
+};
+
+type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
+
 type State = {
   isSolo: boolean;
+  textureMaps: THREE.Texture[];
+  setTextureMaps: (maps: THREE.Texture[]) => void;
   lights: Light[];
   selectedLightId: string | null;
   setSelectedLightId: (id: string) => void;
@@ -75,11 +103,15 @@ type State = {
 const useStore = create(
   immer<State>((set, get) => ({
     isSolo: false,
+    textureMaps: [],
+    setTextureMaps: (maps: THREE.Texture[]) =>
+      set((state) => void (state.textureMaps = maps)),
     lights: [
       {
         name: `Light A`,
         id: THREE.MathUtils.generateUUID(),
         shape: "rect",
+        type: "solid",
         color: "#fff",
         distance: 4,
         phi: Math.PI / 2,
@@ -350,6 +382,7 @@ function Outliner() {
               name: `Light ${String.fromCharCode(lights.length + 65)}`,
               id: THREE.MathUtils.generateUUID(),
               shape: "rect",
+              type: "solid",
               color: "#fff",
               distance: 4,
               phi: Math.PI / 2,
@@ -477,105 +510,136 @@ function ScenePreview({
     >
       <div ref={view1Ref} className="w-full h-full" />
       <div ref={view2Ref} className="w-full h-full" />
-      <Canvas
-        shadows
-        dpr={[1, 2]}
-        eventSource={containerRef as React.MutableRefObject<HTMLDivElement>}
-        className="!absolute top-0 left-0 pointer-events-none w-full h-full"
-      >
-        {/* @ts-ignore */}
-        <View
-          index={1}
-          track={view1Ref as React.MutableRefObject<HTMLDivElement>}
+      <Suspense fallback={null}>
+        <Canvas
+          shadows
+          dpr={[1, 2]}
+          eventSource={containerRef as React.MutableRefObject<HTMLDivElement>}
+          className="!absolute top-0 left-0 pointer-events-none w-full h-full"
         >
-          <PerspectiveCamera makeDefault position={[2, 2, 2]} near={0.001} />
+          <LoadTextureMaps />
 
-          <SaveBackgroundTexture setTexture={setTexture} />
+          {/* @ts-ignore */}
+          <View
+            index={1}
+            track={view1Ref as React.MutableRefObject<HTMLDivElement>}
+          >
+            <PerspectiveCamera makeDefault position={[2, 2, 2]} near={0.001} />
 
-          <BakeShadows />
+            <SaveBackgroundTexture setTexture={setTexture} />
 
-          <Porsche
-            scale={1.6}
-            position={[-0.5, 1, 0]}
-            rotation={[0, Math.PI / 5, 0]}
-          />
-          <ContactShadows
-            resolution={1024}
-            frames={1}
-            position={[0, 0, 0]}
-            scale={20}
-            blur={3}
-            opacity={1}
-            far={10}
-          />
+            <BakeShadows />
 
-          <Perf
-            minimal
-            position="bottom-right"
-            style={{ position: "absolute" }}
-          />
-          <OrbitControls />
-          <Environment background={background} resolution={2048}>
-            {lights.map(
-              ({
-                id,
-                color,
-                distance,
-                phi,
-                theta,
-                intensity,
-                shape,
-                scale,
-                scaleX,
-                scaleY,
-                visible,
-              }) => (
-                <Lightformer
-                  key={id}
-                  visible={visible}
-                  form={shape}
-                  intensity={intensity}
-                  color={color}
-                  position={new THREE.Vector3().setFromSphericalCoords(
-                    distance,
-                    phi,
-                    theta
-                  )}
-                  scale={[scale * scaleX, scale * scaleY, scale]}
-                  target={[0, 0, 0]}
-                />
-              )
-            )}
-            <mesh scale={100}>
-              <sphereGeometry args={[1, 64, 64]} />
-              <LayerMaterial side={THREE.BackSide}>
-                <Color color="#444" alpha={1} mode="normal" />
-                <Depth
-                  colorA={backgroundColor}
-                  colorB="black"
-                  alpha={0.5}
-                  mode="normal"
-                  near={0}
-                  far={300}
-                  origin={[100, 100, 100]}
-                />
-              </LayerMaterial>
-            </mesh>
-          </Environment>
-        </View>
+            <Porsche
+              scale={1.6}
+              position={[-0.5, 1, 0]}
+              rotation={[0, Math.PI / 5, 0]}
+            />
 
-        {/* @ts-ignore */}
-        <View
-          index={2}
-          track={view2Ref as React.MutableRefObject<HTMLDivElement>}
-        >
-          <Bounds fit clip observe damping={6} margin={0.5}>
-            <EnvMapPlane texture={texture} />
-          </Bounds>
-        </View>
-      </Canvas>
+            <ContactShadows
+              resolution={1024}
+              frames={1}
+              position={[0, 0, 0]}
+              scale={20}
+              blur={3}
+              opacity={1}
+              far={10}
+            />
+
+            <Perf
+              minimal
+              position="bottom-right"
+              style={{ position: "absolute" }}
+            />
+            <OrbitControls />
+
+            <Environment background={background} resolution={2048}>
+              {lights.map((props) => {
+                const {
+                  id,
+                  distance,
+                  phi,
+                  theta,
+                  intensity,
+                  shape,
+                  scale,
+                  scaleX,
+                  scaleY,
+                  visible,
+                } = props;
+                return (
+                  <Lightformer
+                    key={id}
+                    visible={visible}
+                    form={shape}
+                    intensity={intensity}
+                    position={new THREE.Vector3().setFromSphericalCoords(
+                      distance,
+                      phi,
+                      theta
+                    )}
+                    scale={[scale * scaleX, scale * scaleY, scale]}
+                    target={[0, 0, 0]}
+                  >
+                    <LayerMaterial>
+                      <LightformerLayers {...props} />
+                    </LayerMaterial>
+                  </Lightformer>
+                );
+              })}
+
+              <mesh scale={100}>
+                <sphereGeometry args={[1, 64, 64]} />
+                <LayerMaterial side={THREE.BackSide}>
+                  <Color color="#444" alpha={1} mode="normal" />
+                  <Depth
+                    colorA={backgroundColor}
+                    colorB="black"
+                    alpha={0.5}
+                    mode="normal"
+                    near={0}
+                    far={300}
+                    origin={[100, 100, 100]}
+                  />
+                </LayerMaterial>
+              </mesh>
+            </Environment>
+          </View>
+
+          {/* @ts-ignore */}
+          <View
+            index={2}
+            track={view2Ref as React.MutableRefObject<HTMLDivElement>}
+          >
+            <Bounds fit clip observe damping={6} margin={0.5}>
+              <EnvMapPlane texture={texture} />
+            </Bounds>
+          </View>
+        </Canvas>
+      </Suspense>
     </div>
   );
+}
+
+function LoadTextureMaps() {
+  const setTextureMaps = useStore((state) => state.setTextureMaps);
+
+  useTexture({ checkerboard: "/textures/checkerboard.png" }, (textures) => {
+    if (Array.isArray(textures)) {
+      textures.forEach((texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        const url = new URL(texture.source.data.currentSrc);
+        texture.name = url.pathname.split("/").pop() as string;
+        texture.needsUpdate = true;
+      });
+      setTextureMaps(textures);
+    } else {
+      setTextureMaps([textures]);
+    }
+  });
+
+  return null;
 }
 
 function SaveBackgroundTexture({
@@ -617,21 +681,23 @@ function LookListItem({ id, name }: Look) {
   );
 }
 
-function LightListItem({
-  id,
-  name,
-  visible,
-  solo,
-  shape,
-  intensity,
-  color,
-  distance,
-  phi,
-  theta,
-  scale,
-  scaleX,
-  scaleY,
-}: Light) {
+function LightListItem(props: Light) {
+  const {
+    id,
+    type,
+    name,
+    visible,
+    solo,
+    shape,
+    intensity,
+    distance,
+    phi,
+    theta,
+    scale,
+    scaleX,
+    scaleY,
+  } = props;
+
   const selectedLightId = useStore((state) => state.selectedLightId);
   const toggleLightVisibilityById = useStore(
     (state) => state.toggleLightVisibilityById
@@ -643,6 +709,7 @@ function LightListItem({
   const removeLightById = useStore((state) => state.removeLightById);
   const toggleSoloLightById = useStore((state) => state.toggleSoloLightById);
   const isSolo = useStore((state) => state.isSolo);
+  const textureMaps = useStore((state) => state.textureMaps);
 
   useControls(() => {
     if (selectedLightId !== id) {
@@ -666,11 +733,6 @@ function LightListItem({
           step: 0.1,
           min: 0,
           onChange: (v) => updateLight({ id, intensity: v }),
-        },
-        [`color ~${id}`]: {
-          label: "Color",
-          value: color ?? "#fff",
-          onChange: (v) => updateLight({ id, color: v }),
         },
         [`scaleMultiplier ~${id}`]: {
           label: "Scale Multiplier",
@@ -711,6 +773,69 @@ function LightListItem({
           max: Math.PI * 2,
           onChange: (v) => updateLight({ id, theta: v }),
         },
+
+        [`type ~${id}`]: {
+          label: "Type",
+          value: type ?? "#fff",
+          options: ["solid", "gradient", "noise", "texture"],
+          onChange: (v) => updateLight({ id, type: v }),
+        },
+
+        ...(() => {
+          if (props.type === "solid") {
+            return {
+              [`color ~${id}`]: {
+                label: "Color",
+                value: props.color ?? "#fff",
+                onChange: (v) => updateLight({ id, color: v }),
+              },
+            };
+          } else if (props.type === "gradient") {
+            return {
+              [`colorA ~${id}`]: {
+                label: "Color A",
+                value: props.colorA ?? "#f5c664",
+                onChange: (v) => updateLight({ id, colorA: v }),
+              },
+              [`colorB ~${id}`]: {
+                label: "Color B",
+                value: props.colorB ?? "#ff0000",
+                onChange: (v) => updateLight({ id, colorB: v }),
+              },
+            };
+          } else if (props.type === "noise") {
+            return {
+              [`colorA ~${id}`]: {
+                label: "Color A",
+                value: props.colorA ?? "#f5c664",
+                onChange: (v) => updateLight({ id, colorA: v }),
+              },
+              [`colorB ~${id}`]: {
+                label: "Color B",
+                value: props.colorB ?? "#ff0000",
+                onChange: (v) => updateLight({ id, colorB: v }),
+              },
+            };
+          } else if (props.type === "texture") {
+            return {
+              [`map ~${id}`]: {
+                label: "Map",
+                value:
+                  textureMaps.find((value) => props.map === value)?.name ??
+                  "none",
+                options: ["none", ...textureMaps.map((value) => value.name)],
+                onChange: (v) => {
+                  updateLight({
+                    id,
+                    map: textureMaps.find((map) => map.name === v),
+                  });
+                },
+              },
+            };
+          } else {
+            return {};
+          }
+        })(),
       };
     }
   }, [
@@ -719,7 +844,7 @@ function LightListItem({
     name,
     shape,
     intensity,
-    color,
+    type,
     distance,
     phi,
     theta,
@@ -825,4 +950,18 @@ function LightListItem({
       </ContextMenu.Portal>
     </ContextMenu.Root>
   );
+}
+
+function LightformerLayers(props: Light) {
+  if (props.type === "solid") {
+    return <Color color={props.color} />;
+  } else if (props.type === "gradient") {
+    return <Gradient colorA={props.colorA} colorB={props.colorB} />;
+  } else if (props.type === "noise") {
+    return <Noise colorA={props.colorA} colorB={props.colorB} />;
+  } else if (props.type === "texture") {
+    return <Texture map={props.map} />;
+  } else {
+    throw new Error("Unknown light type");
+  }
 }

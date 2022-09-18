@@ -278,43 +278,6 @@ function useKeyPress(targetKey: string, handler: () => void) {
 }
 
 export default function App() {
-  const selectedLightId = useStore((state) => state.selectedLightId);
-
-  const [{ background, envMap, backgroundColor }] = useControls(
-    () => ({
-      envMap: {
-        label: "Show Env Map",
-        value: true,
-        render: () => selectedLightId === null,
-      },
-      background: {
-        label: "Show BG",
-        value: true,
-        render: () => selectedLightId === null,
-      },
-      backgroundColor: {
-        label: "BG Color",
-        value: "#0000ff",
-        render: () => selectedLightId === null,
-      },
-      screenshot: button(
-        () => {
-          const canvas = document.querySelector("canvas");
-          if (canvas) {
-            const link = document.createElement("a");
-            link.download = "screenshot.png";
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-          }
-        },
-        {
-          disabled: selectedLightId !== null,
-        }
-      ),
-    }),
-    [selectedLightId]
-  );
-
   return (
     <div
       style={{
@@ -341,11 +304,7 @@ export default function App() {
         }}
         className="bg-neutral-900 rounded-lg overflow-hidden"
       >
-        <ScenePreview
-          background={background}
-          backgroundColor={backgroundColor}
-          envMap={envMap}
-        />
+        <ScenePreview />
       </div>
 
       <div
@@ -572,15 +531,7 @@ function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
   );
 }
 
-function ScenePreview({
-  background,
-  backgroundColor,
-  envMap,
-}: {
-  background: boolean;
-  backgroundColor: string;
-  envMap: boolean;
-}) {
+function ScenePreview() {
   const [texture, setTexture] = useState(() => new THREE.Texture());
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -590,10 +541,54 @@ function ScenePreview({
   const lights = useStore((state) => state.lights);
   const cameras = useStore((state) => state.cameras);
 
+  const selectedLightId = useStore((state) => state.selectedLightId);
   const selectedCameraId = useStore((state) => state.selectedCameraId);
   const updateSelectedCamera = useStore((state) => state.updateSelectedCamera);
 
   const controlsRef = useRef<React.ElementRef<typeof OrbitControls>>(null);
+
+  const [{ background, envMap, backgroundColor, ambientLightIntensity }] =
+    useControls(
+      () => ({
+        envMap: {
+          label: "Show Env Map",
+          value: true,
+          render: () => selectedLightId === null,
+        },
+        background: {
+          label: "Show BG",
+          value: true,
+          render: () => selectedLightId === null,
+        },
+        backgroundColor: {
+          label: "BG Color",
+          value: "#0000ff",
+          render: () => selectedLightId === null,
+        },
+        ambientLightIntensity: {
+          label: "Ambient Intensity",
+          value: 0.5,
+          min: 0,
+          max: 3,
+          render: () => selectedLightId === null,
+        },
+        screenshot: button(
+          () => {
+            const canvas = document.querySelector("canvas");
+            if (canvas) {
+              const link = document.createElement("a");
+              link.download = "screenshot.png";
+              link.href = canvas.toDataURL("image/png");
+              link.click();
+            }
+          },
+          {
+            disabled: selectedLightId !== null,
+          }
+        ),
+      }),
+      [selectedLightId]
+    );
 
   return (
     <div
@@ -669,7 +664,7 @@ function ScenePreview({
               enableDamping={false}
             />
 
-            <ambientLight intensity={0.2} />
+            <ambientLight intensity={ambientLightIntensity} />
 
             <Environment background={background} resolution={2048}>
               {lights.map((light) => {

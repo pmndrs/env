@@ -15,7 +15,6 @@ import {
   Bounds,
   ContactShadows,
   Environment,
-  Lightformer,
   OrbitControls,
   PerspectiveCamera,
   shaderMaterial,
@@ -32,6 +31,7 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import create from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { Lightformer } from "./Lightformer";
 
 type Look = {
   id: string;
@@ -64,6 +64,8 @@ type GradientLight = BaseLight & {
   type: "gradient";
   colorA: string;
   colorB: string;
+  contrast: number;
+  axes: "x" | "y" | "z";
 };
 
 type NoiseLight = BaseLight & {
@@ -73,7 +75,8 @@ type NoiseLight = BaseLight & {
   colorB: string;
   colorC: string;
   colorD: string;
-  scale: number;
+  noiseScale: number;
+  noiseType: "perlin" | "simplex" | "cell" | "curl";
 };
 
 type TextureLight = BaseLight & {
@@ -555,6 +558,8 @@ function ScenePreview({
             />
             <OrbitControls />
 
+            <ambientLight intensity={0.2} />
+
             <Environment background={background} resolution={2048}>
               {lights.map((props) => {
                 const {
@@ -593,16 +598,7 @@ function ScenePreview({
               <mesh scale={100}>
                 <sphereGeometry args={[1, 64, 64]} />
                 <LayerMaterial side={THREE.BackSide}>
-                  <Color color="#444" alpha={1} mode="normal" />
-                  <Depth
-                    colorA={backgroundColor}
-                    colorB="black"
-                    alpha={0.5}
-                    mode="normal"
-                    near={0}
-                    far={300}
-                    origin={[100, 100, 100]}
-                  />
+                  <Color color={backgroundColor} alpha={1} mode="normal" />
                 </LayerMaterial>
               </mesh>
             </Environment>
@@ -804,6 +800,17 @@ function LightListItem(props: Light) {
                 value: props.colorB ?? "#ff0000",
                 onChange: (v) => updateLight({ id, colorB: v }),
               },
+              [`contrast ~${id}`]: {
+                label: "Contrast",
+                value: props.contrast ?? 1,
+                onChange: (v) => updateLight({ id, contrast: v }),
+              },
+              [`axes ~${id}`]: {
+                label: "Axes",
+                value: props.axes ?? "x",
+                options: ["x", "y"],
+                onChange: (v) => updateLight({ id, axes: v }),
+              },
             };
           } else if (props.type === "noise") {
             return {
@@ -819,13 +826,25 @@ function LightListItem(props: Light) {
               },
               [`colorC ~${id}`]: {
                 label: "Color C",
-                value: props.colorB ?? "#ff0000",
+                value: props.colorB ?? "#00ff00",
                 onChange: (v) => updateLight({ id, colorC: v }),
               },
               [`colorD ~${id}`]: {
                 label: "Color D",
-                value: props.colorD ?? "#ff0000",
+                value: props.colorD ?? "#0000ff",
                 onChange: (v) => updateLight({ id, colorD: v }),
+              },
+              [`noiseScale ~${id}`]: {
+                label: "Noise Scale",
+                value: props.noiseScale ?? 1,
+                min: 0,
+                onChange: (v) => updateLight({ id, noiseScale: v }),
+              },
+              [`noiseType ~${id}`]: {
+                label: "Noise Type",
+                value: props.noiseType ?? "perlin",
+                options: ["perlin", "simplex", "cell", "curl"],
+                onChange: (v) => updateLight({ id, noiseType: v }),
               },
             };
           } else if (props.type === "texture") {
@@ -968,7 +987,14 @@ function LightformerLayers(props: Light) {
   if (props.type === "solid") {
     return <Color color={props.color} />;
   } else if (props.type === "gradient") {
-    return <Gradient colorA={props.colorA} colorB={props.colorB} />;
+    return (
+      <Gradient
+        colorA={props.colorA}
+        colorB={props.colorB}
+        contrast={props.contrast}
+        axes={props.axes}
+      />
+    );
   } else if (props.type === "noise") {
     return (
       <Noise
@@ -976,6 +1002,8 @@ function LightformerLayers(props: Light) {
         colorB={props.colorB}
         colorC={props.colorC}
         colorD={props.colorD}
+        type={props.noiseType}
+        scale={props.noiseScale}
       />
     );
   } else if (props.type === "texture") {

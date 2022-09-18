@@ -25,7 +25,7 @@ import {
 import { applyProps, Canvas, extend, useThree } from "@react-three/fiber";
 import clsx from "clsx";
 import { Color, Gradient, LayerMaterial, Noise, Texture } from "lamina";
-import { Leva, useControls } from "leva";
+import { button, Leva, useControls } from "leva";
 import { Perf } from "r3f-perf";
 import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -116,142 +116,145 @@ type State = {
 
 const useStore = create<State>()(
   persist(
-    immer((set, get) => ({
-      isSolo: false,
-      textureMaps: [],
-      setTextureMaps: (maps: THREE.Texture[]) =>
-        set((state) => void (state.textureMaps = maps)),
-      cameras: [
-        {
-          id: "default",
-          name: "Default",
-          position: [0, 0, 5],
-          rotation: [0, 0, 0],
-        },
-      ],
-      selectedCameraId: "default",
-      setSelectedCameraId: (id: string) => set({ selectedCameraId: id }),
-      resetSelectedCamera: () => {
-        set({ selectedCameraId: "default" });
-      },
-      addCamera: (camera: Camera) =>
-        set((state) => void state.cameras.push(camera)),
+    immer(
+      (set, get) =>
+        ({
+          isSolo: false,
+          textureMaps: [],
+          setTextureMaps: (maps: THREE.Texture[]) =>
+            set((state) => void (state.textureMaps = maps)),
+          cameras: [
+            {
+              id: "default",
+              name: "Default",
+              position: [0, 0, 5],
+              rotation: [0, 0, 0],
+            },
+          ],
+          selectedCameraId: "default",
+          setSelectedCameraId: (id: string) => set({ selectedCameraId: id }),
+          resetSelectedCamera: () => {
+            set({ selectedCameraId: "default" });
+          },
+          addCamera: (camera: Camera) =>
+            set((state) => void state.cameras.push(camera)),
 
-      updateSelectedCamera: (camera: Partial<Camera>) =>
-        set((state) => ({
-          cameras: state.cameras.map((c: Camera) =>
-            c.id === get().selectedCameraId ? { ...c, ...camera } : c
-          ),
-        })),
-      lights: [
-        {
-          name: `Light A`,
-          id: THREE.MathUtils.generateUUID(),
-          shape: "rect",
-          type: "solid",
-          color: "#fff",
-          distance: 4,
-          phi: Math.PI / 2,
-          theta: 0,
-          intensity: 1,
-          rotation: 0,
-          scale: 2,
-          scaleX: 1,
-          scaleY: 1,
-          target: [0, 0, 0],
-          visible: true,
-          solo: false,
-        },
-      ],
-      selectedLightId: null,
-      setSelectedLightId: (id: string) => set({ selectedLightId: id }),
-      clearSelectedLight: () => {
-        set({ selectedLightId: null });
-      },
-      addLight: (light: Light) =>
-        set((state) => ({
-          lights: [...state.lights, light],
-        })),
-      updateLight: (light: Partial<Light>) =>
-        set((state) => ({
-          lights: state.lights.map((l: Light) =>
-            l.id === light.id ? { ...l, ...light } : l
-          ),
-        })),
-      setLightVisibleById: (id: string, visible: boolean) => {
-        const light = get().lights.find((l) => l.id === id);
-        if (light) {
-          set((state) => {
-            const light = state.lights.find((l: Light) => l.id === id);
+          updateSelectedCamera: (camera: Partial<Camera>) =>
+            set((state) => ({
+              cameras: state.cameras.map((c: Camera) =>
+                c.id === get().selectedCameraId ? { ...c, ...camera } : c
+              ),
+            })),
+          lights: [
+            {
+              name: `Light A`,
+              id: THREE.MathUtils.generateUUID(),
+              shape: "rect",
+              type: "solid",
+              color: "#fff",
+              distance: 4,
+              phi: Math.PI / 2,
+              theta: 0,
+              intensity: 1,
+              rotation: 0,
+              scale: 2,
+              scaleX: 1,
+              scaleY: 1,
+              target: [0, 0, 0],
+              visible: true,
+              solo: false,
+            },
+          ],
+          selectedLightId: null,
+          setSelectedLightId: (id: string) => set({ selectedLightId: id }),
+          clearSelectedLight: () => {
+            set({ selectedLightId: null });
+          },
+          addLight: (light: Light) =>
+            set((state) => ({
+              lights: [...state.lights, light],
+            })),
+          updateLight: (light: Partial<Light>) =>
+            set((state) => ({
+              lights: state.lights.map((l: Light) =>
+                l.id === light.id ? { ...l, ...light } : l
+              ),
+            })),
+          setLightVisibleById: (id: string, visible: boolean) => {
+            const light = get().lights.find((l) => l.id === id);
             if (light) {
-              light.visible = visible;
+              set((state) => {
+                const light = state.lights.find((l: Light) => l.id === id);
+                if (light) {
+                  light.visible = visible;
+                }
+              });
             }
-          });
-        }
-      },
-      toggleLightVisibilityById: (id: string) => {
-        const state = get();
-        const light = state.lights.find((l) => l.id === id);
-        if (light) {
-          state.setLightVisibleById(id, !light.visible);
-        }
-      },
-      duplicateLightById: (id: string) => {
-        const state = get();
-        const light = state.lights.find((l) => l.id === id);
-        if (light) {
-          const newLight = {
-            ...light,
-            id: THREE.MathUtils.generateUUID(),
-            name: `${light.name} (copy)`,
-          };
-          state.addLight(newLight);
-        }
-      },
-      removeLightById: (id: string) => {
-        const state = get();
-        const light = state.lights.find((l) => l.id === id);
-        if (light) {
-          set((state) => ({
-            lights: state.lights.filter((l) => l.id !== id),
-            selectedLightId:
-              state.selectedLightId === id ? null : state.selectedLightId,
-          }));
-        }
-      },
-      removeSelectedLight: () => {
-        const state = get();
-        if (state.selectedLightId) {
-          state.removeLightById(state.selectedLightId);
-        }
-      },
-      duplicateSelectedLight: () => {
-        const state = get();
-        if (state.selectedLightId) {
-          state.duplicateLightById(state.selectedLightId);
-        }
-      },
-      toggleSoloLightById: (id: string) => {
-        set((state) => {
-          const light = state.lights.find((l) => l.id === id);
-          if (light) {
-            light.solo = !light.solo;
-          }
+          },
+          toggleLightVisibilityById: (id: string) => {
+            const state = get();
+            const light = state.lights.find((l) => l.id === id);
+            if (light) {
+              state.setLightVisibleById(id, !light.visible);
+            }
+          },
+          duplicateLightById: (id: string) => {
+            const state = get();
+            const light = state.lights.find((l) => l.id === id);
+            if (light) {
+              const newLight = {
+                ...light,
+                id: THREE.MathUtils.generateUUID(),
+                name: `${light.name} (copy)`,
+              };
+              state.addLight(newLight);
+            }
+          },
+          removeLightById: (id: string) => {
+            const state = get();
+            const light = state.lights.find((l) => l.id === id);
+            if (light) {
+              set((state) => ({
+                lights: state.lights.filter((l) => l.id !== id),
+                selectedLightId:
+                  state.selectedLightId === id ? null : state.selectedLightId,
+              }));
+            }
+          },
+          removeSelectedLight: () => {
+            const state = get();
+            if (state.selectedLightId) {
+              state.removeLightById(state.selectedLightId);
+            }
+          },
+          duplicateSelectedLight: () => {
+            const state = get();
+            if (state.selectedLightId) {
+              state.duplicateLightById(state.selectedLightId);
+            }
+          },
+          toggleSoloLightById: (id: string) => {
+            set((state) => {
+              const light = state.lights.find((l) => l.id === id);
+              if (light) {
+                light.solo = !light.solo;
+              }
 
-          // Check if any lights are soloed
-          const soloed = state.lights.some((l) => l.solo);
-          if (soloed) {
-            // If so, make all lights invisible except the soloed ones
-            state.lights.forEach((l) => (l.visible = l.solo));
-            state.isSolo = true;
-          } else {
-            // If not, make all lights visible
-            state.lights.forEach((l) => (l.visible = true));
-            state.isSolo = false;
-          }
-        });
-      },
-    })),
+              // Check if any lights are soloed
+              const soloed = state.lights.some((l) => l.solo);
+              if (soloed) {
+                // If so, make all lights invisible except the soloed ones
+                state.lights.forEach((l) => (l.visible = l.solo));
+                state.isSolo = true;
+              } else {
+                // If not, make all lights visible
+                state.lights.forEach((l) => (l.visible = true));
+                state.isSolo = false;
+              }
+            });
+          },
+        } as State)
+    ),
     {
       name: "env-storage",
       version: 1,
@@ -275,11 +278,15 @@ function useKeyPress(targetKey: string, handler: () => void) {
 }
 
 export default function App() {
-  const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
-  const [{ background, backgroundColor }] = useControls(
+  const [{ background, envMap, backgroundColor }] = useControls(
     () => ({
+      envMap: {
+        label: "Show Env Map",
+        value: true,
+        render: () => selectedLightId === null,
+      },
       background: {
         label: "Show BG",
         value: true,
@@ -290,8 +297,22 @@ export default function App() {
         value: "#0000ff",
         render: () => selectedLightId === null,
       },
+      screenshot: button(
+        () => {
+          const canvas = document.querySelector("canvas");
+          if (canvas) {
+            const link = document.createElement("a");
+            link.download = "screenshot.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+          }
+        },
+        {
+          disabled: selectedLightId !== null,
+        }
+      ),
     }),
-    [lights, selectedLightId]
+    [selectedLightId]
   );
 
   return (
@@ -323,6 +344,7 @@ export default function App() {
         <ScenePreview
           background={background}
           backgroundColor={backgroundColor}
+          envMap={envMap}
         />
       </div>
 
@@ -401,6 +423,9 @@ function Outliner() {
   const addLight = useStore((state) => state.addLight);
   const addCamera = useStore((state) => state.addCamera);
 
+  const selectedCameraId = useStore((state) => state.selectedCameraId);
+  const currentCamera = cameras.find((c) => c.id === selectedCameraId);
+
   return (
     <div>
       <div className="flex justify-between items-center p-4 border-b border-white/10">
@@ -411,10 +436,11 @@ function Outliner() {
           className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
           onClick={() => {
             addCamera({
-              name: `Camera ${String.fromCharCode(cameras.length + 65)}`,
-              id: THREE.MathUtils.generateUUID(),
               rotation: [0, 0, 0],
               position: [0, 0, 5],
+              ...currentCamera,
+              name: `Camera ${String.fromCharCode(cameras.length + 65)}`,
+              id: THREE.MathUtils.generateUUID(),
             });
           }}
         >
@@ -549,9 +575,11 @@ function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
 function ScenePreview({
   background,
   backgroundColor,
+  envMap,
 }: {
   background: boolean;
   backgroundColor: string;
+  envMap: boolean;
 }) {
   const [texture, setTexture] = useState(() => new THREE.Texture());
 
@@ -573,13 +601,14 @@ function ScenePreview({
       className="flex flex-col w-full h-full overflow-hidden relative"
     >
       <div ref={view1Ref} className="w-full h-full" />
-      <div ref={view2Ref} className="w-full h-full" />
+      {envMap && <div ref={view2Ref} className="w-full h-full" />}
       <Suspense fallback={null}>
         <Canvas
           shadows
           dpr={[1, 2]}
           eventSource={containerRef as React.MutableRefObject<HTMLDivElement>}
           className="!absolute top-0 left-0 pointer-events-none w-full h-full"
+          gl={{ preserveDrawingBuffer: true }}
         >
           <LoadTextureMaps />
 
@@ -686,15 +715,19 @@ function ScenePreview({
             </Environment>
           </View>
 
-          {/* @ts-ignore */}
-          <View
-            index={2}
-            track={view2Ref as React.MutableRefObject<HTMLDivElement>}
-          >
-            <Bounds fit clip observe damping={6} margin={0.5}>
-              <EnvMapPlane texture={texture} />
-            </Bounds>
-          </View>
+          {envMap && (
+            <>
+              {/* @ts-ignore */}
+              <View
+                index={2}
+                track={view2Ref as React.MutableRefObject<HTMLDivElement>}
+              >
+                <Bounds fit clip observe damping={6} margin={0.5}>
+                  <EnvMapPlane texture={texture} />
+                </Bounds>
+              </View>
+            </>
+          )}
         </Canvas>
       </Suspense>
     </div>

@@ -33,9 +33,11 @@ import create from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { Lightformer } from "./Lightformer";
 
-type Look = {
+type Camera = {
   id: string;
   name: string;
+  position: [number, number, number];
+  rotation: [number, number, number];
 };
 
 type BaseLight = {
@@ -90,6 +92,11 @@ type State = {
   isSolo: boolean;
   textureMaps: THREE.Texture[];
   setTextureMaps: (maps: THREE.Texture[]) => void;
+  cameras: Camera[];
+  selectedCameraId: string;
+  setSelectedCameraId: (id: string) => void;
+  resetSelectedCamera: () => void;
+  addCamera: (camera: Camera) => void;
   lights: Light[];
   selectedLightId: string | null;
   setSelectedLightId: (id: string) => void;
@@ -111,6 +118,21 @@ const useStore = create(
     textureMaps: [],
     setTextureMaps: (maps: THREE.Texture[]) =>
       set((state) => void (state.textureMaps = maps)),
+    cameras: [
+      {
+        id: "default",
+        name: "Default",
+        position: [0, 0, 5],
+        rotation: [0, 0, 0],
+      },
+    ],
+    selectedCameraId: "default",
+    setSelectedCameraId: (id: string) => set({ selectedCameraId: id }),
+    resetSelectedCamera: () => {
+      set({ selectedCameraId: "default" });
+    },
+    addCamera: (camera: Camera) =>
+      set((state) => void state.cameras.push(camera)),
     lights: [
       {
         name: `Light A`,
@@ -222,30 +244,9 @@ const useStore = create(
   }))
 );
 
-function useKeyPress(targetKey: string, handler: () => void) {
-  useEffect(() => {
-    function keyDownHandler(event: KeyboardEvent) {
-      if (event.key === targetKey) {
-        handler();
-      }
-    }
-    window.addEventListener("keypress", keyDownHandler);
-    return () => {
-      window.removeEventListener("keypress", keyDownHandler);
-    };
-  }, []);
-}
-
 export default function App() {
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
-  const removeSelectedLight = useStore((state) => state.removeSelectedLight);
-  const duplicateSelectedLight = useStore(
-    (state) => state.duplicateSelectedLight
-  );
-
-  useKeyPress("x", () => removeSelectedLight());
-  useKeyPress("d", () => duplicateSelectedLight());
 
   const [{ background, backgroundColor }] = useControls(
     () => ({
@@ -366,16 +367,37 @@ function Porsche(props: any) {
 
 function Outliner() {
   const lights = useStore((state) => state.lights);
+  const cameras = useStore((state) => state.cameras);
   const addLight = useStore((state) => state.addLight);
+  const addCamera = useStore((state) => state.addCamera);
 
   return (
     <div>
-      <h2 className="p-4 uppercase font-light text-xs tracking-widest text-gray-300 border-b border-white/10">
-        Looks
-      </h2>
+      <div className="flex justify-between items-center p-4 border-b border-white/10">
+        <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
+          Cameras
+        </h2>
+        <button
+          className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
+          onClick={() => {
+            addCamera({
+              name: `Camera ${String.fromCharCode(cameras.length + 65)}`,
+              id: THREE.MathUtils.generateUUID(),
+              rotation: [0, 0, 0],
+              position: [0, 0, 5],
+            });
+          }}
+        >
+          <PlusIcon className="w-4 h-4" />
+        </button>
+      </div>
+
       <ul className="m-0 p-2 flex flex-col gap-1">
-        <LookListItem id="default" name="Default" />
+        {cameras.map((camera) => (
+          <CameraListItem key={camera.id} camera={camera} />
+        ))}
       </ul>
+
       <div className="flex justify-between items-center p-4 border-b border-white/10">
         <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
           Lights
@@ -406,9 +428,10 @@ function Outliner() {
           <PlusIcon className="w-4 h-4" />
         </button>
       </div>
+
       <ul className="m-0 p-2 flex flex-col gap-1">
         {lights.map((light) => (
-          <LightListItem key={light.id} {...light} />
+          <LightListItem key={light.id} light={light} />
         ))}
       </ul>
     </div>
@@ -507,6 +530,9 @@ function ScenePreview({
   const view2Ref = useRef<HTMLDivElement | null>(null);
 
   const lights = useStore((state) => state.lights);
+  const cameras = useStore((state) => state.cameras);
+
+  const selectedCameraId = useStore((state) => state.selectedCameraId);
 
   return (
     <div
@@ -529,7 +555,15 @@ function ScenePreview({
             index={1}
             track={view1Ref as React.MutableRefObject<HTMLDivElement>}
           >
-            <PerspectiveCamera makeDefault position={[2, 2, 2]} near={0.001} />
+            {cameras.map((camera) => (
+              <PerspectiveCamera
+                key={camera.id}
+                makeDefault={camera.id === selectedCameraId}
+                position={camera.position}
+                rotation={camera.rotation}
+                near={0.001}
+              />
+            ))}
 
             <SaveBackgroundTexture setTexture={setTexture} />
 
@@ -561,7 +595,7 @@ function ScenePreview({
             <ambientLight intensity={0.2} />
 
             <Environment background={background} resolution={2048}>
-              {lights.map((props) => {
+              {lights.map((light) => {
                 const {
                   id,
                   distance,
@@ -573,7 +607,7 @@ function ScenePreview({
                   scaleX,
                   scaleY,
                   visible,
-                } = props;
+                } = light;
                 return (
                   <Lightformer
                     key={id}
@@ -589,7 +623,7 @@ function ScenePreview({
                     target={[0, 0, 0]}
                   >
                     <LayerMaterial>
-                      <LightformerLayers {...props} />
+                      <LightformerLayers light={light} />
                     </LayerMaterial>
                   </Lightformer>
                 );
@@ -654,23 +688,31 @@ function SaveBackgroundTexture({
   return null;
 }
 
-function LookListItem({ id, name }: Look) {
-  const selectedLookId = id;
+function CameraListItem({ camera }: { camera: Camera }) {
+  const { id, name } = camera;
+  const selectedCameraId = useStore((state) => state.selectedCameraId);
+  const setSelectedCameraId = useStore((state) => state.setSelectedCameraId);
+
   return (
     <li
       role="button"
       className={clsx(
         "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-        selectedLookId === id && "bg-white/20",
-        selectedLookId !== id && "hover:bg-white/10"
+        selectedCameraId === id && "bg-white/20",
+        selectedCameraId !== id && "hover:bg-white/10"
       )}
+      onClick={() => {
+        if (selectedCameraId !== id) {
+          setSelectedCameraId(id);
+        }
+      }}
     >
       <CameraIcon className="w-4 h-4 text-green-400" />
       <input
         type="checkbox"
         hidden
         readOnly
-        checked={selectedLookId === id}
+        checked={selectedCameraId === id}
         className="peer"
       />
 
@@ -679,7 +721,7 @@ function LookListItem({ id, name }: Look) {
   );
 }
 
-function LightListItem(props: Light) {
+function LightListItem({ light }: { light: Light }) {
   const {
     id,
     type,
@@ -694,7 +736,7 @@ function LightListItem(props: Light) {
     scale,
     scaleX,
     scaleY,
-  } = props;
+  } = light;
 
   const selectedLightId = useStore((state) => state.selectedLightId);
   const toggleLightVisibilityById = useStore(
@@ -780,79 +822,79 @@ function LightListItem(props: Light) {
         },
 
         ...(() => {
-          if (props.type === "solid") {
+          if (light.type === "solid") {
             return {
               [`color ~${id}`]: {
                 label: "Color",
-                value: props.color ?? "#fff",
+                value: light.color ?? "#fff",
                 onChange: (v) => updateLight({ id, color: v }),
               },
             };
-          } else if (props.type === "gradient") {
+          } else if (light.type === "gradient") {
             return {
               [`colorA ~${id}`]: {
                 label: "Color A",
-                value: props.colorA ?? "#f5c664",
+                value: light.colorA ?? "#f5c664",
                 onChange: (v) => updateLight({ id, colorA: v }),
               },
               [`colorB ~${id}`]: {
                 label: "Color B",
-                value: props.colorB ?? "#ff0000",
+                value: light.colorB ?? "#ff0000",
                 onChange: (v) => updateLight({ id, colorB: v }),
               },
               [`contrast ~${id}`]: {
                 label: "Contrast",
-                value: props.contrast ?? 1,
+                value: light.contrast ?? 1,
                 onChange: (v) => updateLight({ id, contrast: v }),
               },
               [`axes ~${id}`]: {
                 label: "Axes",
-                value: props.axes ?? "x",
+                value: light.axes ?? "x",
                 options: ["x", "y"],
                 onChange: (v) => updateLight({ id, axes: v }),
               },
             };
-          } else if (props.type === "noise") {
+          } else if (light.type === "noise") {
             return {
               [`colorA ~${id}`]: {
                 label: "Color A",
-                value: props.colorA ?? "#f5c664",
+                value: light.colorA ?? "#f5c664",
                 onChange: (v) => updateLight({ id, colorA: v }),
               },
               [`colorB ~${id}`]: {
                 label: "Color B",
-                value: props.colorB ?? "#ff0000",
+                value: light.colorB ?? "#ff0000",
                 onChange: (v) => updateLight({ id, colorB: v }),
               },
               [`colorC ~${id}`]: {
                 label: "Color C",
-                value: props.colorB ?? "#00ff00",
+                value: light.colorB ?? "#00ff00",
                 onChange: (v) => updateLight({ id, colorC: v }),
               },
               [`colorD ~${id}`]: {
                 label: "Color D",
-                value: props.colorD ?? "#0000ff",
+                value: light.colorD ?? "#0000ff",
                 onChange: (v) => updateLight({ id, colorD: v }),
               },
               [`noiseScale ~${id}`]: {
                 label: "Noise Scale",
-                value: props.noiseScale ?? 1,
+                value: light.noiseScale ?? 1,
                 min: 0,
                 onChange: (v) => updateLight({ id, noiseScale: v }),
               },
               [`noiseType ~${id}`]: {
                 label: "Noise Type",
-                value: props.noiseType ?? "perlin",
+                value: light.noiseType ?? "perlin",
                 options: ["perlin", "simplex", "cell", "curl"],
                 onChange: (v) => updateLight({ id, noiseType: v }),
               },
             };
-          } else if (props.type === "texture") {
+          } else if (light.type === "texture") {
             return {
               [`map ~${id}`]: {
                 label: "Map",
                 value:
-                  textureMaps.find((value) => props.map === value)?.name ??
+                  textureMaps.find((value) => light.map === value)?.name ??
                   "none",
                 options: ["none", ...textureMaps.map((value) => value.name)],
                 onChange: (v) => {
@@ -983,31 +1025,31 @@ function LightListItem(props: Light) {
   );
 }
 
-function LightformerLayers(props: Light) {
-  if (props.type === "solid") {
-    return <Color color={props.color} />;
-  } else if (props.type === "gradient") {
+function LightformerLayers({ light }: { light: Light }) {
+  if (light.type === "solid") {
+    return <Color color={light.color} />;
+  } else if (light.type === "gradient") {
     return (
       <Gradient
-        colorA={props.colorA}
-        colorB={props.colorB}
-        contrast={props.contrast}
-        axes={props.axes}
+        colorA={light.colorA}
+        colorB={light.colorB}
+        contrast={light.contrast}
+        axes={light.axes}
       />
     );
-  } else if (props.type === "noise") {
+  } else if (light.type === "noise") {
     return (
       <Noise
-        colorA={props.colorA}
-        colorB={props.colorB}
-        colorC={props.colorC}
-        colorD={props.colorD}
-        type={props.noiseType}
-        scale={props.noiseScale}
+        colorA={light.colorA}
+        colorB={light.colorB}
+        colorC={light.colorC}
+        colorD={light.colorD}
+        type={light.noiseType}
+        scale={light.noiseScale}
       />
     );
-  } else if (props.type === "texture") {
-    return <Texture map={props.map} />;
+  } else if (light.type === "texture") {
+    return <Texture map={light.map} />;
   } else {
     throw new Error("Unknown light type");
   }

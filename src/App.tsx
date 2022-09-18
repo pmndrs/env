@@ -71,6 +71,8 @@ type NoiseLight = BaseLight & {
   algorithm: "perlin" | "simplex" | "cell" | "curl";
   colorA: string;
   colorB: string;
+  colorC: string;
+  colorD: string;
   scale: number;
 };
 
@@ -815,6 +817,16 @@ function LightListItem(props: Light) {
                 value: props.colorB ?? "#ff0000",
                 onChange: (v) => updateLight({ id, colorB: v }),
               },
+              [`colorC ~${id}`]: {
+                label: "Color C",
+                value: props.colorB ?? "#ff0000",
+                onChange: (v) => updateLight({ id, colorC: v }),
+              },
+              [`colorD ~${id}`]: {
+                label: "Color D",
+                value: props.colorD ?? "#ff0000",
+                onChange: (v) => updateLight({ id, colorD: v }),
+              },
             };
           } else if (props.type === "texture") {
             return {
@@ -958,7 +970,14 @@ function LightformerLayers(props: Light) {
   } else if (props.type === "gradient") {
     return <Gradient colorA={props.colorA} colorB={props.colorB} />;
   } else if (props.type === "noise") {
-    return <Noise colorA={props.colorA} colorB={props.colorB} />;
+    return (
+      <Noise
+        colorA={props.colorA}
+        colorB={props.colorB}
+        colorC={props.colorC}
+        colorD={props.colorD}
+      />
+    );
   } else if (props.type === "texture") {
     return <Texture map={props.map} />;
   } else {

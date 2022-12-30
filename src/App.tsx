@@ -577,14 +577,17 @@ function ScenePreview() {
       debugMaterial: {
         label: "Debug Material",
         value: false,
+        render: () => selectedLightId === null,
       },
       shadows: {
         label: "Shadows",
         value: true,
+        render: () => selectedLightId === null,
       },
       autoRotate: {
         label: "Auto Rotate",
         value: false,
+        render: () => selectedLightId === null,
       },
       Screenshot: button(
         () => {
@@ -600,28 +603,33 @@ function ScenePreview() {
           disabled: selectedLightId !== null,
         }
       ),
-      "Upload Model": button(() => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".glb";
-        input.onchange = (e) => {
-          const file = (e.target as HTMLInputElement).files?.[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const data = e.target?.result;
-              if (data) {
-                const blob = new Blob([data], { type: "model/gltf-binary" });
-                const url = URL.createObjectURL(blob);
-                useGLTF.preload(url);
-                useStore.setState({ modelUrl: url });
-              }
-            };
-            reader.readAsArrayBuffer(file);
-          }
-        };
-        input.click();
-      }),
+      "Upload Model": button(
+        () => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = ".glb";
+          input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const data = e.target?.result;
+                if (data) {
+                  const blob = new Blob([data], { type: "model/gltf-binary" });
+                  const url = URL.createObjectURL(blob);
+                  useGLTF.preload(url);
+                  useStore.setState({ modelUrl: url });
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            }
+          };
+          input.click();
+        },
+        {
+          disabled: selectedLightId !== null,
+        }
+      ),
     }),
     [selectedLightId]
   );
@@ -670,7 +678,7 @@ function ScenePreview() {
               alphaTest={0.65}
               opacity={1}
               scale={20}
-              position={[0, -0.65, 0]}
+              position={[0, 0, 0]}
               visible={shadows}
             >
               <RandomizedLight

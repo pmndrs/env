@@ -547,6 +547,8 @@ function ScenePreview() {
       backgroundColor,
       ambientLightIntensity,
       debugMaterial,
+      shadows,
+      autoRotate,
     },
   ] = useControls(
     () => ({
@@ -574,6 +576,14 @@ function ScenePreview() {
       },
       debugMaterial: {
         label: "Debug Material",
+        value: false,
+      },
+      shadows: {
+        label: "Shadows",
+        value: true,
+      },
+      autoRotate: {
+        label: "Auto Rotate",
         value: false,
       },
       Screenshot: button(
@@ -661,6 +671,7 @@ function ScenePreview() {
               opacity={1}
               scale={20}
               position={[0, -0.65, 0]}
+              visible={shadows}
             >
               <RandomizedLight
                 amount={10}
@@ -678,6 +689,8 @@ function ScenePreview() {
             />
             <OrbitControls
               ref={controlsRef}
+              autoRotate={autoRotate}
+              autoRotateSpeed={0.5}
               onEnd={(e) => {
                 if (controlsRef.current) {
                   updateSelectedCamera({

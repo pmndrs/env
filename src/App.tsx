@@ -11,18 +11,18 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import {
-  BakeShadows,
+  AccumulativeShadows,
   Bounds,
-  ContactShadows,
   Environment,
   OrbitControls,
   PerspectiveCamera,
+  RandomizedLight,
   shaderMaterial,
   useGLTF,
   useTexture,
   View,
 } from "@react-three/drei";
-import { applyProps, Canvas, extend, useThree } from "@react-three/fiber";
+import { Canvas, extend, useThree } from "@react-three/fiber";
 import clsx from "clsx";
 import { Color, Gradient, LayerMaterial, Noise, Texture } from "lamina";
 import { button, Leva, useControls } from "leva";
@@ -650,19 +650,26 @@ function ScenePreview() {
 
             <SaveBackgroundTexture setTexture={setTexture} />
 
-            <BakeShadows />
-
             <Model debugMaterial={debugMaterial} />
 
-            <ContactShadows
+            <AccumulativeShadows
+              temporal
               resolution={1024}
-              frames={1}
-              position={[0, 0, 0]}
-              scale={20}
-              blur={3}
+              frames={30}
+              color={background ? backgroundColor : "#000000"}
+              alphaTest={0.65}
               opacity={1}
-              far={10}
-            />
+              scale={20}
+              position={[0, -0.65, 0]}
+            >
+              <RandomizedLight
+                amount={10}
+                radius={2}
+                ambient={0.5}
+                bias={0.001}
+                position={[5, 8, -10]}
+              />
+            </AccumulativeShadows>
 
             <Perf
               minimal

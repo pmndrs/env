@@ -339,7 +339,7 @@ export default function App() {
   );
 }
 
-function Model(props: any) {
+function Model({ debugMaterial, ...props }: any) {
   const modelUrl = useStore((state) => state.modelUrl);
   const {
     scene,
@@ -353,7 +353,19 @@ function Model(props: any) {
       (node: any) =>
         node.isMesh && (node.receiveShadow = node.castShadow = true)
     );
-  }, [nodes, materials]);
+    const material = new THREE.MeshPhysicalMaterial({
+      color: "black",
+      roughness: 0,
+    });
+    Object.values(nodes).forEach((node: any) => {
+      if (node.isMesh && debugMaterial) {
+        node.userData.material = node.material;
+        node.material = material;
+      } else {
+        node.material = node.userData.material || node.material;
+      }
+    });
+  }, [nodes, materials, debugMaterial]);
   return <primitive object={scene} {...props} />;
 }
 
@@ -528,70 +540,81 @@ function ScenePreview() {
 
   const controlsRef = useRef<React.ElementRef<typeof OrbitControls>>(null);
 
-  const [{ background, envMap, backgroundColor, ambientLightIntensity }] =
-    useControls(
-      () => ({
-        envMap: {
-          label: "Show Env Map",
-          value: true,
-          render: () => selectedLightId === null,
-        },
-        background: {
-          label: "Show BG",
-          value: true,
-          render: () => selectedLightId === null,
-        },
-        backgroundColor: {
-          label: "BG Color",
-          value: "#0000ff",
-          render: () => selectedLightId === null,
-        },
-        ambientLightIntensity: {
-          label: "Ambient Intensity",
-          value: 0.5,
-          min: 0,
-          max: 3,
-          render: () => selectedLightId === null,
-        },
-        Screenshot: button(
-          () => {
-            const canvas = document.querySelector("canvas");
-            if (canvas) {
-              const link = document.createElement("a");
-              link.download = "screenshot.png";
-              link.href = canvas.toDataURL("image/png");
-              link.click();
-            }
-          },
-          {
-            disabled: selectedLightId !== null,
+  const [
+    {
+      background,
+      envMap,
+      backgroundColor,
+      ambientLightIntensity,
+      debugMaterial,
+    },
+  ] = useControls(
+    () => ({
+      envMap: {
+        label: "Show Env Map",
+        value: true,
+        render: () => selectedLightId === null,
+      },
+      background: {
+        label: "Show BG",
+        value: true,
+        render: () => selectedLightId === null,
+      },
+      backgroundColor: {
+        label: "BG Color",
+        value: "#0000ff",
+        render: () => selectedLightId === null,
+      },
+      ambientLightIntensity: {
+        label: "Ambient Intensity",
+        value: 0.5,
+        min: 0,
+        max: 3,
+        render: () => selectedLightId === null,
+      },
+      debugMaterial: {
+        label: "Debug Material",
+        value: false,
+      },
+      Screenshot: button(
+        () => {
+          const canvas = document.querySelector("canvas");
+          if (canvas) {
+            const link = document.createElement("a");
+            link.download = "screenshot.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
           }
-        ),
-        "Upload Model": button(() => {
-          const input = document.createElement("input");
-          input.type = "file";
-          input.accept = ".glb";
-          input.onchange = (e) => {
-            const file = (e.target as HTMLInputElement).files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                const data = e.target?.result;
-                if (data) {
-                  const blob = new Blob([data], { type: "model/gltf-binary" });
-                  const url = URL.createObjectURL(blob);
-                  useGLTF.preload(url);
-                  useStore.setState({ modelUrl: url });
-                }
-              };
-              reader.readAsArrayBuffer(file);
-            }
-          };
-          input.click();
-        }),
+        },
+        {
+          disabled: selectedLightId !== null,
+        }
+      ),
+      "Upload Model": button(() => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".glb";
+        input.onchange = (e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const data = e.target?.result;
+              if (data) {
+                const blob = new Blob([data], { type: "model/gltf-binary" });
+                const url = URL.createObjectURL(blob);
+                useGLTF.preload(url);
+                useStore.setState({ modelUrl: url });
+              }
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        };
+        input.click();
       }),
-      [selectedLightId]
-    );
+    }),
+    [selectedLightId]
+  );
 
   return (
     <div
@@ -629,7 +652,7 @@ function ScenePreview() {
 
             <BakeShadows />
 
-            <Model />
+            <Model debugMaterial={debugMaterial} />
 
             <ContactShadows
               resolution={1024}

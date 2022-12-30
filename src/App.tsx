@@ -90,6 +90,7 @@ type TextureLight = BaseLight & {
 type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
 
 type State = {
+  modelUrl: string;
   isSolo: boolean;
   textureMaps: THREE.Texture[];
   cameras: Camera[];
@@ -119,6 +120,7 @@ const useStore = create<State>()(
     immer(
       (set, get) =>
         ({
+          modelUrl: "/911-transformed.glb",
           isSolo: false,
           textureMaps: [],
           setTextureMaps: (maps: THREE.Texture[]) =>
@@ -337,14 +339,15 @@ export default function App() {
   );
 }
 
-function Porsche(props: any) {
+function Model(props: any) {
+  const modelUrl = useStore((state) => state.modelUrl);
   const {
     scene,
     // @ts-ignore
     nodes,
     // @ts-ignore
     materials,
-  } = useGLTF("/911-transformed.glb");
+  } = useGLTF(modelUrl);
   useMemo(() => {
     Object.values(nodes).forEach(
       (node: any) =>
@@ -550,7 +553,7 @@ function ScenePreview() {
           max: 3,
           render: () => selectedLightId === null,
         },
-        screenshot: button(
+        Screenshot: button(
           () => {
             const canvas = document.querySelector("canvas");
             if (canvas) {
@@ -564,6 +567,28 @@ function ScenePreview() {
             disabled: selectedLightId !== null,
           }
         ),
+        "Upload Model": button(() => {
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept = ".glb";
+          input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const data = e.target?.result;
+                if (data) {
+                  const blob = new Blob([data], { type: "model/gltf-binary" });
+                  const url = URL.createObjectURL(blob);
+                  useGLTF.preload(url);
+                  useStore.setState({ modelUrl: url });
+                }
+              };
+              reader.readAsArrayBuffer(file);
+            }
+          };
+          input.click();
+        }),
       }),
       [selectedLightId]
     );
@@ -604,11 +629,7 @@ function ScenePreview() {
 
             <BakeShadows />
 
-            <Porsche
-              scale={1.6}
-              position={[-0.5, 1, 0]}
-              rotation={[0, Math.PI / 5, 0]}
-            />
+            <Model />
 
             <ContactShadows
               resolution={1024}

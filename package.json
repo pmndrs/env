@@ -15,8 +15,8 @@
   "dependencies": {
     "@heroicons/react": "^2.0.10",
     "@radix-ui/react-context-menu": "^1.0.0",
-    "@react-three/drei": "https://pkg.csb.dev/pmndrs/drei/commit/d0f6751b/@react-three/drei/_pkg.tgz",
-    "@react-three/fiber": "^8.7.2",
+    "@react-three/drei": "9.48.4",
+    "@react-three/fiber": "^8.9.2",
     "clsx": "^1.2.1",
     "immer": "^9.0.15",
     "lamina": "^1.1.23",
@@ -24,14 +24,14 @@
     "r3f-perf": "^6.4.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": "^0.144.0",
+    "three": "^0.148.0",
     "three-stdlib": "^2.15.0",
     "zustand": "^4.1.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.19",
     "@types/react-dom": "^18.0.6",
-    "@types/three": "^0.144.0",
+    "@types/three": "^0.147.0",
     "@vitejs/plugin-react": "^2.1.0",
     "autoprefixer": "^10.4.8",
     "postcss": "^8.4.16",

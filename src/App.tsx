@@ -739,6 +739,7 @@ function ScenePreview() {
             <ambientLight intensity={ambientLightIntensity} />
 
             <Environment background={background} resolution={2048}>
+              <color attach="background" args={[backgroundColor]} />
               {lights.map((light) => {
                 const {
                   id,
@@ -779,13 +780,6 @@ function ScenePreview() {
                   </Lightformer>
                 );
               })}
-
-              <mesh scale={100}>
-                <sphereGeometry args={[1, 64, 64]} />
-                <LayerMaterial side={THREE.BackSide}>
-                  <Color color={backgroundColor} alpha={1} mode="normal" />
-                </LayerMaterial>
-              </mesh>
             </Environment>
           </View>
 

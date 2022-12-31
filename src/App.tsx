@@ -15,6 +15,7 @@ import {
   Bounds,
   Environment,
   OrbitControls,
+  OrthographicCamera,
   PerspectiveCamera,
   RandomizedLight,
   shaderMaterial,
@@ -33,6 +34,10 @@ import create from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { Lightformer } from "./Lightformer";
+import convertCubemapToEquirectangular, {
+  fragmentShader,
+  vertexShader,
+} from "./convertCubemapToEquirectangular";
 
 type Camera = {
   id: string;
@@ -450,41 +455,8 @@ const CubeMapMaterialImpl = shaderMaterial(
   {
     map: new THREE.CubeTexture(),
   },
-  `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-    `,
-  `
-    precision mediump float;
-    
-    varying vec2 vUv;
-    uniform samplerCube map;
-    
-    #define PI 3.14159
-    
-    void main() {
-      vec2 coord = vUv * 2.0 + vec2(-1.0, -1.0);
-      
-      float a = coord.x * PI;
-      float b = coord.y * PI * 0.5;
-      
-      vec3 rayDirection = vec3(
-        sin(a) * cos(b),
-        sin(b),
-        cos(a) * cos(b)
-      );
-      
-      vec3 color = vec3(textureCube(map, rayDirection));
-
-      gl_FragColor = vec4(color, 1.0);
-
-      #include <tonemapping_fragment>
-      #include <encodings_fragment>
-    }
-  `
+  vertexShader,
+  fragmentShader
 );
 
 // @ts-ignore
@@ -509,7 +481,7 @@ function CubeMaterial({ map }: { map: THREE.Texture }) {
       attach="material"
       // @ts-ignore
       map={map}
-      // map={texture}
+      transparent
       side={THREE.DoubleSide}
     />
   );
@@ -517,15 +489,61 @@ function CubeMaterial({ map }: { map: THREE.Texture }) {
 
 function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
   return (
-    <mesh {...props}>
+    <mesh {...props} rotation={[Math.PI, 0, 0]}>
       <planeGeometry args={[2, 1, 1, 1]} />
       <CubeMaterial map={texture} />
     </mesh>
   );
 }
 
+function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
+  const renderer = useThree((state) => state.gl);
+  const selectedLightId = useStore((state) => state.selectedLightId);
+  useControls(
+    {
+      "Download Env Map": button(
+        () => {
+          const width = 2048;
+          const height = 1024;
+          const fbo = convertCubemapToEquirectangular(
+            texture,
+            renderer,
+            width,
+            height
+          );
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            const pixels = new Uint8Array(width * height * 4);
+            renderer.readRenderTargetPixels(fbo, 0, 0, width, height, pixels);
+            const imageData = new ImageData(
+              new Uint8ClampedArray(pixels),
+              width,
+              height
+            );
+            ctx.putImageData(imageData, 0, 0);
+            const link = document.createElement("a");
+            link.download = "envmap.png";
+            link.href = canvas.toDataURL("image/png", 1.0);
+            link.click();
+          }
+        },
+        {
+          disabled: selectedLightId !== null,
+        }
+      ),
+    },
+    [selectedLightId, texture]
+  );
+
+  return null;
+}
+
 function ScenePreview() {
-  const [texture, setTexture] = useState(() => new THREE.Texture());
+  const [texture, setTexture] = useState(() => new THREE.CubeTexture());
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const view1Ref = useRef<HTMLDivElement | null>(null);
@@ -650,6 +668,8 @@ function ScenePreview() {
           gl={{ preserveDrawingBuffer: true }}
         >
           <LoadTextureMaps />
+
+          <DownloadHDRI texture={texture} />
 
           {/* @ts-ignore */}
           <View
@@ -803,11 +823,11 @@ function LoadTextureMaps() {
 function SaveBackgroundTexture({
   setTexture,
 }: {
-  setTexture: (texture: THREE.Texture) => void;
+  setTexture: (texture: THREE.CubeTexture) => void;
 }) {
   const backgroundTexture = useThree((state) => state.scene.background);
   useEffect(() => {
-    if (backgroundTexture instanceof THREE.Texture) {
+    if (backgroundTexture instanceof THREE.CubeTexture) {
       setTexture(backgroundTexture);
     }
   }, [backgroundTexture]);

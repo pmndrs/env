@@ -15,7 +15,6 @@ import {
   Bounds,
   Environment,
   OrbitControls,
-  OrthographicCamera,
   PerspectiveCamera,
   RandomizedLight,
   shaderMaterial,
@@ -61,6 +60,7 @@ type BaseLight = {
   target: [number, number, number];
   visible: boolean;
   solo: boolean;
+  opacity: number;
 };
 
 type SolidLight = BaseLight & {
@@ -170,6 +170,7 @@ const useStore = create<State>()(
               target: [0, 0, 0],
               visible: true,
               solo: false,
+              opacity: 1,
             },
           ],
           selectedLightId: null,
@@ -435,6 +436,7 @@ function Outliner() {
               target: [0, 0, 0],
               visible: true,
               solo: false,
+              opacity: 1,
             });
           }}
         >
@@ -749,6 +751,8 @@ function ScenePreview() {
                   scaleX,
                   scaleY,
                   visible,
+                  rotation,
+                  opacity,
                 } = light;
                 return (
                   <Lightformer
@@ -761,10 +765,15 @@ function ScenePreview() {
                       phi,
                       theta
                     )}
+                    rotation={[rotation, 0, 0]}
                     scale={[scale * scaleX, scale * scaleY, scale]}
                     target={[0, 0, 0]}
                   >
-                    <LayerMaterial>
+                    <LayerMaterial
+                      color={new THREE.Color(0xffffff).multiplyScalar(3)}
+                      alpha={opacity}
+                      transparent
+                    >
                       <LightformerLayers light={light} />
                     </LayerMaterial>
                   </Lightformer>
@@ -894,6 +903,7 @@ function LightListItem({ light }: { light: Light }) {
     scale,
     scaleX,
     scaleY,
+    opacity,
   } = light;
 
   const selectedLightId = useStore((state) => state.selectedLightId);
@@ -931,6 +941,14 @@ function LightListItem({ light }: { light: Light }) {
           step: 0.1,
           min: 0,
           onChange: (v) => updateLight({ id, intensity: v }),
+        },
+        [`opacity ~${id}`]: {
+          label: "Opacity",
+          value: opacity ?? 1.0,
+          step: 0.1,
+          min: 0,
+          max: 1,
+          onChange: (v) => updateLight({ id, opacity: v }),
         },
         [`scaleMultiplier ~${id}`]: {
           label: "Scale Multiplier",
@@ -1185,23 +1203,37 @@ function LightListItem({ light }: { light: Light }) {
 
 function LightformerLayers({ light }: { light: Light }) {
   if (light.type === "solid") {
-    return <Color color={light.color} />;
+    const color = new THREE.Color(light.color);
+    color.multiplyScalar(light.intensity);
+    return <Color color={color} />;
   } else if (light.type === "gradient") {
+    const colorA = new THREE.Color(light.colorA);
+    const colorB = new THREE.Color(light.colorB);
+    colorA.multiplyScalar(light.intensity);
+    colorB.multiplyScalar(light.intensity);
     return (
       <Gradient
-        colorA={light.colorA}
-        colorB={light.colorB}
+        colorA={colorA}
+        colorB={colorB}
         contrast={light.contrast}
         axes={light.axes}
       />
     );
   } else if (light.type === "noise") {
+    const colorA = new THREE.Color(light.colorA);
+    const colorB = new THREE.Color(light.colorB);
+    const colorC = new THREE.Color(light.colorC);
+    const colorD = new THREE.Color(light.colorD);
+    colorA.multiplyScalar(light.intensity);
+    colorB.multiplyScalar(light.intensity);
+    colorC.multiplyScalar(light.intensity);
+    colorD.multiplyScalar(light.intensity);
     return (
       <Noise
-        colorA={light.colorA}
-        colorB={light.colorB}
-        colorC={light.colorC}
-        colorD={light.colorD}
+        colorA={colorA}
+        colorB={colorB}
+        colorC={colorC}
+        colorD={colorD}
         type={light.noiseType}
         scale={light.noiseScale}
       />

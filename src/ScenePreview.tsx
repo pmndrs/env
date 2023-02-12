@@ -109,14 +109,13 @@ export function ScenePreview() {
               const reader = new FileReader();
               reader.onload = (e) => {
                 const data = e.target?.result;
-                if (data) {
-                  const blob = new Blob([data], { type: "model/gltf-binary" });
-                  const url = URL.createObjectURL(blob);
-                  useGLTF.preload(url);
-                  useStore.setState({ modelUrl: url });
+                if (typeof data === "string") {
+                  const modelUrl = data;
+                  useGLTF.preload(modelUrl);
+                  useStore.setState({ modelUrl });
                 }
               };
-              reader.readAsArrayBuffer(file);
+              reader.readAsDataURL(file);
             }
           };
           input.click();
@@ -143,6 +142,7 @@ export function ScenePreview() {
         className="!absolute top-0 left-0 pointer-events-none w-full h-full"
         gl={{
           preserveDrawingBuffer: true, // for screenshot
+          logarithmicDepthBuffer: true,
           antialias: true,
         }}
       >

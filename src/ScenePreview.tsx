@@ -90,7 +90,7 @@ export function ScenePreview() {
           if (canvas) {
             const link = document.createElement("a");
             link.download = "screenshot.png";
-            link.href = canvas.toDataURL("image/png");
+            link.href = canvas.toDataURL("image/png", 1);
             link.click();
           }
         },
@@ -142,7 +142,7 @@ export function ScenePreview() {
         eventSource={containerRef as React.MutableRefObject<HTMLDivElement>}
         className="!absolute top-0 left-0 pointer-events-none w-full h-full"
         gl={{
-          logarithmicDepthBuffer: true,
+          preserveDrawingBuffer: true, // for screenshot
           antialias: true,
         }}
       >

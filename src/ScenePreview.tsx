@@ -132,6 +132,11 @@ export function ScenePreview() {
     <div
       ref={containerRef}
       className="flex flex-col w-full h-full overflow-hidden relative"
+      style={{
+        backgroundSize: "20px 20px",
+        backgroundImage:
+          "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
+      }}
     >
       <div ref={view1Ref} className="w-full h-full" />
       {envMap && <div ref={view2Ref} className="w-full h-full" />}

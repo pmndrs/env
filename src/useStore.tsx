@@ -53,6 +53,8 @@ type TextureLight = BaseLight & {
 };
 export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
 type State = {
+  mode: "edit" | "code";
+  setMode: (mode: "edit" | "code") => void;
   modelUrl: string;
   isSolo: boolean;
   textureMaps: THREE.Texture[];
@@ -82,6 +84,8 @@ export const useStore = create<State>()(
     immer(
       (set, get) =>
         ({
+          mode: "edit",
+          setMode: (mode) => set({ mode }),
           modelUrl: "/911-transformed.glb",
           isSolo: false,
           textureMaps: [],

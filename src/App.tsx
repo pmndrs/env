@@ -1,6 +1,7 @@
 import { Bars2Icon } from "@heroicons/react/24/outline";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { AppToolbar } from "./AppToolbar";
+import { Code } from "./Code";
 
 import { Outliner } from "./Outliner";
 import { Properties } from "./Properties";
@@ -30,7 +31,7 @@ export default function App() {
         {/* Middle */}
         <Panel minSize={30} className="bg-neutral-900 rounded-lg">
           {mode === "edit" && <ScenePreview />}
-          {mode === "code" && <div>Code</div>}
+          {mode === "code" && <Code />}
         </Panel>
 
         <PanelResizeHandle className="w-2 grid place-items-center transition-all hover:bg-white/40 rounded-sm mx-1">

@@ -11,7 +11,6 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { Color, Gradient, Noise, Texture } from "lamina";
 import { useControls } from "leva";
 import * as THREE from "three";
 
@@ -95,6 +94,7 @@ export function Outliner() {
     </div>
   );
 }
+
 function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
   const { id, name } = camera;
   const selectedCameraId = useStore((state) => state.selectedCameraId);
@@ -452,47 +452,4 @@ function LightListItem({ light }: { light: Light }) {
       </ContextMenu.Portal>
     </ContextMenu.Root>
   );
-}
-export function LightformerLayers({ light }: { light: Light }) {
-  if (light.type === "solid") {
-    const color = new THREE.Color(light.color);
-    color.multiplyScalar(light.intensity);
-    return <Color color={color} />;
-  } else if (light.type === "gradient") {
-    const colorA = new THREE.Color(light.colorA);
-    const colorB = new THREE.Color(light.colorB);
-    colorA.multiplyScalar(light.intensity);
-    colorB.multiplyScalar(light.intensity);
-    return (
-      <Gradient
-        colorA={colorA}
-        colorB={colorB}
-        contrast={light.contrast}
-        axes={light.axes}
-      />
-    );
-  } else if (light.type === "noise") {
-    const colorA = new THREE.Color(light.colorA);
-    const colorB = new THREE.Color(light.colorB);
-    const colorC = new THREE.Color(light.colorC);
-    const colorD = new THREE.Color(light.colorD);
-    colorA.multiplyScalar(light.intensity);
-    colorB.multiplyScalar(light.intensity);
-    colorC.multiplyScalar(light.intensity);
-    colorD.multiplyScalar(light.intensity);
-    return (
-      <Noise
-        colorA={colorA}
-        colorB={colorB}
-        colorC={colorC}
-        colorD={colorD}
-        type={light.noiseType}
-        scale={light.noiseScale}
-      />
-    );
-  } else if (light.type === "texture") {
-    return <Texture map={light.map} />;
-  } else {
-    throw new Error("Unknown light type");
-  }
 }

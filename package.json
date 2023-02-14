@@ -23,6 +23,8 @@
     "immer": "^9.0.15",
     "lamina": "^1.1.23",
     "leva": "^0.9.34",
+    "prettier": "^2.8.4",
+    "prism-react-renderer": "^1.3.5",
     "r3f-perf": "^6.4.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -32,6 +34,7 @@
     "zustand": "^4.1.1"
   },
   "devDependencies": {
+    "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.19",
     "@types/react-dom": "^18.0.6",
     "@types/three": "^0.147.0",

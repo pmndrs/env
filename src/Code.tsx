@@ -22,6 +22,7 @@ export function Env() {
             ${lights
               .map((light) => {
                 return `
+{/* ${light.name} */}
 <Lightformer
     visible={${light.visible}}
     form="${light.shape}"

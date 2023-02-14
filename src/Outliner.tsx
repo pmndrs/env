@@ -100,6 +100,8 @@ function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
   const selectedCameraId = useStore((state) => state.selectedCameraId);
   const setSelectedCameraId = useStore((state) => state.setSelectedCameraId);
 
+  const isSelected = selectedCameraId === id;
+
   const key = String(index + 1);
   useKeyPress(key, () => setSelectedCameraId(id));
 
@@ -108,11 +110,11 @@ function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
       role="button"
       className={clsx(
         "group flex relative list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-        selectedCameraId === id && "bg-white/20",
-        selectedCameraId !== id && "hover:bg-white/10"
+        isSelected && "bg-white/20",
+        !isSelected && "hover:bg-white/10"
       )}
       onClick={() => {
-        if (selectedCameraId !== id) {
+        if (!isSelected) {
           setSelectedCameraId(id);
         }
       }}
@@ -122,7 +124,7 @@ function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
         type="checkbox"
         hidden
         readOnly
-        checked={selectedCameraId === id}
+        checked={isSelected}
         className="peer"
       />
 
@@ -131,7 +133,7 @@ function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
       <kbd
         className={clsx(
           "absolute right-1.5 top-1.5 text-xs font-mono text-gray-300 bg-white/10 w-5 h-5 flex items-center justify-center rounded",
-          selectedCameraId === id && "bg-white text-gray-900"
+          isSelected && "bg-white/100 text-gray-900"
         )}
       >
         {key}

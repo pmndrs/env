@@ -1,6 +1,8 @@
 import {
+  ArrowTopRightOnSquareIcon,
   CameraIcon,
   CodeBracketIcon,
+  LinkIcon,
   PaintBrushIcon,
   PhotoIcon,
 } from "@heroicons/react/24/solid";
@@ -39,8 +41,9 @@ export function AppToolbar() {
       aria-label="Editing options"
       className="flex items-center justify-between min-w-[max-content] px-4 pt-1"
     >
-      <span className="p-3">
+      <span className="p-3 flex items-center gap-4">
         <Logo />
+        <h1 className="font-bold tracking-wide text-xl">Env</h1>
       </span>
 
       <Toolbar.ToggleGroup
@@ -83,9 +86,15 @@ export function AppToolbar() {
         ))}
       </Toolbar.ToggleGroup>
 
-      <Toolbar.Button className="px-[10px] text-white bg-violet-600 flex-shrink-0 flex-grow-0 basis-auto h-[25px] rounded inline-flex text-[13px] leading-none items-center justify-center outline-none hover:bg-violet10 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7">
-        Export
-      </Toolbar.Button>
+      <Toolbar.Link
+        href="https://github.com/pmndrs/env"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex justify-center items-center text-xs px-3 py-1.5 leading-4 tracking-wide uppercase font-semibold bg-white/0 hover:bg-white/100 text-white hover:text-black rounded-md transition-all duration-500 ease-in-out"
+      >
+        <span>Source Code</span>
+        <ArrowTopRightOnSquareIcon className="w-4 h-4 ml-2" />
+      </Toolbar.Link>
     </Toolbar.Root>
   );
 }

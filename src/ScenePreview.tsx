@@ -6,12 +6,11 @@ import {
   useGLTF,
   useTexture,
 } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
 import { Perf } from "r3f-perf";
 import React, { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
-import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
 import { Effects } from "./Effects";
 import { Env } from "./Env";
 import { SaveBackgroundTexture } from "./HDRIPreview";
@@ -114,7 +113,6 @@ export function ScenePreview() {
     >
       <LoadTextureMaps />
       <SaveBackgroundTexture setTexture={setTexture} />
-      <DownloadHDRI texture={texture} />
 
       <Cameras />
 
@@ -209,52 +207,6 @@ function LoadTextureMaps() {
       setTextureMaps([textures]);
     }
   });
-
-  return null;
-}
-
-function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
-  const renderer = useThree((state) => state.gl);
-  const selectedLightId = useStore((state) => state.selectedLightId);
-  useControls(
-    {
-      "Download Env Map": button(
-        () => {
-          const width = 2048;
-          const height = 1024;
-          const fbo = convertCubemapToEquirectangular(
-            texture,
-            renderer,
-            width,
-            height
-          );
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            const pixels = new Uint8Array(width * height * 4);
-            renderer.readRenderTargetPixels(fbo, 0, 0, width, height, pixels);
-            const imageData = new ImageData(
-              new Uint8ClampedArray(pixels),
-              width,
-              height
-            );
-            ctx.putImageData(imageData, 0, 0);
-            const link = document.createElement("a");
-            link.download = "envmap.png";
-            link.href = canvas.toDataURL("image/png", 1.0);
-            link.click();
-          }
-        },
-        {
-          disabled: selectedLightId !== null,
-        }
-      ),
-    },
-    [selectedLightId, texture]
-  );
 
   return null;
 }

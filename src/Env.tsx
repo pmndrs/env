@@ -5,6 +5,7 @@ import { useControls, folder } from "leva";
 import { Light, useStore } from "./useStore";
 
 export function Env() {
+  const mode = useStore((state) => state.mode);
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
@@ -15,12 +16,12 @@ export function Env() {
           background: {
             label: "Show BG",
             value: true,
-            render: () => selectedLightId === null,
+            render: () => selectedLightId === null && mode === "scene",
           },
           backgroundColor: {
             label: "BG Color",
             value: "#000000",
-            render: () => selectedLightId === null,
+            render: () => selectedLightId === null && mode === "scene",
           },
         },
         {
@@ -32,7 +33,7 @@ export function Env() {
   );
 
   return (
-    <Environment resolution={2048} background={background}>
+    <Environment resolution={1024} background>
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {
         const {

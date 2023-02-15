@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { useControls } from "leva";
+import { folder, useControls } from "leva";
 import * as THREE from "three";
 
 import { useStore, Camera, Light } from "./useStore";
@@ -174,170 +174,189 @@ function LightListItem({ light }: { light: Light }) {
 
   useControls(() => {
     if (selectedLightId !== id) {
-      return {};
+      return {
+        Light: folder(
+          {},
+          {
+            color: "yellow",
+            order: 0,
+          }
+        ),
+      };
     } else {
       return {
-        [`name ~${id}`]: {
-          label: "Name",
-          value: name ?? "Light",
-          onChange: (v) => updateLight({ id, name: v }),
-        },
-        [`shape ~${id}`]: {
-          label: "Shape",
-          value: shape ?? "rect",
-          options: ["rect", "ring", "circle"],
-          onChange: (v) => updateLight({ id, shape: v }),
-        },
-        [`intensity ~${id}`]: {
-          label: "Intensity",
-          value: intensity,
-          step: 0.1,
-          min: 0,
-          onChange: (v) => updateLight({ id, intensity: v }),
-        },
-        [`opacity ~${id}`]: {
-          label: "Opacity",
-          value: opacity ?? 1.0,
-          step: 0.1,
-          min: 0,
-          max: 1,
-          onChange: (v) => updateLight({ id, opacity: v }),
-        },
-        [`scaleMultiplier ~${id}`]: {
-          label: "Scale Multiplier",
-          value: scale ?? 1.0,
-          step: 0.1,
-          min: 0,
-          max: 10,
-          onChange: (v) => updateLight({ id, scale: v }),
-        },
-        [`scale ~${id}`]: {
-          label: "Scale",
-          value: [scaleX, scaleY] ?? [1.0, 1.0],
-          step: 0.1,
-          min: 0,
-          joystick: false,
-          onChange: (v) => updateLight({ id, scaleX: v[0], scaleY: v[1] }),
-        },
-        [`distance ~${id}`]: {
-          label: "Distance",
-          value: distance ?? 1.0,
-          step: 0.1,
-          min: 0,
-          onChange: (v) => updateLight({ id, distance: v }),
-        },
-        [`phi ~${id}`]: {
-          label: "Phi",
-          value: phi ?? 1.0,
-          step: 0.1,
-          min: 0,
-          max: Math.PI,
-          onChange: (v) => updateLight({ id, phi: v }),
-        },
-        [`theta ~${id}`]: {
-          label: "Theta",
-          value: theta ?? 1.0,
-          step: 0.1,
-          min: 0,
-          max: Math.PI * 2,
-          onChange: (v) => updateLight({ id, theta: v }),
-        },
+        Light: folder(
+          {
+            [`name ~${id}`]: {
+              label: "Name",
+              value: name ?? "Light",
+              onChange: (v) => updateLight({ id, name: v }),
+            },
+            [`shape ~${id}`]: {
+              label: "Shape",
+              value: shape ?? "rect",
+              options: ["rect", "ring", "circle"],
+              onChange: (v) => updateLight({ id, shape: v }),
+            },
+            [`intensity ~${id}`]: {
+              label: "Intensity",
+              value: intensity,
+              step: 0.1,
+              min: 0,
+              onChange: (v) => updateLight({ id, intensity: v }),
+            },
+            [`opacity ~${id}`]: {
+              label: "Opacity",
+              value: opacity ?? 1.0,
+              step: 0.1,
+              min: 0,
+              max: 1,
+              onChange: (v) => updateLight({ id, opacity: v }),
+            },
+            [`scaleMultiplier ~${id}`]: {
+              label: "Scale Multiplier",
+              value: scale ?? 1.0,
+              step: 0.1,
+              min: 0,
+              max: 10,
+              onChange: (v) => updateLight({ id, scale: v }),
+            },
+            [`scale ~${id}`]: {
+              label: "Scale",
+              value: [scaleX, scaleY] ?? [1.0, 1.0],
+              step: 0.1,
+              min: 0,
+              joystick: false,
+              onChange: (v) => updateLight({ id, scaleX: v[0], scaleY: v[1] }),
+            },
+            [`distance ~${id}`]: {
+              label: "Distance",
+              value: distance ?? 1.0,
+              step: 0.1,
+              min: 0,
+              onChange: (v) => updateLight({ id, distance: v }),
+            },
+            [`phi ~${id}`]: {
+              label: "Phi",
+              value: phi ?? 1.0,
+              step: 0.1,
+              min: 0,
+              max: Math.PI,
+              onChange: (v) => updateLight({ id, phi: v }),
+            },
+            [`theta ~${id}`]: {
+              label: "Theta",
+              value: theta ?? 1.0,
+              step: 0.1,
+              min: 0,
+              max: Math.PI * 2,
+              onChange: (v) => updateLight({ id, theta: v }),
+            },
 
-        [`type ~${id}`]: {
-          label: "Type",
-          value: type ?? "#fff",
-          options: ["solid", "gradient", "noise", "texture"],
-          onChange: (v) => updateLight({ id, type: v }),
-        },
+            [`type ~${id}`]: {
+              label: "Type",
+              value: type ?? "#fff",
+              options: ["solid", "gradient", "noise", "texture"],
+              onChange: (v) => updateLight({ id, type: v }),
+            },
 
-        ...(() => {
-          if (light.type === "solid") {
-            return {
-              [`color ~${id}`]: {
-                label: "Color",
-                value: light.color ?? "#fff",
-                onChange: (v) => updateLight({ id, color: v }),
-              },
-            };
-          } else if (light.type === "gradient") {
-            return {
-              [`colorA ~${id}`]: {
-                label: "Color A",
-                value: light.colorA ?? "#f5c664",
-                onChange: (v) => updateLight({ id, colorA: v }),
-              },
-              [`colorB ~${id}`]: {
-                label: "Color B",
-                value: light.colorB ?? "#ff0000",
-                onChange: (v) => updateLight({ id, colorB: v }),
-              },
-              [`contrast ~${id}`]: {
-                label: "Contrast",
-                value: light.contrast ?? 1,
-                onChange: (v) => updateLight({ id, contrast: v }),
-              },
-              [`axes ~${id}`]: {
-                label: "Axes",
-                value: light.axes ?? "x",
-                options: ["x", "y"],
-                onChange: (v) => updateLight({ id, axes: v }),
-              },
-            };
-          } else if (light.type === "noise") {
-            return {
-              [`colorA ~${id}`]: {
-                label: "Color A",
-                value: light.colorA ?? "#f5c664",
-                onChange: (v) => updateLight({ id, colorA: v }),
-              },
-              [`colorB ~${id}`]: {
-                label: "Color B",
-                value: light.colorB ?? "#ff0000",
-                onChange: (v) => updateLight({ id, colorB: v }),
-              },
-              [`colorC ~${id}`]: {
-                label: "Color C",
-                value: light.colorB ?? "#00ff00",
-                onChange: (v) => updateLight({ id, colorC: v }),
-              },
-              [`colorD ~${id}`]: {
-                label: "Color D",
-                value: light.colorD ?? "#0000ff",
-                onChange: (v) => updateLight({ id, colorD: v }),
-              },
-              [`noiseScale ~${id}`]: {
-                label: "Noise Scale",
-                value: light.noiseScale ?? 1,
-                min: 0,
-                onChange: (v) => updateLight({ id, noiseScale: v }),
-              },
-              [`noiseType ~${id}`]: {
-                label: "Noise Type",
-                value: light.noiseType ?? "perlin",
-                options: ["perlin", "simplex", "cell", "curl"],
-                onChange: (v) => updateLight({ id, noiseType: v }),
-              },
-            };
-          } else if (light.type === "texture") {
-            return {
-              [`map ~${id}`]: {
-                label: "Map",
-                value:
-                  textureMaps.find((value) => light.map === value)?.name ??
-                  "none",
-                options: ["none", ...textureMaps.map((value) => value.name)],
-                onChange: (v) => {
-                  updateLight({
-                    id,
-                    map: textureMaps.find((map) => map.name === v),
-                  });
-                },
-              },
-            };
-          } else {
-            return {};
+            ...(() => {
+              if (light.type === "solid") {
+                return {
+                  [`color ~${id}`]: {
+                    label: "Color",
+                    value: light.color ?? "#fff",
+                    onChange: (v) => updateLight({ id, color: v }),
+                  },
+                };
+              } else if (light.type === "gradient") {
+                return {
+                  [`colorA ~${id}`]: {
+                    label: "Color A",
+                    value: light.colorA ?? "#f5c664",
+                    onChange: (v) => updateLight({ id, colorA: v }),
+                  },
+                  [`colorB ~${id}`]: {
+                    label: "Color B",
+                    value: light.colorB ?? "#ff0000",
+                    onChange: (v) => updateLight({ id, colorB: v }),
+                  },
+                  [`contrast ~${id}`]: {
+                    label: "Contrast",
+                    value: light.contrast ?? 1,
+                    onChange: (v) => updateLight({ id, contrast: v }),
+                  },
+                  [`axes ~${id}`]: {
+                    label: "Axes",
+                    value: light.axes ?? "x",
+                    options: ["x", "y"],
+                    onChange: (v) => updateLight({ id, axes: v }),
+                  },
+                };
+              } else if (light.type === "noise") {
+                return {
+                  [`colorA ~${id}`]: {
+                    label: "Color A",
+                    value: light.colorA ?? "#f5c664",
+                    onChange: (v) => updateLight({ id, colorA: v }),
+                  },
+                  [`colorB ~${id}`]: {
+                    label: "Color B",
+                    value: light.colorB ?? "#ff0000",
+                    onChange: (v) => updateLight({ id, colorB: v }),
+                  },
+                  [`colorC ~${id}`]: {
+                    label: "Color C",
+                    value: light.colorB ?? "#00ff00",
+                    onChange: (v) => updateLight({ id, colorC: v }),
+                  },
+                  [`colorD ~${id}`]: {
+                    label: "Color D",
+                    value: light.colorD ?? "#0000ff",
+                    onChange: (v) => updateLight({ id, colorD: v }),
+                  },
+                  [`noiseScale ~${id}`]: {
+                    label: "Noise Scale",
+                    value: light.noiseScale ?? 1,
+                    min: 0,
+                    onChange: (v) => updateLight({ id, noiseScale: v }),
+                  },
+                  [`noiseType ~${id}`]: {
+                    label: "Noise Type",
+                    value: light.noiseType ?? "perlin",
+                    options: ["perlin", "simplex", "cell", "curl"],
+                    onChange: (v) => updateLight({ id, noiseType: v }),
+                  },
+                };
+              } else if (light.type === "texture") {
+                return {
+                  [`map ~${id}`]: {
+                    label: "Map",
+                    value:
+                      textureMaps.find((value) => light.map === value)?.name ??
+                      "none",
+                    options: [
+                      "none",
+                      ...textureMaps.map((value) => value.name),
+                    ],
+                    onChange: (v) => {
+                      updateLight({
+                        id,
+                        map: textureMaps.find((map) => map.name === v),
+                      });
+                    },
+                  },
+                };
+              } else {
+                return {};
+              }
+            })(),
+          },
+          {
+            color: "yellow",
+            order: 0,
           }
-        })(),
+        ),
       };
     }
   }, [

@@ -11,7 +11,7 @@ export function Env() {
 
   const [{ background, backgroundColor }] = useControls(
     () => ({
-      background: folder(
+      Background: folder(
         {
           background: {
             label: "Show BG",
@@ -26,6 +26,7 @@ export function Env() {
         },
         {
           order: 0,
+          color: "cyan",
         }
       ),
     }),

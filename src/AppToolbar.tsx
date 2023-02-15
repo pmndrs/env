@@ -49,7 +49,7 @@ export function AppToolbar() {
       <Toolbar.ToggleGroup
         type="single"
         aria-label="Tools"
-        className="flex divide-x-2 divide-gray-900 bg-black/10 rounded-md overflow-hidden border-white/10 border"
+        className="flex divide-x divide-white/10 bg-black/10 rounded-md overflow-hidden border-white/10 border"
         value={mode}
         onValueChange={setMode}
       >
@@ -78,7 +78,7 @@ export function AppToolbar() {
           <Toolbar.ToggleItem
             key={value}
             value={value}
-            className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-black/10 hover:bg-black/20 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
+            className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-white/0 hover:bg-white/10 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
           >
             <Icon className="w-4 h-4 mr-2" />
             <span>{label}</span>

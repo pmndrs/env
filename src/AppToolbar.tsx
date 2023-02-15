@@ -1,13 +1,10 @@
 import {
   ArrowTopRightOnSquareIcon,
-  CameraIcon,
   CodeBracketIcon,
-  LinkIcon,
   PaintBrushIcon,
   PhotoIcon,
 } from "@heroicons/react/24/solid";
 import * as Toolbar from "@radix-ui/react-toolbar";
-import { useState } from "react";
 import { useStore } from "./useStore";
 
 function Logo() {
@@ -55,8 +52,8 @@ export function AppToolbar() {
       >
         {[
           {
-            value: "edit",
-            label: "Edit",
+            value: "scene",
+            label: "Scene",
             icon: PaintBrushIcon,
           },
           {
@@ -65,13 +62,8 @@ export function AppToolbar() {
             icon: CodeBracketIcon,
           },
           {
-            value: "render",
-            label: "Render",
-            icon: CameraIcon,
-          },
-          {
-            value: "preview",
-            label: "Preview",
+            value: "hdri",
+            label: "HDRI",
             icon: PhotoIcon,
           },
         ].map(({ value, label, icon: Icon }) => (

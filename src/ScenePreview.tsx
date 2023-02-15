@@ -1,6 +1,5 @@
 import {
   AccumulativeShadows,
-  Environment,
   OrbitControls,
   PerspectiveCamera,
   RandomizedLight,
@@ -8,17 +7,16 @@ import {
   useTexture,
 } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Color, Gradient, LayerMaterial, Noise, Texture } from "lamina";
 import { button, folder, useControls } from "leva";
 import { Perf } from "r3f-perf";
-import React, { Suspense, useEffect, useRef, useState } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
 import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
-import { CubeMaterial } from "./CubeMaterial";
 import { Effects } from "./Effects";
-import { Lightformer } from "./Lightformer";
+import { Env } from "./Env";
+import { SaveBackgroundTexture } from "./HDRIPreview";
 import { Model } from "./Model";
-import { Light, useStore } from "./useStore";
+import { useStore } from "./useStore";
 
 export function ScenePreview() {
   const [texture, setTexture] = useState(() => new THREE.CubeTexture());
@@ -105,165 +103,73 @@ export function ScenePreview() {
     );
 
   return (
-    <div
-      className="flex flex-col w-full h-full overflow-hidden relative"
-      style={{
-        backgroundSize: "20px 20px",
-        backgroundImage:
-          "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
+    <Canvas
+      shadows
+      dpr={[1, 2]}
+      gl={{
+        preserveDrawingBuffer: true, // for screenshot
+        logarithmicDepthBuffer: true,
+        antialias: true,
       }}
     >
-      <Canvas
-        shadows
-        dpr={[1, 2]}
-        className="!absolute top-0 left-0 pointer-events-none w-full h-full"
-        gl={{
-          preserveDrawingBuffer: true, // for screenshot
-          logarithmicDepthBuffer: true,
-          antialias: true,
-        }}
-      >
-        <LoadTextureMaps />
-        <DownloadHDRI texture={texture} />
-        <SaveBackgroundTexture setTexture={setTexture} />
+      <LoadTextureMaps />
+      <SaveBackgroundTexture setTexture={setTexture} />
+      <DownloadHDRI texture={texture} />
 
-        <Cameras />
+      <Cameras />
 
-        <ambientLight intensity={ambientLightIntensity} />
-        <hemisphereLight intensity={ambientLightIntensity} />
+      <ambientLight intensity={ambientLightIntensity} />
+      <hemisphereLight intensity={ambientLightIntensity} />
 
-        <Suspense fallback={null}>
-          <Model debugMaterial={debugMaterial} />
-        </Suspense>
-
+      <Suspense fallback={null}>
+        <Model debugMaterial={debugMaterial} />
         <Env />
+      </Suspense>
 
-        {shadows && (
-          <AccumulativeShadows
-            temporal
-            frames={30}
-            color="black"
-            alphaTest={0.65}
-            opacity={0.5}
-            scale={14}
-            position={[0, 0, 0]}
-          >
-            <RandomizedLight
-              amount={8}
-              radius={4}
-              ambient={0.5}
-              bias={0.001}
-              position={[0, 15, 0]}
-            />
-          </AccumulativeShadows>
-        )}
+      {shadows && (
+        <AccumulativeShadows
+          temporal
+          frames={30}
+          color="black"
+          alphaTest={0.65}
+          opacity={0.5}
+          scale={14}
+          position={[0, 0, 0]}
+        >
+          <RandomizedLight
+            amount={8}
+            radius={4}
+            ambient={0.5}
+            bias={0.001}
+            position={[0, 15, 0]}
+          />
+        </AccumulativeShadows>
+      )}
 
-        <Effects />
+      <Effects />
 
-        <Perf
-          minimal
-          position="bottom-right"
-          style={{ position: "absolute" }}
-        />
+      <Perf minimal position="bottom-right" style={{ position: "absolute" }} />
 
-        <OrbitControls
-          makeDefault
-          ref={controlsRef}
-          autoRotate={autoRotate}
-          autoRotateSpeed={0.5}
-          onEnd={(e) => {
-            if (controlsRef.current) {
-              updateSelectedCamera({
-                position: controlsRef.current.object.position.toArray(),
-                rotation: controlsRef.current.object.rotation.toArray() as [
-                  number,
-                  number,
-                  number
-                ],
-              });
-            }
-          }}
-          enableDamping={false}
-        />
-      </Canvas>
-    </div>
-  );
-}
-
-function Env() {
-  const lights = useStore((state) => state.lights);
-  const selectedLightId = useStore((state) => state.selectedLightId);
-
-  const [{ background, backgroundColor }] = useControls(
-    () => ({
-      background: folder(
-        {
-          background: {
-            label: "Show BG",
-            value: true,
-            render: () => selectedLightId === null,
-          },
-          backgroundColor: {
-            label: "BG Color",
-            value: "#000000",
-            render: () => selectedLightId === null,
-          },
-        },
-        {
-          order: 0,
-        }
-      ),
-    }),
-    [selectedLightId]
-  );
-
-  return (
-    <Environment resolution={2048} background={background}>
-      <color attach="background" args={[backgroundColor]} />
-      {lights.map((light) => {
-        const {
-          id,
-          distance,
-          phi,
-          theta,
-          intensity,
-          shape,
-          scale,
-          scaleX,
-          scaleY,
-          visible,
-          rotation,
-          opacity,
-        } = light;
-        return (
-          <Lightformer
-            key={id}
-            visible={visible}
-            form={shape}
-            intensity={intensity}
-            position={new THREE.Vector3().setFromSphericalCoords(
-              distance,
-              phi,
-              theta
-            )}
-            rotation={[rotation, 0, 0]}
-            scale={[scale * scaleX, scale * scaleY, scale]}
-            target={[0, 0, 0]}
-            castShadow={false}
-            receiveShadow={false}
-          >
-            <LayerMaterial
-              alpha={opacity}
-              transparent
-              side={THREE.DoubleSide}
-              toneMapped={false}
-            >
-              <LightformerLayers light={light} />
-            </LayerMaterial>
-          </Lightformer>
-        );
-      })}
-    </Environment>
+      <OrbitControls
+        makeDefault
+        ref={controlsRef}
+        autoRotate={autoRotate}
+        autoRotateSpeed={0.5}
+        onEnd={(e) => {
+          if (controlsRef.current) {
+            updateSelectedCamera({
+              position: controlsRef.current.object.position.toArray(),
+              rotation: controlsRef.current.object.rotation.toArray() as [
+                number,
+                number,
+                number
+              ],
+            });
+          }
+        }}
+        enableDamping={false}
+      />
+    </Canvas>
   );
 }
 
@@ -286,50 +192,6 @@ function Cameras() {
   );
 }
 
-function LightformerLayers({ light }: { light: Light }) {
-  if (light.type === "solid") {
-    const color = new THREE.Color(light.color);
-    color.multiplyScalar(light.intensity);
-    return <Color color={color} />;
-  } else if (light.type === "gradient") {
-    const colorA = new THREE.Color(light.colorA);
-    const colorB = new THREE.Color(light.colorB);
-    colorA.multiplyScalar(light.intensity);
-    colorB.multiplyScalar(light.intensity);
-    return (
-      <Gradient
-        colorA={colorA}
-        colorB={colorB}
-        contrast={light.contrast}
-        axes={light.axes}
-      />
-    );
-  } else if (light.type === "noise") {
-    const colorA = new THREE.Color(light.colorA);
-    const colorB = new THREE.Color(light.colorB);
-    const colorC = new THREE.Color(light.colorC);
-    const colorD = new THREE.Color(light.colorD);
-    colorA.multiplyScalar(light.intensity);
-    colorB.multiplyScalar(light.intensity);
-    colorC.multiplyScalar(light.intensity);
-    colorD.multiplyScalar(light.intensity);
-    return (
-      <Noise
-        colorA={colorA}
-        colorB={colorB}
-        colorC={colorC}
-        colorD={colorD}
-        type={light.noiseType}
-        scale={light.noiseScale}
-      />
-    );
-  } else if (light.type === "texture") {
-    return <Texture map={light.map} />;
-  } else {
-    throw new Error("Unknown light type");
-  }
-}
-
 function LoadTextureMaps() {
   const setTextureMaps = useStore((state) => state.setTextureMaps);
 
@@ -349,29 +211,6 @@ function LoadTextureMaps() {
   });
 
   return null;
-}
-
-function SaveBackgroundTexture({
-  setTexture,
-}: {
-  setTexture: (texture: THREE.CubeTexture) => void;
-}) {
-  const backgroundTexture = useThree((state) => state.scene.background);
-  useEffect(() => {
-    if (backgroundTexture instanceof THREE.CubeTexture) {
-      setTexture(backgroundTexture);
-    }
-  }, [backgroundTexture]);
-  return null;
-}
-
-function EnvMapPlane({ texture, ...props }: { texture: THREE.Texture }) {
-  return (
-    <mesh {...props} rotation={[Math.PI, 0, 0]}>
-      <planeGeometry args={[2, 1, 1, 1]} />
-      <CubeMaterial map={texture} />
-    </mesh>
-  );
 }
 
 function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {

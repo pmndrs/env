@@ -5,7 +5,6 @@ import { Code } from "./Code";
 import { HDRIPreview } from "./HDRIPreview";
 
 import { Outliner } from "./Outliner";
-import { PathTracedPreview } from "./PathTracedPreview";
 import { Properties } from "./Properties";
 import { ScenePreview } from "./ScenePreview";
 import { useStore } from "./useStore";
@@ -35,10 +34,9 @@ export default function App() {
           minSize={30}
           className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 rounded-lg"
         >
-          {mode === "edit" && <ScenePreview />}
+          {mode === "scene" && <ScenePreview />}
           {mode === "code" && <Code />}
-          {mode === "preview" && <HDRIPreview />}
-          {mode === "render" && <PathTracedPreview />}
+          {mode === "hdri" && <HDRIPreview />}
         </Panel>
 
         <PanelResizeHandle className="w-2 grid place-items-center transition-all hover:bg-white/40 rounded-sm mx-1">

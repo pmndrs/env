@@ -53,7 +53,7 @@ type TextureLight = BaseLight & {
 };
 export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
 type State = {
-  mode: "edit" | "code" | "preview" | "render";
+  mode: "scene" | "code" | "hdri";
   setMode: (mode: State["mode"]) => void;
   modelUrl: string;
   isSolo: boolean;
@@ -84,7 +84,7 @@ export const useStore = create<State>()(
     immer(
       (set, get) =>
         ({
-          mode: "edit",
+          mode: "scene",
           setMode: (mode) => set({ mode }),
           modelUrl: "/911-transformed.glb",
           isSolo: false,

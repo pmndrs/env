@@ -13,7 +13,7 @@ import { useStore } from "./useStore";
 export default function App() {
   const mode = useStore((state) => state.mode);
   return (
-    <div className="h-full w-full flex flex-col bg-neutral-800 overflow-hidden text-white">
+    <div className="h-full w-full flex flex-col from-neutral-900 to-neutral-800 bg-gradient-to-t overflow-hidden text-white">
       <AppToolbar />
 
       <PanelGroup direction="horizontal" className="flex-1 p-4 pt-1">
@@ -21,7 +21,7 @@ export default function App() {
         <Panel
           collapsible
           defaultSize={15}
-          className="bg-neutral-900 rounded-lg"
+          className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 rounded-lg"
         >
           <Outliner />
         </Panel>
@@ -31,7 +31,10 @@ export default function App() {
         </PanelResizeHandle>
 
         {/* Middle */}
-        <Panel minSize={30} className="bg-neutral-900 rounded-lg">
+        <Panel
+          minSize={30}
+          className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 rounded-lg"
+        >
           {mode === "edit" && <ScenePreview />}
           {mode === "code" && <Code />}
           {mode === "preview" && <HDRIPreview />}
@@ -46,7 +49,7 @@ export default function App() {
         <Panel
           collapsible
           defaultSize={20}
-          className="bg-neutral-900 rounded-lg"
+          className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 rounded-lg"
         >
           <Properties />
         </Panel>

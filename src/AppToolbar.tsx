@@ -23,8 +23,8 @@ function Logo() {
       <rect x="718" y="718" width="564" height="564" fill="white" />
       <rect x="60" y="718" width="564" height="564" fill="white" />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M1376 60H718V624H1376V1282H1940V60H1376Z"
         fill="white"
       />
@@ -49,7 +49,7 @@ export function AppToolbar() {
       <Toolbar.ToggleGroup
         type="single"
         aria-label="Tools"
-        className="flex divide-x divide-white/10 bg-black/10 rounded-md overflow-hidden border-white/10 border"
+        className="flex divide-x divide-white/10 bg-neutral-900 rounded-md overflow-hidden shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20"
         value={mode}
         onValueChange={setMode}
       >
@@ -78,7 +78,7 @@ export function AppToolbar() {
           <Toolbar.ToggleItem
             key={value}
             value={value}
-            className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-white/0 hover:bg-white/10 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
+            className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-white/0 hover:bg-white/10 bg-gradient-to-b data-[state=on]:from-blue-500 data-[state=on]:to-blue-600 data-[state=on]:text-white flex items-center"
           >
             <Icon className="w-4 h-4 mr-2" />
             <span>{label}</span>

@@ -2,8 +2,10 @@ import { Bars2Icon } from "@heroicons/react/24/outline";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { AppToolbar } from "./AppToolbar";
 import { Code } from "./Code";
+import { HDRIPreview } from "./HDRIPreview";
 
 import { Outliner } from "./Outliner";
+import { PathTracedPreview } from "./PathTracedPreview";
 import { Properties } from "./Properties";
 import { ScenePreview } from "./ScenePreview";
 import { useStore } from "./useStore";
@@ -32,6 +34,8 @@ export default function App() {
         <Panel minSize={30} className="bg-neutral-900 rounded-lg">
           {mode === "edit" && <ScenePreview />}
           {mode === "code" && <Code />}
+          {mode === "preview" && <HDRIPreview />}
+          {mode === "render" && <PathTracedPreview />}
         </Panel>
 
         <PanelResizeHandle className="w-2 grid place-items-center transition-all hover:bg-white/40 rounded-sm mx-1">

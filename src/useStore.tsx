@@ -53,8 +53,8 @@ type TextureLight = BaseLight & {
 };
 export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
 type State = {
-  mode: "edit" | "code";
-  setMode: (mode: "edit" | "code") => void;
+  mode: "edit" | "code" | "preview" | "render";
+  setMode: (mode: State["mode"]) => void;
   modelUrl: string;
   isSolo: boolean;
   textureMaps: THREE.Texture[];

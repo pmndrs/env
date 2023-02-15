@@ -1,4 +1,9 @@
-import { CodeBracketIcon, PaintBrushIcon } from "@heroicons/react/24/solid";
+import {
+  CameraIcon,
+  CodeBracketIcon,
+  PaintBrushIcon,
+  PhotoIcon,
+} from "@heroicons/react/24/solid";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { useState } from "react";
 import { useStore } from "./useStore";
@@ -45,20 +50,37 @@ export function AppToolbar() {
         value={mode}
         onValueChange={setMode}
       >
-        <Toolbar.ToggleItem
-          value="edit"
-          className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-black/10 hover:bg-black/20 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
-        >
-          <PaintBrushIcon className="w-4 h-4 mr-2" />
-          <span>Edit</span>
-        </Toolbar.ToggleItem>
-        <Toolbar.ToggleItem
-          value="code"
-          className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-black/10 hover:bg-black/20 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
-        >
-          <CodeBracketIcon className="w-4 h-4 mr-2" />
-          <span>Code</span>
-        </Toolbar.ToggleItem>
+        {[
+          {
+            value: "edit",
+            label: "Edit",
+            icon: PaintBrushIcon,
+          },
+          {
+            value: "code",
+            label: "Code",
+            icon: CodeBracketIcon,
+          },
+          {
+            value: "render",
+            label: "Render",
+            icon: CameraIcon,
+          },
+          {
+            value: "preview",
+            label: "Preview",
+            icon: PhotoIcon,
+          },
+        ].map(({ value, label, icon: Icon }) => (
+          <Toolbar.ToggleItem
+            key={value}
+            value={value}
+            className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-black/10 hover:bg-black/20 data-[state=on]:bg-white data-[state=on]:text-black flex items-center"
+          >
+            <Icon className="w-4 h-4 mr-2" />
+            <span>{label}</span>
+          </Toolbar.ToggleItem>
+        ))}
       </Toolbar.ToggleGroup>
 
       <Toolbar.Button className="px-[10px] text-white bg-violet-600 flex-shrink-0 flex-grow-0 basis-auto h-[25px] rounded inline-flex text-[13px] leading-none items-center justify-center outline-none hover:bg-violet10 focus:relative focus:shadow-[0_0_0_2px] focus:shadow-violet7">

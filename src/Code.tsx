@@ -71,7 +71,7 @@ export function Env() {
     >
       {({ className, style, tokens, getLineProps, getTokenProps }) => (
         <pre
-          className={`${className} whitespace-pre-wrap col-span-3 p-16 overflow-auto bg-white h-full`}
+          className={`${className} whitespace-pre-wrap col-span-3 p-4 sm:p-16 overflow-auto bg-white h-full`}
           style={{
             ...style,
             fontSize: 12,

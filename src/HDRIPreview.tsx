@@ -7,6 +7,7 @@ import { Env } from "./Env";
 import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
 import { useStore } from "./useStore";
 import { button, folder, LevaInputs, useControls } from "leva";
+import { encodeRGBE, HDRImageData } from "@derschmale/io-rgbe";
 
 export function HDRIPreview() {
   return (
@@ -68,8 +69,8 @@ function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
   const renderer = useThree((state) => state.gl);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
-  useControls(
-    {
+  const [{ format, resolution }, set] = useControls(
+    () => ({
       "Export Settings": folder(
         {
           resolution: {
@@ -85,30 +86,73 @@ function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
             label: "Format",
             type: LevaInputs.SELECT,
             options: {
+              HDR: "image/vnd.radiance",
               PNG: "image/png",
               JPEG: "image/jpg",
               WEBP: "image/webp",
             },
           },
-          "Export HDRI": button(
-            (get) => {
-              const [width, height] = get("resolution");
-              const format = get("format");
-              const filename =
-                format === "image/png"
-                  ? "envmap.png"
-                  : format === "image/jpg"
-                  ? "envmap.jpg"
-                  : format === "image/webp"
-                  ? "envmap.webp"
-                  : "envmap";
+          "Export HDRI": button((get) => {
+            const [width, height] = get("Export Settings.resolution");
+            const format = get("Export Settings.format");
+            const filename =
+              format === "image/vnd.radiance"
+                ? "envmap.hdr"
+                : format === "image/png"
+                ? "envmap.png"
+                : format === "image/jpg"
+                ? "envmap.jpg"
+                : format === "image/webp"
+                ? "envmap.webp"
+                : "envmap";
 
+            if (format === "image/vnd.radiance") {
+              const fbo = convertCubemapToEquirectangular(
+                texture,
+                renderer,
+                width,
+                height,
+                THREE.LinearEncoding,
+                THREE.FloatType
+              );
+
+              const pixels = new Float32Array(width * height * 4);
+              renderer.readRenderTargetPixels(fbo, 0, 0, width, height, pixels);
+
+              // Convert RBGA buffer to RGB
+              const rgbPixels = new Float32Array(width * height * 3);
+              for (let i = 0; i < width * height; i++) {
+                rgbPixels[i * 3] = pixels[i * 4];
+                rgbPixels[i * 3 + 1] = pixels[i * 4 + 1];
+                rgbPixels[i * 3 + 2] = pixels[i * 4 + 2];
+              }
+
+              const imgData = new HDRImageData();
+              imgData.width = width;
+              imgData.height = height;
+              imgData.exposure = 1.0;
+              imgData.gamma = 1.0;
+              imgData.data = rgbPixels;
+
+              const blob = new Blob([encodeRGBE(imgData)], {
+                type: "application/octet-stream",
+              });
+              const url = URL.createObjectURL(blob);
+
+              const link = document.createElement("a");
+              link.download = filename;
+              link.href = url;
+              link.click();
+
+              URL.revokeObjectURL(url);
+            } else {
               const fbo = convertCubemapToEquirectangular(
                 texture,
                 renderer,
                 width,
                 height
               );
+
               const canvas = document.createElement("canvas");
               canvas.width = width;
               canvas.height = height;
@@ -135,18 +179,15 @@ function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
                 link.href = canvas.toDataURL(format, 1.0);
                 link.click();
               }
-            },
-            {
-              disabled: selectedLightId !== null,
             }
-          ),
+          }),
         },
         {
           order: 0,
           color: "magenta",
         }
       ),
-    },
+    }),
     [selectedLightId, texture]
   );
 

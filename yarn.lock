@@ -359,6 +359,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@derschmale/io-rgbe@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@derschmale/io-rgbe@npm:0.1.1"
+  checksum: e04bf2bee7e511fb8fba58230a9f9ae83f04ea977def7fc7b11541fc2b10bf40c1d297c978bfc9e20465ea4b7c0b469328fc347f547585e9e3007e28bc6961ad
+  languageName: node
+  linkType: hard
+
 "@esbuild/linux-loong64@npm:0.15.7":
   version: 0.15.7
   resolution: "@esbuild/linux-loong64@npm:0.15.7"
@@ -2707,6 +2714,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "hdri-editor@workspace:."
   dependencies:
+    "@derschmale/io-rgbe": ^0.1.1
     "@heroicons/react": ^2.0.10
     "@radix-ui/react-context-menu": ^1.0.0
     "@radix-ui/react-toolbar": ^1.0.2

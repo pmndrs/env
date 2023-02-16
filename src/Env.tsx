@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Environment, Lightformer } from "@react-three/drei";
 import { LayerMaterial, Gradient, Noise, Color, Texture } from "lamina";
-import { useControls, folder } from "leva";
+import { useControls, folder, LevaInputs } from "leva";
 import { Light, useStore } from "./useStore";
 
 export function Env() {
@@ -9,7 +9,7 @@ export function Env() {
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
-  const [{ background, backgroundColor }] = useControls(
+  const [{ background, backgroundColor, preset, blur }] = useControls(
     () => ({
       Background: folder(
         {
@@ -18,10 +18,34 @@ export function Env() {
             value: true,
             render: () => selectedLightId === null && mode === "scene",
           },
+          preset: {
+            type: LevaInputs.SELECT,
+            label: "Preset",
+            value: "",
+            options: [
+              "",
+              "sunset",
+              "dawn",
+              "night",
+              "warehouse",
+              "forest",
+              "apartment",
+              "studio",
+              "city",
+              "park",
+              "lobby",
+            ] as const,
+          },
           backgroundColor: {
             label: "BG Color",
             value: "#000000",
             render: () => selectedLightId === null && mode === "scene",
+          },
+          blur: {
+            label: "Blur",
+            value: 0,
+            min: 0,
+            max: 1,
           },
         },
         {
@@ -34,7 +58,12 @@ export function Env() {
   );
 
   return (
-    <Environment resolution={1024} background>
+    <Environment
+      resolution={2048}
+      background
+      preset={preset as any}
+      blur={blur}
+    >
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {
         const {

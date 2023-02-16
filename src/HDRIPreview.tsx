@@ -19,7 +19,12 @@ export function HDRIPreview() {
           "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
       }}
     >
-      <Canvas dpr={[1, 2]}>
+      <Canvas
+        dpr={[1, 2]}
+        gl={{
+          antialias: true,
+        }}
+      >
         <Bounds fit clip observe damping={6} margin={0.9}>
           <EnvMapPlane />
         </Bounds>
@@ -69,7 +74,7 @@ function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
   const renderer = useThree((state) => state.gl);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
-  const [{ format, resolution }, set] = useControls(
+  useControls(
     () => ({
       "Export Settings": folder(
         {

@@ -3,6 +3,10 @@ import { useEffect } from "react";
 export function useKeyPress(targetKey: string, handler: () => void) {
   useEffect(() => {
     function keyDownHandler(event: KeyboardEvent) {
+      if (event.target !== document.body) {
+        return;
+      }
+      
       if (event.key === targetKey) {
         handler();
       }

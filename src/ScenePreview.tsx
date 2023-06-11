@@ -1,8 +1,6 @@
 import {
-  AccumulativeShadows,
   OrbitControls,
   PerspectiveCamera,
-  RandomizedLight,
   useGLTF,
   useTexture,
 } from "@react-three/drei";
@@ -26,7 +24,7 @@ export function ScenePreview() {
 
   const controlsRef = useRef<React.ElementRef<typeof OrbitControls>>(null);
 
-  const [{ ambientLightIntensity, debugMaterial, shadows, autoRotate }] =
+  const [{ ambientLightIntensity, debugMaterial, autoRotate }] =
     useControls(
       () => ({
         Preview: folder(
@@ -41,11 +39,6 @@ export function ScenePreview() {
             debugMaterial: {
               label: "Debug Material",
               value: false,
-              render: () => mode === "scene",
-            },
-            shadows: {
-              label: "Shadows",
-              value: true,
               render: () => mode === "scene",
             },
             autoRotate: {
@@ -115,26 +108,6 @@ export function ScenePreview() {
         <Model debugMaterial={debugMaterial} />
         <Env />
       </Suspense>
-
-      {shadows && (
-        <AccumulativeShadows
-          temporal
-          frames={30}
-          color="black"
-          alphaTest={0.65}
-          opacity={0.5}
-          scale={14}
-          position={[0, 0, 0]}
-        >
-          <RandomizedLight
-            amount={8}
-            radius={4}
-            ambient={0.5}
-            bias={0.001}
-            position={[0, 15, 0]}
-          />
-        </AccumulativeShadows>
-      )}
 
       <Effects />
 

@@ -47,10 +47,10 @@ void main()  {
 export default function convertCubemapToEquirectangular(
   cubeTexture: THREE.CubeTexture,
   renderer: THREE.WebGLRenderer,
-  width = 1024,
-  height = 512,
-  encoding = THREE.sRGBEncoding,
-  type = THREE.UnsignedByteType
+  width: number = 1024,
+  height: number = 512,
+  colorSpace: THREE.ColorSpace = THREE.SRGBColorSpace,
+  type: THREE.TextureDataType = THREE.UnsignedByteType
 ) {
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(
@@ -95,7 +95,7 @@ export default function convertCubemapToEquirectangular(
     wrapT: THREE.ClampToEdgeWrapping,
     format: THREE.RGBAFormat,
     type,
-    encoding,
+    colorSpace,
   });
 
   renderer.setRenderTarget(renderTarget);

@@ -117,7 +117,7 @@ function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
                 renderer,
                 width,
                 height,
-                THREE.LinearEncoding,
+                THREE.SRGBColorSpace,
                 THREE.FloatType
               );
 

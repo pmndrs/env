@@ -1,4 +1,5 @@
 import {
+  Bvh,
   OrbitControls,
   PerspectiveCamera,
   useGLTF,
@@ -105,7 +106,9 @@ export function ScenePreview() {
       <hemisphereLight intensity={ambientLightIntensity} />
 
       <Suspense fallback={null}>
-        <Model debugMaterial={debugMaterial} />
+        <Bvh firstHitOnly>
+          <Model debugMaterial={debugMaterial} />
+        </Bvh>
         <Env />
       </Suspense>
 
@@ -149,6 +152,7 @@ function Cameras() {
           position={camera.position}
           rotation={camera.rotation}
           near={0.001}
+          far={100}
         />
       ))}
     </>

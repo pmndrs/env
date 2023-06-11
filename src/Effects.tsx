@@ -1,8 +1,10 @@
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import AutoFocusDOF from "./AutoFocus";
 
 export function Effects() {
   return (
     <EffectComposer disableNormalPass>
+      <AutoFocusDOF />
       <Bloom
         mipmapBlur
         luminanceThreshold={0.5}

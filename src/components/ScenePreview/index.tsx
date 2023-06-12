@@ -1,10 +1,5 @@
-import { Suspense, useState } from "react";
-import {
-  AdaptiveDpr,
-  Bvh,
-  PerformanceMonitor,
-  useGLTF,
-} from "@react-three/drei";
+import { Suspense } from "react";
+import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
 import { useStore } from "../../hooks/useStore";

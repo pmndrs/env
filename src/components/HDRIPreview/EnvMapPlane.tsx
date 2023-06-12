@@ -20,7 +20,6 @@ export function EnvMapPlane() {
         </>,
         scene
       )}
-      {/* <SaveBackgroundTexture setTexture={setTexture} /> */}
       <mesh rotation={[Math.PI, 0, 0]}>
         <planeGeometry args={[2, 1, 1, 1]} />
         <CubeMaterial map={texture} />

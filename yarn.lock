@@ -2821,6 +2821,7 @@ __metadata:
     react: ^18.2.0
     react-dom: ^18.2.0
     react-resizable-panels: ^0.0.51
+    sonner: ^0.4.0
     tailwindcss: ^3.2.6
     three: ^0.153.0
     three-stdlib: ^2.23.9
@@ -4244,6 +4245,16 @@ __metadata:
     ip: ^2.0.0
     smart-buffer: ^4.2.0
   checksum: 0b5d94e2b3c11e7937b40fc5dac1e80d8b92a330e68c51f1d271ce6980c70adca42a3f8cd47c4a5769956bada074823b53374f2dc5f2ea5c2121b222dec6eadf
+  languageName: node
+  linkType: hard
+
+"sonner@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "sonner@npm:0.4.0"
+  peerDependencies:
+    react: ^18.0.0
+    react-dom: ^18.0.0
+  checksum: ae1a0594c03e0f195c50733c68e84823ca0994ebdd102bee9cf078a2d6802c53e21c58b9c0d783c01406438e1ec3f8a7e84dd2e588c3cfd45c1ff219fbf5d953
   languageName: node
   linkType: hard
 

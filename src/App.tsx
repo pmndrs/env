@@ -1,9 +1,10 @@
 import { Bars2Icon } from "@heroicons/react/24/outline";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { Toaster } from "sonner";
+
 import { AppToolbar } from "./components/AppToolbar";
 import { Code } from "./components/Code";
 import { HDRIPreview } from "./components/HDRIPreview";
-
 import { Outliner } from "./components/Outliner/Outliner";
 import { Properties } from "./components/Properties";
 import { ScenePreview } from "./components/ScenePreview";
@@ -13,6 +14,8 @@ export default function App() {
   const mode = useStore((state) => state.mode);
   return (
     <div className="h-full w-full flex flex-col from-neutral-900 to-neutral-800 bg-gradient-to-t overflow-hidden text-white">
+      <Toaster theme="dark" />
+
       <AppToolbar />
 
       <PanelGroup direction="horizontal" className="flex-1 p-4 pt-1">

@@ -1,9 +1,15 @@
 import * as THREE from "three";
-import { Environment, Float, Lightformer } from "@react-three/drei";
+import {
+  Environment,
+  Float,
+  Lightformer,
+  usePerformanceMonitor,
+} from "@react-three/drei";
 import { LayerMaterial } from "lamina";
 import { useControls, folder, LevaInputs } from "leva";
 import { useStore } from "../../hooks/useStore";
 import { LightformerLayers } from "./LightformerLayers";
+import { useState } from "react";
 
 export function Env() {
   const mode = useStore((state) => state.mode);
@@ -58,13 +64,29 @@ export function Env() {
     [selectedLightId]
   );
 
+  const [resolution, setResolution] = useState(2048);
+  usePerformanceMonitor({
+    onDecline: ({ factor }) => {
+      if (factor > 0.5) {
+        setResolution(512);
+      } else {
+        setResolution(1024);
+      }
+    },
+    onIncline: () => {
+      setResolution(2048);
+    },
+  });
+
   return (
     <Environment
-      resolution={2048}
+      resolution={resolution}
       background={background}
       preset={preset as any}
       blur={blur}
       frames={Infinity}
+      far={100}
+      near={0.01}
     >
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {

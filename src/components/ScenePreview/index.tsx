@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Bvh, useGLTF } from "@react-three/drei";
+import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
 import { useStore } from "../../hooks/useStore";
@@ -11,6 +11,8 @@ import { Controls } from "./Controls";
 import { Debug } from "./Debug";
 import { LoadTextureMaps } from "./LoadTextureMaps";
 import { Lights } from "./Lights";
+import { toast } from "sonner";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 export function ScenePreview() {
   const selectedLightId = useStore((state) => state.selectedLightId);
@@ -87,27 +89,39 @@ export function ScenePreview() {
         antialias: true,
       }}
     >
-      <Cameras />
+      <PerformanceMonitor
+        flipflops={2}
+        onDecline={() =>
+          toast("Switching to low performance mode", {
+            description:
+              "This will reduce the quality of the preview, but will improve performance.",
+            icon: <BoltIcon className="w-4 h-4" />,
+          })
+        }
+        onIncline={() => toast("Switching to high performance mode")}
+      >
+        <Cameras />
 
-      <Suspense fallback={null}>
-        <Bvh firstHitOnly>
-          <Model debugMaterial={debugMaterial} />
-        </Bvh>
-      </Suspense>
+        <Suspense fallback={null}>
+          <Bvh firstHitOnly>
+            <Model debugMaterial={debugMaterial} />
+          </Bvh>
+        </Suspense>
 
-      <Lights ambientLightIntensity={ambientLightIntensity} />
+        <Lights ambientLightIntensity={ambientLightIntensity} />
 
-      <Suspense fallback={null}>
-        <Env />
-      </Suspense>
+        <Suspense fallback={null}>
+          <Env />
+        </Suspense>
 
-      <Effects />
+        <Effects />
 
-      <Debug />
+        <Debug />
 
-      <Controls autoRotate={autoRotate} />
+        <Controls autoRotate={autoRotate} />
 
-      <LoadTextureMaps />
+        <LoadTextureMaps />
+      </PerformanceMonitor>
     </Canvas>
   );
 }

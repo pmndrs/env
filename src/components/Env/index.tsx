@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Environment, Lightformer } from "@react-three/drei";
+import { Environment, Float, Lightformer } from "@react-three/drei";
 import { LayerMaterial } from "lamina";
 import { useControls, folder, LevaInputs } from "leva";
 import { useStore } from "../../hooks/useStore";
@@ -64,6 +64,7 @@ export function Env() {
       background={background}
       preset={preset as any}
       blur={blur}
+      frames={Infinity}
     >
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {
@@ -80,33 +81,47 @@ export function Env() {
           visible,
           rotation,
           opacity,
+          animate,
+          animationSpeed,
+          animationFloatIntensity,
+          animationRotationIntensity,
+          animationFloatingRange,
         } = light;
+
         return (
-          <Lightformer
+          <Float
             key={id}
-            visible={visible}
-            form={shape}
-            intensity={intensity}
-            position={new THREE.Vector3().setFromSphericalCoords(
-              distance,
-              phi,
-              theta
-            )}
-            rotation={[rotation, 0, 0]}
-            scale={[scale * scaleX, scale * scaleY, scale]}
-            target={[0, 0, 0]}
-            castShadow={false}
-            receiveShadow={false}
+            enabled={animate}
+            speed={animationSpeed} // Animation speed, defaults to 1
+            rotationIntensity={animationRotationIntensity} // XYZ rotation intensity, defaults to 1
+            floatIntensity={animationFloatIntensity} // Up/down float intensity, works like a multiplier with floatingRange,defaults to 1
+            floatingRange={animationFloatingRange}
           >
-            <LayerMaterial
-              alpha={opacity}
-              transparent
-              side={THREE.DoubleSide}
-              toneMapped={false}
+            <Lightformer
+              visible={visible}
+              form={shape}
+              intensity={intensity}
+              position={new THREE.Vector3().setFromSphericalCoords(
+                distance,
+                phi,
+                theta
+              )}
+              rotation={[rotation, 0, 0]}
+              scale={[scale * scaleX, scale * scaleY, scale]}
+              target={[0, 0, 0]}
+              castShadow={false}
+              receiveShadow={false}
             >
-              <LightformerLayers light={light} />
-            </LayerMaterial>
-          </Lightformer>
+              <LayerMaterial
+                alpha={opacity}
+                transparent
+                side={THREE.DoubleSide}
+                toneMapped={false}
+              >
+                <LightformerLayers light={light} />
+              </LayerMaterial>
+            </Lightformer>
+          </Float>
         );
       })}
     </Environment>

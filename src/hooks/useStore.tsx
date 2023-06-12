@@ -9,27 +9,35 @@ export type Camera = {
   position: [number, number, number];
   rotation: [number, number, number];
 };
+
 type BaseLight = {
   id: string;
   name: string;
   shape: "rect" | "circle" | "ring";
   intensity: number;
-  distance: number;
   scale: number;
   scaleX: number;
   scaleY: number;
   rotation: number;
+  distance: number;
   phi: number;
   theta: number;
   target: [number, number, number];
   visible: boolean;
   solo: boolean;
   opacity: number;
+  animate: boolean;
+  animationSpeed?: number;
+  animationRotationIntensity?: number;
+  animationFloatIntensity?: number;
+  animationFloatingRange?: [number, number];
 };
+
 type SolidLight = BaseLight & {
   type: "solid";
   color: string;
 };
+
 type GradientLight = BaseLight & {
   type: "gradient";
   colorA: string;
@@ -37,6 +45,7 @@ type GradientLight = BaseLight & {
   contrast: number;
   axes: "x" | "y" | "z";
 };
+
 type NoiseLight = BaseLight & {
   type: "noise";
   algorithm: "perlin" | "simplex" | "cell" | "curl";
@@ -47,11 +56,14 @@ type NoiseLight = BaseLight & {
   noiseScale: number;
   noiseType: "perlin" | "simplex" | "cell" | "curl";
 };
+
 type TextureLight = BaseLight & {
   type: "texture";
   map: THREE.Texture;
 };
+
 export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
+
 type State = {
   mode: "scene" | "code" | "hdri";
   setMode: (mode: State["mode"]) => void;
@@ -79,6 +91,7 @@ type State = {
   duplicateSelectedLight: () => void;
   toggleSoloLightById: (id: string) => void;
 };
+
 export const useStore = create<State>()(
   persist(
     immer(
@@ -132,6 +145,7 @@ export const useStore = create<State>()(
               visible: true,
               solo: false,
               opacity: 1,
+              animate: false,
             },
           ],
           selectedLightId: null,

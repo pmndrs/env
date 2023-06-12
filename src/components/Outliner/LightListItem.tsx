@@ -1,20 +1,34 @@
 import {
   EyeSlashIcon,
   FlagIcon,
-  LightBulbIcon
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import {
   EyeIcon as EyeFilledIcon,
-  FlagIcon as FlagFilledIcon
+  FlagIcon as FlagFilledIcon,
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
 import { folder, useControls } from "leva";
 import { useStore, Light } from "../../hooks/useStore";
 
-export function LightListItem({ light }: { light: Light; }) {
+export function LightListItem({ light }: { light: Light }) {
   const {
-    id, type, name, visible, solo, shape, intensity, distance, phi, theta, scale, scaleX, scaleY, opacity,
+    id,
+    type,
+    name,
+    visible,
+    solo,
+    shape,
+    intensity,
+    distance,
+    phi,
+    theta,
+    scale,
+    scaleX,
+    scaleY,
+    opacity,
+    animate,
   } = light;
 
   const selectedLightId = useStore((state) => state.selectedLightId);
@@ -190,7 +204,8 @@ export function LightListItem({ light }: { light: Light; }) {
                 return {
                   [`map ~${id}`]: {
                     label: "Map",
-                    value: textureMaps.find((value) => light.map === value)?.name ??
+                    value:
+                      textureMaps.find((value) => light.map === value)?.name ??
                       "none",
                     options: [
                       "none",
@@ -207,6 +222,49 @@ export function LightListItem({ light }: { light: Light; }) {
               } else {
                 return {};
               }
+            })(),
+
+            [`animate ~${id}`]: {
+              label: "Animate",
+              value: light.animate ?? false,
+              onChange: (v) => updateLight({ id, animate: v }),
+            },
+
+            ...(() => {
+              if (!light.animate) {
+                return {};
+              }
+
+              return {
+                [`animationSpeed ~${id}`]: {
+                  label: "Animation Speed",
+                  value: light.animationSpeed ?? 1,
+                  min: 0,
+                  onChange: (v) => updateLight({ id, animationSpeed: v }),
+                },
+                [`animationRotationIntensity ~${id}`]: {
+                  label: "Rotation Intensity",
+                  value: light.animationRotationIntensity ?? 1,
+                  min: 0,
+                  onChange: (v) =>
+                    updateLight({ id, animationRotationIntensity: v }),
+                },
+                [`animationFloatIntensity ~${id}`]: {
+                  label: "Float Intensity",
+                  value: light.animationFloatIntensity ?? 1,
+                  min: 0,
+                  onChange: (v) =>
+                    updateLight({ id, animationFloatIntensity: v }),
+                },
+                [`animationFloatingRange ~${id}`]: {
+                  label: "Floating Range",
+                  value: light.animationFloatingRange ?? [0, 2],
+                  min: 0,
+                  max: 2,
+                  onChange: (v) =>
+                    updateLight({ id, animationFloatingRange: v }),
+                },
+              };
             })(),
           },
           {
@@ -229,6 +287,7 @@ export function LightListItem({ light }: { light: Light; }) {
     scale,
     scaleX,
     scaleY,
+    animate,
   ]);
 
   return (
@@ -254,13 +313,15 @@ export function LightListItem({ light }: { light: Light; }) {
             className={clsx(
               "w-4 h-4 text-yellow-400",
               !visible && "text-gray-300/50"
-            )} />
+            )}
+          />
           <input
             type="checkbox"
             hidden
             readOnly
             checked={selectedLightId === id}
-            className="peer" />
+            className="peer"
+          />
 
           <span
             className={clsx(

@@ -1,5 +1,5 @@
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import AutoFocusDOF from "./AutoFocus";
+import AutoFocusDOF from "./AutoFocusDOF";
 
 export function Effects() {
   return (

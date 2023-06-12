@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { DepthOfField } from '@react-three/postprocessing'
 import { Raycaster, Vector2, Vector3 } from 'three'
-import { DepthOfFieldEffect } from 'postprocessing'
+import type { DepthOfFieldEffect } from 'postprocessing'
 
 export default function AutoFocusDOF(
     { bokehScale = 10, 

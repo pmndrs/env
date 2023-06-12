@@ -1,162 +1,20 @@
 import {
-  CameraIcon,
   EyeSlashIcon,
   FlagIcon,
-  LightBulbIcon,
-  PlusIcon,
+  LightBulbIcon
 } from "@heroicons/react/24/outline";
 import {
   EyeIcon as EyeFilledIcon,
-  FlagIcon as FlagFilledIcon,
+  FlagIcon as FlagFilledIcon
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
 import { folder, useControls } from "leva";
-import * as THREE from "three";
+import { useStore, Light } from "../../hooks/useStore";
 
-import { useStore, Camera, Light } from "./useStore";
-import { useKeyPress } from "./useKeyPress";
-
-export function Outliner() {
-  const lights = useStore((state) => state.lights);
-  const cameras = useStore((state) => state.cameras);
-  const addLight = useStore((state) => state.addLight);
-  const addCamera = useStore((state) => state.addCamera);
-
-  const selectedCameraId = useStore((state) => state.selectedCameraId);
-  const currentCamera = cameras.find((c) => c.id === selectedCameraId);
-
-  return (
-    <div>
-      <div className="flex justify-between items-center p-4 border-b border-white/10">
-        <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
-          Cameras
-        </h2>
-        <button
-          className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
-          onClick={() => {
-            addCamera({
-              rotation: [0, 0, 0],
-              position: [0, 0, 5],
-              ...currentCamera,
-              name: `Camera ${String.fromCharCode(cameras.length + 65)}`,
-              id: THREE.MathUtils.generateUUID(),
-            });
-          }}
-        >
-          <PlusIcon className="w-4 h-4" />
-        </button>
-      </div>
-
-      <ul className="m-0 p-2 flex flex-col gap-1">
-        {cameras.map((camera, index) => (
-          <CameraListItem key={camera.id} index={index} camera={camera} />
-        ))}
-      </ul>
-
-      <div className="flex justify-between items-center p-4 border-b border-white/10">
-        <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
-          Lights
-        </h2>
-        <button
-          className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
-          onClick={() => {
-            addLight({
-              name: `Light ${String.fromCharCode(lights.length + 65)}`,
-              id: THREE.MathUtils.generateUUID(),
-              shape: "rect",
-              type: "solid",
-              color: "#fff",
-              distance: 4,
-              phi: Math.PI / 2,
-              theta: 0,
-              intensity: 1,
-              rotation: 0,
-              scale: 2,
-              scaleX: 1,
-              scaleY: 1,
-              target: [0, 0, 0],
-              visible: true,
-              solo: false,
-              opacity: 1,
-            });
-          }}
-        >
-          <PlusIcon className="w-4 h-4" />
-        </button>
-      </div>
-
-      <ul className="m-0 p-2 flex flex-col gap-1">
-        {lights.map((light) => (
-          <LightListItem key={light.id} light={light} />
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function CameraListItem({ index, camera }: { index: number; camera: Camera }) {
-  const { id, name } = camera;
-  const selectedCameraId = useStore((state) => state.selectedCameraId);
-  const setSelectedCameraId = useStore((state) => state.setSelectedCameraId);
-
-  const isSelected = selectedCameraId === id;
-
-  const key = String(index + 1);
-  useKeyPress(key, () => setSelectedCameraId(id));
-
-  return (
-    <li
-      role="button"
-      className={clsx(
-        "group flex relative list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-        isSelected && "bg-white/20",
-        !isSelected && "hover:bg-white/10"
-      )}
-      onClick={() => {
-        if (!isSelected) {
-          setSelectedCameraId(id);
-        }
-      }}
-    >
-      <CameraIcon className="w-4 h-4 text-green-400" />
-      <input
-        type="checkbox"
-        hidden
-        readOnly
-        checked={isSelected}
-        className="peer"
-      />
-
-      <span className="flex-1 text-xs font-mono text-gray-300">{name}</span>
-
-      <kbd
-        className={clsx(
-          "absolute right-1.5 top-1.5 text-xs font-mono text-gray-300 bg-white/10 w-5 h-5 flex items-center justify-center rounded",
-          isSelected && "bg-white/100 text-gray-900"
-        )}
-      >
-        {key}
-      </kbd>
-    </li>
-  );
-}
-function LightListItem({ light }: { light: Light }) {
+export function LightListItem({ light }: { light: Light; }) {
   const {
-    id,
-    type,
-    name,
-    visible,
-    solo,
-    shape,
-    intensity,
-    distance,
-    phi,
-    theta,
-    scale,
-    scaleX,
-    scaleY,
-    opacity,
+    id, type, name, visible, solo, shape, intensity, distance, phi, theta, scale, scaleX, scaleY, opacity,
   } = light;
 
   const selectedLightId = useStore((state) => state.selectedLightId);
@@ -207,7 +65,7 @@ function LightListItem({ light }: { light: Light }) {
             },
             [`opacity ~${id}`]: {
               label: "Opacity",
-              value: opacity ?? 1.0,
+              value: opacity ?? 1,
               step: 0.1,
               min: 0,
               max: 1,
@@ -215,7 +73,7 @@ function LightListItem({ light }: { light: Light }) {
             },
             [`scaleMultiplier ~${id}`]: {
               label: "Scale Multiplier",
-              value: scale ?? 1.0,
+              value: scale ?? 1,
               step: 0.1,
               min: 0,
               max: 10,
@@ -223,7 +81,7 @@ function LightListItem({ light }: { light: Light }) {
             },
             [`scale ~${id}`]: {
               label: "Scale",
-              value: [scaleX, scaleY] ?? [1.0, 1.0],
+              value: [scaleX, scaleY] ?? [1, 1],
               step: 0.1,
               min: 0,
               joystick: false,
@@ -231,14 +89,14 @@ function LightListItem({ light }: { light: Light }) {
             },
             [`distance ~${id}`]: {
               label: "Distance",
-              value: distance ?? 1.0,
+              value: distance ?? 1,
               step: 0.1,
               min: 0,
               onChange: (v) => updateLight({ id, distance: v }),
             },
             [`phi ~${id}`]: {
               label: "Phi",
-              value: phi ?? 1.0,
+              value: phi ?? 1,
               step: 0.1,
               min: 0,
               max: Math.PI,
@@ -246,7 +104,7 @@ function LightListItem({ light }: { light: Light }) {
             },
             [`theta ~${id}`]: {
               label: "Theta",
-              value: theta ?? 1.0,
+              value: theta ?? 1,
               step: 0.1,
               min: 0,
               max: Math.PI * 2,
@@ -332,8 +190,7 @@ function LightListItem({ light }: { light: Light }) {
                 return {
                   [`map ~${id}`]: {
                     label: "Map",
-                    value:
-                      textureMaps.find((value) => light.map === value)?.name ??
+                    value: textureMaps.find((value) => light.map === value)?.name ??
                       "none",
                     options: [
                       "none",
@@ -397,15 +254,13 @@ function LightListItem({ light }: { light: Light }) {
             className={clsx(
               "w-4 h-4 text-yellow-400",
               !visible && "text-gray-300/50"
-            )}
-          />
+            )} />
           <input
             type="checkbox"
             hidden
             readOnly
             checked={selectedLightId === id}
-            className="peer"
-          />
+            className="peer" />
 
           <span
             className={clsx(

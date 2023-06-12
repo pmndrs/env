@@ -1,20 +1,20 @@
 import {
   Bvh,
   OrbitControls,
-  PerspectiveCamera,
   useGLTF,
-  useTexture,
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
 import { Perf } from "r3f-perf";
 import React, { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
-import { Effects } from "./Effects";
-import { Env } from "./Env";
-import { SaveBackgroundTexture } from "./HDRIPreview";
-import { Model } from "./Model";
-import { useStore } from "./useStore";
+import { useStore } from "../../hooks/useStore";
+import { Effects } from "../Effects";
+import { Env } from "../Env";
+import { SaveBackgroundTexture } from "../HDRIPreview";
+import { Model } from "../Model";
+import { Cameras } from "./Cameras";
+import { LoadTextureMaps } from "./LoadTextureMaps";
 
 export function ScenePreview() {
   const [texture, setTexture] = useState(() => new THREE.CubeTexture());
@@ -139,43 +139,4 @@ export function ScenePreview() {
   );
 }
 
-function Cameras() {
-  const cameras = useStore((state) => state.cameras);
-  const selectedCameraId = useStore((state) => state.selectedCameraId);
 
-  return (
-    <>
-      {cameras.map((camera) => (
-        <PerspectiveCamera
-          key={camera.id}
-          makeDefault={camera.id === selectedCameraId}
-          position={camera.position}
-          rotation={camera.rotation}
-          near={0.001}
-          far={100}
-        />
-      ))}
-    </>
-  );
-}
-
-function LoadTextureMaps() {
-  const setTextureMaps = useStore((state) => state.setTextureMaps);
-
-  useTexture({ checkerboard: "/textures/checkerboard.png" }, (textures) => {
-    if (Array.isArray(textures)) {
-      textures.forEach((texture) => {
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        const url = new URL(texture.source.data.currentSrc);
-        texture.name = url.pathname.split("/").pop() as string;
-        texture.needsUpdate = true;
-      });
-      setTextureMaps(textures);
-    } else {
-      setTextureMaps([textures]);
-    }
-  });
-
-  return null;
-}

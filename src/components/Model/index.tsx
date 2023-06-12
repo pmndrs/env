@@ -1,7 +1,7 @@
 import { PivotControls, useCursor, useGLTF } from "@react-three/drei";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
-import { useStore } from "./useStore";
+import { useStore } from "../../hooks/useStore";
 
 export function Model({ debugMaterial, ...props }: any) {
   const modelUrl = useStore((state) => state.modelUrl);

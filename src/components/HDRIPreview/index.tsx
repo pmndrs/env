@@ -3,9 +3,9 @@ import { Canvas, createPortal, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { CubeMaterial } from "./CubeMaterial";
-import { Env } from "./Env";
+import { Env } from "../Env";
 import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
-import { useStore } from "./useStore";
+import { useStore } from "../../hooks/useStore";
 import { button, folder, LevaInputs, useControls } from "leva";
 import { encodeRGBE, HDRImageData } from "@derschmale/io-rgbe";
 

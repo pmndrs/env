@@ -1,13 +1,13 @@
 import { Bars2Icon } from "@heroicons/react/24/outline";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { AppToolbar } from "./AppToolbar";
-import { Code } from "./Code";
-import { HDRIPreview } from "./HDRIPreview";
+import { AppToolbar } from "./components/AppToolbar";
+import { Code } from "./components/Code";
+import { HDRIPreview } from "./components/HDRIPreview";
 
-import { Outliner } from "./Outliner";
-import { Properties } from "./Properties";
-import { ScenePreview } from "./ScenePreview";
-import { useStore } from "./useStore";
+import { Outliner } from "./components/Outliner/Outliner";
+import { Properties } from "./components/Properties";
+import { ScenePreview } from "./components/ScenePreview";
+import { useStore } from "./hooks/useStore";
 
 export default function App() {
   const mode = useStore((state) => state.mode);

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Environment, Lightformer } from "@react-three/drei";
 import { LayerMaterial, Gradient, Noise, Color, Texture } from "lamina";
 import { useControls, folder, LevaInputs } from "leva";
-import { Light, useStore } from "./useStore";
+import { Light, useStore } from "../../hooks/useStore";
 
 export function Env() {
   const mode = useStore((state) => state.mode);

@@ -1,4 +1,4 @@
-import { useStore } from "./useStore";
+import { useStore } from "../../hooks/useStore";
 import { format } from "prettier";
 import parserBabel from "prettier/parser-babel";
 import theme from "prism-react-renderer/themes/vsDark";

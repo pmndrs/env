@@ -51,7 +51,7 @@ export function LightListItem({ light }: { light: Light }) {
           {},
           {
             color: "yellow",
-            order: 0,
+            order: 2,
           }
         ),
       };
@@ -269,7 +269,7 @@ export function LightListItem({ light }: { light: Light }) {
           },
           {
             color: "yellow",
-            order: 0,
+            order: 2,
           }
         ),
       };

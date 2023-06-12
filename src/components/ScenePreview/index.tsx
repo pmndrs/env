@@ -1,5 +1,10 @@
-import { Suspense } from "react";
-import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
+import { Suspense, useState } from "react";
+import {
+  AdaptiveDpr,
+  Bvh,
+  PerformanceMonitor,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
 import { useStore } from "../../hooks/useStore";
@@ -15,7 +20,6 @@ import { toast } from "sonner";
 import { BoltIcon } from "@heroicons/react/24/solid";
 
 export function ScenePreview() {
-  const selectedLightId = useStore((state) => state.selectedLightId);
   const mode = useStore((state) => state.mode);
 
   const [{ ambientLightIntensity, debugMaterial, autoRotate }] = useControls(
@@ -75,14 +79,13 @@ export function ScenePreview() {
           color: "limegreen",
         }
       ),
-    }),
-    [selectedLightId]
+    })
   );
 
   return (
     <Canvas
       shadows
-      dpr={[1, 2]}
+      dpr={[1, 3]}
       gl={{
         preserveDrawingBuffer: true, // for screenshot
         logarithmicDepthBuffer: true,
@@ -90,15 +93,16 @@ export function ScenePreview() {
       }}
     >
       <PerformanceMonitor
-        flipflops={2}
-        onDecline={() =>
+        threshold={1}
+        factor={1}
+        flipflops={0}
+        onFallback={() => {
           toast("Switching to low performance mode", {
             description:
               "This will reduce the quality of the preview, but will improve performance.",
             icon: <BoltIcon className="w-4 h-4" />,
-          })
-        }
-        onIncline={() => toast("Switching to high performance mode")}
+          });
+        }}
       >
         <Cameras />
 

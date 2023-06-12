@@ -123,7 +123,7 @@ export function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
           }),
         },
         {
-          order: 0,
+          order: 3,
           color: "magenta",
         }
       ),

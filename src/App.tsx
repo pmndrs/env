@@ -32,7 +32,7 @@ export default function App() {
         {/* Middle */}
         <Panel
           minSize={30}
-          className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 rounded-lg"
+          className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 bg-[conic-gradient(#202020_90deg,#313131_90deg_180deg,#202020_180deg_270deg,#313131_270deg)] bg-repeat bg-left-top bg-[length:20px_20px] rounded-lg"
         >
           {mode === "scene" && <ScenePreview />}
           {mode === "code" && <Code />}

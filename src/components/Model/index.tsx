@@ -1,4 +1,4 @@
-import { PivotControls, useCursor, useGLTF } from "@react-three/drei";
+import { PivotControls, Resize, useCursor, useGLTF } from "@react-three/drei";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 import { useStore } from "../../hooks/useStore";
@@ -63,7 +63,9 @@ export function Model({ debugMaterial, ...props }: any) {
         }}
         onPointerOut={(e) => setHovered(false)}
       >
-        <primitive object={scene} {...props} />
+        <Resize scale={2}>
+          <primitive object={scene} {...props} />
+        </Resize>
       </group>
     </PivotControls>
   );

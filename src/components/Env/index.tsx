@@ -1,10 +1,5 @@
 import * as THREE from "three";
-import {
-  Environment,
-  Float,
-  Lightformer,
-  usePerformanceMonitor,
-} from "@react-three/drei";
+import { Environment, Float, Lightformer } from "@react-three/drei";
 import { LayerMaterial } from "lamina";
 import { useControls, folder, LevaInputs } from "leva";
 import { useStore } from "../../hooks/useStore";
@@ -65,18 +60,6 @@ export function Env() {
   );
 
   const [resolution, setResolution] = useState(2048);
-  usePerformanceMonitor({
-    onDecline: ({ factor }) => {
-      if (factor > 0.5) {
-        setResolution(512);
-      } else {
-        setResolution(1024);
-      }
-    },
-    onIncline: () => {
-      setResolution(2048);
-    },
-  });
 
   return (
     <Environment

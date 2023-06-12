@@ -29,7 +29,7 @@
     "r3f-perf": "^7.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-resizable-panels": "^0.0.36",
+    "react-resizable-panels": "^0.0.51",
     "three": "^0.153.0",
     "three-stdlib": "^2.23.9",
     "zustand": "^4.1.1"

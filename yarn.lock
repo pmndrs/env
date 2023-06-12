@@ -2820,7 +2820,7 @@ __metadata:
     r3f-perf: ^7.1.2
     react: ^18.2.0
     react-dom: ^18.2.0
-    react-resizable-panels: ^0.0.36
+    react-resizable-panels: ^0.0.51
     tailwindcss: ^3.2.6
     three: ^0.153.0
     three-stdlib: ^2.23.9
@@ -3940,13 +3940,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resizable-panels@npm:^0.0.36":
-  version: 0.0.36
-  resolution: "react-resizable-panels@npm:0.0.36"
+"react-resizable-panels@npm:^0.0.51":
+  version: 0.0.51
+  resolution: "react-resizable-panels@npm:0.0.51"
   peerDependencies:
     react: ^16.14.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0
-  checksum: 166083b04e0e85298f562ba8982bcd70bf97521469ea26c3bf6e2ac9a1302f01f1236ad2fbdbcdc1d32203dd322a92ff31999dac3b54ff5313f528e811b4b055
+  checksum: 8ed1a33a2d0c2a4b78bbfb93e08bbff2df8a4925da08139b501fcf4d21d42f42a7b1c93bf8fa62b7dfc44529ec3030b8f3dba00e32d0b993d1a865bf0f24fcee
   languageName: node
   linkType: hard
 

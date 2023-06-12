@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import * as THREE from "three";
 import { CubeMaterial } from "./CubeMaterial";
 import { Env } from "../Env";
-import { SaveBackgroundTexture, DownloadHDRI } from "./SaveBackgroundTexture";
+import { SaveBackgroundTexture } from "./SaveBackgroundTexture";
+import { DownloadHDRI } from "./DownloadHDRI";
 
 export function EnvMapPlane() {
   const [texture, setTexture] = useState(() => new THREE.CubeTexture());

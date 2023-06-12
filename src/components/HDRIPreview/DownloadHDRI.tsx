@@ -1,24 +1,9 @@
 import { useThree } from "@react-three/fiber";
-import { useEffect } from "react";
 import * as THREE from "three";
 import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
 import { useStore } from "../../hooks/useStore";
 import { button, folder, LevaInputs, useControls } from "leva";
 import { encodeRGBE, HDRImageData } from "@derschmale/io-rgbe";
-
-export function SaveBackgroundTexture({
-  setTexture,
-}: {
-  setTexture: (texture: THREE.CubeTexture) => void;
-}) {
-  const backgroundTexture = useThree((state) => state.scene.background);
-  useEffect(() => {
-    if (backgroundTexture instanceof THREE.CubeTexture) {
-      setTexture(backgroundTexture);
-    }
-  }, [backgroundTexture]);
-  return null;
-}
 
 export function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
   const renderer = useThree((state) => state.gl);

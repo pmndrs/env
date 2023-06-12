@@ -1,25 +1,20 @@
-import { Bvh, OrbitControls, useGLTF } from "@react-three/drei";
+import { Suspense } from "react";
+import { Bvh, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { button, folder, useControls } from "leva";
-import { Perf } from "r3f-perf";
-import React, { Suspense, useRef, useState } from "react";
-import * as THREE from "three";
 import { useStore } from "../../hooks/useStore";
 import { Effects } from "../Effects";
 import { Env } from "../Env";
-import { SaveBackgroundTexture } from "../HDRIPreview/SaveBackgroundTexture";
 import { Model } from "../Model";
 import { Cameras } from "./Cameras";
+import { Controls } from "./Controls";
+import { Debug } from "./Debug";
 import { LoadTextureMaps } from "./LoadTextureMaps";
+import { Lights } from "./Lights";
 
 export function ScenePreview() {
-  const [texture, setTexture] = useState(() => new THREE.CubeTexture());
-
   const selectedLightId = useStore((state) => state.selectedLightId);
-  const updateSelectedCamera = useStore((state) => state.updateSelectedCamera);
   const mode = useStore((state) => state.mode);
-
-  const controlsRef = useRef<React.ElementRef<typeof OrbitControls>>(null);
 
   const [{ ambientLightIntensity, debugMaterial, autoRotate }] = useControls(
     () => ({
@@ -92,44 +87,27 @@ export function ScenePreview() {
         antialias: true,
       }}
     >
-      <LoadTextureMaps />
-      <SaveBackgroundTexture setTexture={setTexture} />
-
       <Cameras />
-
-      <ambientLight intensity={ambientLightIntensity} />
-      <hemisphereLight intensity={ambientLightIntensity} />
 
       <Suspense fallback={null}>
         <Bvh firstHitOnly>
           <Model debugMaterial={debugMaterial} />
         </Bvh>
+      </Suspense>
+
+      <Lights ambientLightIntensity={ambientLightIntensity} />
+
+      <Suspense fallback={null}>
         <Env />
       </Suspense>
 
       <Effects />
 
-      <Perf minimal position="bottom-right" style={{ position: "absolute" }} />
+      <Debug />
 
-      <OrbitControls
-        makeDefault
-        ref={controlsRef}
-        autoRotate={autoRotate}
-        autoRotateSpeed={0.5}
-        onEnd={(e) => {
-          if (controlsRef.current) {
-            updateSelectedCamera({
-              position: controlsRef.current.object.position.toArray(),
-              rotation: controlsRef.current.object.rotation.toArray() as [
-                number,
-                number,
-                number
-              ],
-            });
-          }
-        }}
-        enableDamping={false}
-      />
+      <Controls autoRotate={autoRotate} />
+
+      <LoadTextureMaps />
     </Canvas>
   );
 }

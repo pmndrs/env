@@ -4,31 +4,24 @@ import { usePerformanceMonitor } from "@react-three/drei";
 import { useState } from "react";
 
 export function Effects() {
-  const [dofEnabled, setDofEnabled] = useState(true);
-  const [bloomEnabled, setBloomEnabled] = useState(true);
+  const [factor, setFactor] = useState(1);
   usePerformanceMonitor({
-    onDecline: () => {
-      setDofEnabled(false);
-      setBloomEnabled(false);
+    onDecline: (api) => {
+      setFactor(api.factor);
     },
-    onIncline: () => {
-      setDofEnabled(true);
-      setBloomEnabled(true);
+    onIncline: (api) => {
+      setFactor(api.factor);
     },
   });
   return (
     <EffectComposer disableNormalPass multisampling={0}>
-      {dofEnabled ? <AutoFocusDOF /> : <></>}
-      {bloomEnabled ? (
-        <Bloom
-          mipmapBlur
-          luminanceThreshold={0.5}
-          luminanceSmoothing={0.9}
-          height={500}
-        />
-      ) : (
-        <></>
-      )}
+      <AutoFocusDOF resolution={factor > 0.5 ? 2048 : 1024} />
+      <Bloom
+        mipmapBlur
+        luminanceThreshold={0.5}
+        luminanceSmoothing={0.9}
+        height={factor > 0.5 ? 500 : 250}
+      />
     </EffectComposer>
   );
 }

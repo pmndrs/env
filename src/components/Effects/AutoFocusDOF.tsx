@@ -1,21 +1,20 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { DepthOfField } from "@react-three/postprocessing";
 import { Raycaster, Vector2, Vector3 } from "three";
-import type { DepthOfFieldEffect } from "postprocessing";
 
 export default function AutoFocusDOF({
   bokehScale = 10,
   focalLength = 0.01,
   focusSpeed = 0.2,
   mouseFocus = false,
-  resolution = 512,
+  resolution = 2048,
 }) {
   const camera = useThree((state) => state.camera);
   const mouse = useThree((state) => state.mouse);
   const scene = useThree((state) => state.scene);
 
-  const ref = useRef<DepthOfFieldEffect>(null);
+  const ref = useRef<React.ElementRef<typeof DepthOfField>>(null);
   const raycaster = new Raycaster();
   const finalVector = new Vector3();
 

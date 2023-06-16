@@ -3,6 +3,44 @@ import create from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
+export type Easing =
+  | "ease"
+  | "linear"
+  | "ease-in"
+  | "ease-out"
+  | "ease-in-out"
+  | "in-out-sine"
+  | "in-out-quadratic"
+  | "in-out-cubic"
+  | "fast-out-slow-in"
+  | "in-out-back";
+
+export const Easings: Record<Easing, [number, number, number, number]> = {
+  ease: [0.25, 0.1, 0.25, 1],
+  linear: [0, 0, 1, 1],
+  "ease-in": [0.42, 0, 1, 1],
+  "ease-out": [0, 0, 0.58, 1],
+  "ease-in-out": [0.42, 0, 0.58, 1],
+  "in-out-sine": [0.45, 0.05, 0.55, 0.95],
+  "in-out-quadratic": [0.46, 0.03, 0.52, 0.96],
+  "in-out-cubic": [0.65, 0.05, 0.36, 1],
+  "fast-out-slow-in": [0.4, 0, 0.2, 1],
+  "in-out-back": [0.68, -0.55, 0.27, 1.55],
+};
+
+export type Signal = {
+  id: string;
+  name: string;
+  targetId: string;
+  property: "position" | "rotation" | "scale";
+  axis: "x" | "y" | "z";
+  start: number;
+  end: number;
+  animation: "loop" | "pingpong" | "once" | "additive";
+  easing: Easing;
+  duration: number;
+};
+
 export type Camera = {
   id: string;
   name: string;
@@ -69,6 +107,11 @@ type State = {
   setMode: (mode: State["mode"]) => void;
   modelUrl: string;
   isSolo: boolean;
+  signals: Signal[];
+  addSignal: (signal: Signal) => void;
+  removeSignalById: (id: string) => void;
+  updateSignal: (signal: Partial<Signal>) => void;
+  getSignalsForTarget: (targetId: string) => Signal[];
   textureMaps: THREE.Texture[];
   cameras: Camera[];
   selectedCameraId: string;
@@ -101,6 +144,34 @@ export const useStore = create<State>()(
           setMode: (mode) => set({ mode }),
           modelUrl: "/911-transformed.glb",
           isSolo: false,
+          signals: [
+            {
+              id: THREE.MathUtils.generateUUID(),
+              name: "Signal 2",
+              targetId: "light-1",
+              property: "position",
+              axis: "x",
+              start: 0,
+              end: 1,
+              animation: "pingpong",
+              easing: "linear",
+              duration: 3,
+            },
+          ],
+          addSignal: (signal: Signal) =>
+            set((state) => void state.signals.push(signal)),
+          removeSignalById: (id: string) =>
+            set((state) => ({
+              signals: state.signals.filter((s) => s.id !== id),
+            })),
+          updateSignal: (signal: Partial<Signal>) =>
+            set((state) => ({
+              signals: state.signals.map((s: Signal) =>
+                s.id === signal.id ? { ...s, ...signal } : s
+              ),
+            })),
+          getSignalsForTarget: (targetId: string) =>
+            get().signals.filter((s) => s.targetId === targetId),
           textureMaps: [],
           setTextureMaps: (maps: THREE.Texture[]) =>
             set((state) => void (state.textureMaps = maps)),
@@ -129,7 +200,7 @@ export const useStore = create<State>()(
           lights: [
             {
               name: `Light A`,
-              id: THREE.MathUtils.generateUUID(),
+              id: "light-1",
               shape: "rect",
               type: "solid",
               color: "#fff",

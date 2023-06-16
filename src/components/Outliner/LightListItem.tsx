@@ -9,8 +9,9 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { folder, useControls } from "leva";
-import { useStore, Light } from "../../hooks/useStore";
+import { LevaInputs, button, folder, useControls } from "leva";
+import { useStore, Light, Easings } from "../../hooks/useStore";
+import * as THREE from "three";
 
 export function LightListItem({ light }: { light: Light }) {
   const {
@@ -43,6 +44,10 @@ export function LightListItem({ light }: { light: Light }) {
   const toggleSoloLightById = useStore((state) => state.toggleSoloLightById);
   const isSolo = useStore((state) => state.isSolo);
   const textureMaps = useStore((state) => state.textureMaps);
+  const signals = useStore((state) => state.getSignalsForTarget(id));
+  const addSignal = useStore((state) => state.addSignal);
+  const removeSignalById = useStore((state) => state.removeSignalById);
+  const updateSignal = useStore((state) => state.updateSignal);
 
   useControls(() => {
     if (selectedLightId !== id) {
@@ -224,47 +229,96 @@ export function LightListItem({ light }: { light: Light }) {
               }
             })(),
 
-            [`animate ~${id}`]: {
-              label: "Animate",
-              value: light.animate ?? false,
-              onChange: (v) => updateLight({ id, animate: v }),
-            },
+            [`Add Signal ~${id}`]: button(() =>
+              addSignal({
+                id: THREE.MathUtils.generateUUID(),
+                targetId: id,
+                property: "position",
+                axis: "x",
+                animation: "pingpong",
+                name: "New Signal",
+                start: 0,
+                end: 1,
+                duration: 1,
+                easing: "linear",
+              })
+            ),
 
             ...(() => {
-              if (!light.animate) {
+              if (signals.length === 0) {
                 return {};
               }
 
-              return {
-                [`animationSpeed ~${id}`]: {
-                  label: "Animation Speed",
-                  value: light.animationSpeed ?? 1,
-                  min: 0,
-                  onChange: (v) => updateLight({ id, animationSpeed: v }),
-                },
-                [`animationRotationIntensity ~${id}`]: {
-                  label: "Rotation Intensity",
-                  value: light.animationRotationIntensity ?? 1,
-                  min: 0,
-                  onChange: (v) =>
-                    updateLight({ id, animationRotationIntensity: v }),
-                },
-                [`animationFloatIntensity ~${id}`]: {
-                  label: "Float Intensity",
-                  value: light.animationFloatIntensity ?? 1,
-                  min: 0,
-                  onChange: (v) =>
-                    updateLight({ id, animationFloatIntensity: v }),
-                },
-                [`animationFloatingRange ~${id}`]: {
-                  label: "Floating Range",
-                  value: light.animationFloatingRange ?? [0, 2],
-                  min: 0,
-                  max: 2,
-                  onChange: (v) =>
-                    updateLight({ id, animationFloatingRange: v }),
-                },
-              };
+              const folders: Record<string, any> = {};
+
+              for (const signal of signals) {
+                const {
+                  id: signalId,
+                  property,
+                  axis,
+                  animation,
+                  name,
+                  start,
+                  end,
+                  duration,
+                  easing,
+                } = signal;
+
+                folders[signal.id] = folder({
+                  [`property ~${id} ~${signalId}`]: {
+                    label: "Property",
+                    value: property,
+                    options: ["position", "rotation", "scale"],
+                    onChange: (v) =>
+                      updateSignal({ id: signalId, property: v }),
+                  },
+
+                  [`animation ~${id} ~${signalId}`]: {
+                    label: "Animation",
+                    value: animation,
+                    options: ["pingpong", "loop", "once"],
+                    onChange: (v) =>
+                      updateSignal({ id: signalId, animation: v }),
+                  },
+
+                  [`axis ~${id} ~${signalId}`]: {
+                    label: "Axis",
+                    value: axis,
+                    options: ["x", "y", "z"],
+                    onChange: (v) => updateSignal({ id: signalId, axis: v }),
+                  },
+                  [`start ~${id} ~${signalId}`]: {
+                    label: "Start",
+                    value: start,
+                    onChange: (v) => updateSignal({ id: signalId, start: v }),
+                  },
+                  [`end ~${id} ~${signalId}`]: {
+                    label: "End",
+                    value: end,
+                    onChange: (v) => updateSignal({ id: signalId, end: v }),
+                  },
+                  [`duration ~${id} ~${signalId}`]: {
+                    label: "Duration",
+                    value: duration,
+                    min: 0,
+                    onChange: (v) =>
+                      updateSignal({ id: signalId, duration: v }),
+                  },
+                  [`easing ~${id} ~${signalId}`]: {
+                    label: "Easing",
+                    value: easing,
+                    options: Object.keys(Easings),
+                    onChange: (v) => {
+                      updateSignal({ id: signalId, easing: v });
+                    },
+                  },
+                  [`Remove Signal ~${id} ~${signalId}`]: button(() =>
+                    removeSignalById(signalId)
+                  ),
+                });
+              }
+
+              return folders;
             })(),
           },
           {
@@ -275,6 +329,7 @@ export function LightListItem({ light }: { light: Light }) {
       };
     }
   }, [
+    signals,
     selectedLightId,
     id,
     name,

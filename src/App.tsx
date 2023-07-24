@@ -9,12 +9,15 @@ import { Outliner } from "./components/Outliner/Outliner";
 import { Properties } from "./components/Properties";
 import { ScenePreview } from "./components/ScenePreview";
 import { useStore } from "./hooks/useStore";
+import { CommandPalette } from "./components/CommandPalette";
 
 export default function App() {
   const mode = useStore((state) => state.mode);
   return (
     <div className="h-full w-full flex flex-col from-neutral-900 to-neutral-800 bg-gradient-to-t overflow-hidden text-white">
       <Toaster theme="dark" />
+
+      <CommandPalette />
 
       <AppToolbar />
 

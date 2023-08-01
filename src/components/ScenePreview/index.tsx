@@ -80,7 +80,7 @@ export function ScenePreview() {
   return (
     <Canvas
       shadows
-      dpr={[1, 3]}
+      dpr={[1, 2]}
       gl={{
         preserveDrawingBuffer: true, // for screenshot
         logarithmicDepthBuffer: true,

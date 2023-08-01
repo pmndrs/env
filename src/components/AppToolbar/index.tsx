@@ -23,11 +23,21 @@ export function AppToolbar() {
       </span>
 
       <Toolbar.ToggleGroup
-        type="single"
+        type="multiple"
         aria-label="Tools"
         className="flex divide-x divide-white/10 bg-neutral-900 rounded-md overflow-hidden shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20"
-        value={mode}
-        onValueChange={setMode}
+        value={Object.keys(mode).filter(
+          (key) => mode[key as keyof typeof mode]
+        )}
+        onValueChange={(modes) =>
+          setMode(
+            modes.reduce((acc, mode) => ({ ...acc, [mode]: true }), {
+              scene: false,
+              code: false,
+              hdri: false,
+            })
+          )
+        }
       >
         {[
           {
@@ -49,6 +59,7 @@ export function AppToolbar() {
           <Toolbar.ToggleItem
             key={value}
             value={value}
+            disabled={value === "scene"}
             className="px-3 py-1.5 leading-4 text-xs tracking-wide uppercase font-semibold bg-white/0 hover:bg-white/10 bg-gradient-to-b data-[state=on]:from-blue-500 data-[state=on]:to-blue-600 data-[state=on]:text-white flex items-center"
           >
             <Icon className="w-4 h-4 mr-2" />

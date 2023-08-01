@@ -67,7 +67,6 @@ export function Env() {
       background={background}
       preset={preset as any}
       blur={blur}
-      frames={Infinity}
       far={100}
       near={0.01}
     >

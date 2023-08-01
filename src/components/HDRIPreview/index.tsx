@@ -18,7 +18,7 @@ export function HDRIPreview() {
           antialias: true,
         }}
       >
-        <Bounds fit clip observe damping={6} margin={0.9}>
+        <Bounds fit clip observe margin={0.45}>
           <EnvMapPlane />
         </Bounds>
       </Canvas>

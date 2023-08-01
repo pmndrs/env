@@ -65,7 +65,7 @@ type TextureLight = BaseLight & {
 export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
 
 type State = {
-  mode: "scene" | "code" | "hdri";
+  mode: Record<"scene" | "code" | "hdri", boolean>;
   setMode: (mode: State["mode"]) => void;
   modelUrl: string;
   isSolo: boolean;
@@ -97,7 +97,7 @@ export const useStore = create<State>()(
     immer(
       (set, get) =>
         ({
-          mode: "scene",
+          mode: { scene: true, hdri: true, code: false },
           setMode: (mode) => set({ mode }),
           modelUrl: "/911-transformed.glb",
           isSolo: false,
@@ -246,7 +246,7 @@ export const useStore = create<State>()(
     ),
     {
       name: "env-storage",
-      version: 2,
+      version: 4,
       getStorage: () => localStorage,
     }
   )

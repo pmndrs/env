@@ -158,11 +158,17 @@ export const useStore = create<State>()(
               lights: [...state.lights, light],
             })),
           updateLight: (light: Partial<Light>) =>
-            set((state) => ({
-              lights: state.lights.map((l: Light) =>
-                l.id === light.id ? { ...l, ...light } : l
-              ),
-            })),
+            set((state) => {
+              const targetLight = state.lights.find(
+                (l: Light) => l.id === light.id
+              );
+
+              if (!targetLight) {
+                return;
+              }
+
+              Object.assign(targetLight, light);
+            }),
           setLightVisibleById: (id: string, visible: boolean) => {
             const light = get().lights.find((l) => l.id === id);
             if (light) {

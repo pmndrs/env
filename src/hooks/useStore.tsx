@@ -240,7 +240,7 @@ export const useStore = create<State>()(
     ),
     {
       name: "env-storage",
-      version: 1,
+      version: 2,
       getStorage: () => localStorage,
     }
   )

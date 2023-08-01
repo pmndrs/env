@@ -26,17 +26,17 @@ export function ScenePreview() {
             value: 0.5,
             min: 0,
             max: 3,
-            render: () => mode === "scene",
+            render: () => mode.scene,
           },
           debugMaterial: {
             label: "Debug Material",
             value: false,
-            render: () => mode === "scene",
+            render: () => mode.scene,
           },
           autoRotate: {
             label: "Auto Rotate",
             value: false,
-            render: () => mode === "scene",
+            render: () => mode.scene,
           },
           Screenshot: button(() => {
             const canvas = document.querySelector("canvas");

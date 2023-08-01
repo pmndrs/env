@@ -18,7 +18,7 @@ export function Env() {
           background: {
             label: "Show BG",
             value: true,
-            render: () => selectedLightId === null && mode === "scene",
+            render: () => selectedLightId === null && mode.scene,
           },
           preset: {
             type: LevaInputs.SELECT,
@@ -41,7 +41,7 @@ export function Env() {
           backgroundColor: {
             label: "BG Color",
             value: "#000000",
-            render: () => selectedLightId === null && mode === "scene",
+            render: () => selectedLightId === null && mode.scene,
           },
           blur: {
             label: "Blur",

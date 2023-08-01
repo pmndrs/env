@@ -24,6 +24,7 @@ export default function App() {
       <PanelGroup direction="horizontal" className="flex-1 p-2 pt-1">
         {/* Left */}
         <Panel
+          id="outliner"
           order={1}
           collapsible
           defaultSize={15}
@@ -37,9 +38,10 @@ export default function App() {
         </PanelResizeHandle>
 
         {/* Middle */}
-        <Panel order={2} minSize={30}>
+        <Panel id="stage" order={2} minSize={30}>
           <PanelGroup direction="vertical">
             <Panel
+              id="scene-preview"
               order={1}
               className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 bg-[conic-gradient(#202020_90deg,#313131_90deg_180deg,#202020_180deg_270deg,#313131_270deg)] bg-repeat bg-left-top bg-[length:20px_20px] rounded-lg"
             >
@@ -53,6 +55,7 @@ export default function App() {
                 </PanelResizeHandle>
 
                 <Panel
+                  id="hdri-preview"
                   order={2}
                   collapsible
                   className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 bg-[conic-gradient(#202020_90deg,#313131_90deg_180deg,#202020_180deg_270deg,#313131_270deg)] bg-repeat bg-left-top bg-[length:20px_20px] rounded-lg"
@@ -69,6 +72,7 @@ export default function App() {
                 </PanelResizeHandle>
 
                 <Panel
+                  id="code"
                   order={3}
                   collapsible
                   className="shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20 bg-neutral-900 bg-[conic-gradient(#202020_90deg,#313131_90deg_180deg,#202020_180deg_270deg,#313131_270deg)] bg-repeat bg-left-top bg-[length:20px_20px] rounded-lg"
@@ -86,6 +90,7 @@ export default function App() {
 
         {/* Right */}
         <Panel
+          id="properties"
           order={3}
           collapsible
           defaultSize={25}

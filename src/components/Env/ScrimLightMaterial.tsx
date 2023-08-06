@@ -31,6 +31,29 @@ const fragmentShader = /* glsl */ `
 
   // SOURCE: https://articles.hyperknot.com/area_lights_in_shaders/
 
+  float point_light(vec2 uv, float h, float i) {
+    // h - light's height over the ground
+    // i - light's intensity
+    return i * h * pow(dot(uv, uv) + h * h, -1.5);
+  }
+
+  float disc_light(vec2 uv, float h, float i) {
+    // h - light's height over the ground
+    // i - light's intensity
+    if (uv.x > 0.) return 0.;
+    return i * h * -uv.x * pow(dot(uv,uv) + h*h, -2.);
+  }
+
+  float rod_light_antideriv(vec2 uv, float i, float h) {
+    return i * uv.x / (dot(uv,uv) + h*h);
+  }
+
+  float rod_light(vec2 uv, float i, float h_top, float h_bottom) {
+    // h_top and h_bottom - the light's top and bottom above the ground
+    // i - light's intensity
+    return rod_light_antideriv(uv, i, h_top) - rod_light_antideriv(uv, i, h_bottom);
+  }
+
   float area_light_antideriv(vec2 uv, float i, float h, float t) {
     float lxh = length(vec2(uv.x, h));
     return -i * uv.x * atan((t-uv.y) / lxh) / lxh;
@@ -48,18 +71,18 @@ const fragmentShader = /* glsl */ `
     return max(0.0, v);
   }
 
-  float point_light(vec2 uv, float h, float i) {
-    // h - light's height over the ground
-    // i - light's intensity
-    return i * h * pow(dot(uv, uv) + h * h, -1.5);
-  }
-
   void main() {
     vec2 uv = vUv;
     uv = (2.0 * uv - 1.0);
 
-    float l = area_light(uv + uLightPosition, uIntensity, 0.5 - uLightPosition.x, 3.0, -0.25, 0.25);
+    float l = 0.0;
     // l = point_light(uv + uLightPosition, uLightPosition.x + 0.5, uIntensity);
+    // l = disc_light(uv + uLightPosition, uLightPosition.x + 0.5, uIntensity);
+    // l = rod_light(uv + uLightPosition, uIntensity, 0.5, 0.0);
+    l = area_light(uv + uLightPosition, uIntensity, 0.5 - uLightPosition.x, 3.0, -0.25, 0.25);
+    
+    // Clamp to 0
+    l = max(0.0, l);
 
     vec3 color = vec3(l);
     

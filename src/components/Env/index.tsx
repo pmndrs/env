@@ -71,7 +71,7 @@ export function Env() {
       blur={blur}
       far={100}
       near={0.01}
-      frames={5}
+      frames={Infinity}
     >
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {

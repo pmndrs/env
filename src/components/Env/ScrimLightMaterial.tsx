@@ -25,49 +25,46 @@ const fragmentShader = /* glsl */ `
   uniform float uOpacity;
   uniform vec3 uColor;
   uniform float uIntensity;
+  uniform vec2 uLightPosition;
 
   varying vec2 vUv;
 
-  float area_light(in vec2 p, in vec2 a, in vec2 b) {
-    // projection point to line
-    vec2 pa = p - a;
-    vec2 ba = b - a;
-    float u = dot(pa, ba) / dot(ba, ba);
-    u = clamp(u, 0.0, 1.0);
-    vec2 c = mix(a, b, u);
-    p = p - c;
-    
-    //calculate normal and use it to get diffuse light
-    vec2 n = normalize(vec2(ba.y, -ba.x));
-    float diffuse = dot(n, normalize(p));
-    
-    //compute attenuation
-    float l = length(p);
-    float kc = 1.0;
-    float kl = 0.3;
-    float kq = 1.8;
-    float attenuation = 1.0 / (kc + kl * l + kq * l * l);
-    
-    //return final light
-    return diffuse * attenuation;
+  // SOURCE: https://articles.hyperknot.com/area_lights_in_shaders/
+
+  float area_light_antideriv(vec2 uv, float i, float h, float t) {
+    float lxh = length(vec2(uv.x, h));
+    return -i * uv.x * atan((t-uv.y) / lxh) / lxh;
   }
 
-  float point_light(in vec2 p) {
-    return 1.0 / dot(p, p);
+  float area_light(vec2 uv, float i, float h_bottom, float h_top, float t_start, float t_end) {
+    // i - light's intensity
+    // h_top and h_bottom - the light's top and bottom above the ground
+    // t_start and t_end - the light's start and end on the y-axis
+    float v =
+    + area_light_antideriv(uv, i, h_top, t_end)
+    + area_light_antideriv(uv, i, h_bottom, t_start)
+    - area_light_antideriv(uv, i, h_bottom, t_end)
+    - area_light_antideriv(uv, i, h_top, t_start);
+    return max(0.0, v);
   }
 
+  float point_light(vec2 uv, float h, float i) {
+    // h - light's height over the ground
+    // i - light's intensity
+    return i * h * pow(dot(uv, uv) + h * h, -1.5);
+  }
 
   void main() {
     vec2 uv = vUv;
     uv = (2.0 * uv - 1.0);
 
-    float l = area_light(uv, vec2(-0.5, 0.0), vec2(0.5, 0.0));
-    // l = point_light(uv);
+    float l = area_light(uv + uLightPosition, uIntensity, 0.5 - uLightPosition.x, 3.0, -0.25, 0.25);
+    // l = point_light(uv + uLightPosition, uLightPosition.x + 0.5, uIntensity);
 
     vec3 color = vec3(l);
     
     // Apply intensity and color
-    color *= uColor * uIntensity;
+    color *= uColor;
 
     gl_FragColor = vec4(color, uOpacity);
   }
@@ -78,6 +75,7 @@ const ScrimLightShaderMaterial = shaderMaterial(
     uOpacity: 1,
     uColor: new THREE.Color(0xffffff),
     uIntensity: 1,
+    uLightPosition: new THREE.Vector2(0, 0),
   },
   vertexShader,
   fragmentShader
@@ -106,6 +104,14 @@ export function ScrimLightMaterial({ lightId }: { lightId: string }) {
     if (light.type === "solid") {
       ref.current.uniforms.uColor.value = new THREE.Color(light.color);
     }
+  });
+
+  useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
+    ref.current.uniforms.uLightPosition.value = new THREE.Vector2(
+      Math.sin(time) * 0.5,
+      Math.cos(time) * 0.5
+    );
   });
 
   return <scrimLightShaderMaterial ref={ref} transparent />;

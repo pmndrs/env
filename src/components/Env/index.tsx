@@ -5,6 +5,8 @@ import { useControls, folder, LevaInputs } from "leva";
 import { useStore } from "../../hooks/useStore";
 import { LightformerLayers } from "./LightformerLayers";
 import { useState } from "react";
+import { UmbrellaLightMaterial } from "./UmbrellaLightMaterial";
+import { ScrimLightMaterial } from "./ScrimLightMaterial";
 
 export function Env() {
   const mode = useStore((state) => state.mode);
@@ -69,6 +71,7 @@ export function Env() {
       blur={blur}
       far={100}
       near={0.01}
+      frames={5}
     >
       <color attach="background" args={[backgroundColor]} />
       {lights.map((light) => {
@@ -77,14 +80,12 @@ export function Env() {
           distance,
           phi,
           theta,
-          intensity,
           shape,
           scale,
           scaleX,
           scaleY,
           visible,
           rotation,
-          opacity,
           animate,
           animationSpeed,
           animationFloatIntensity,
@@ -104,7 +105,6 @@ export function Env() {
             <Lightformer
               visible={visible}
               form={shape}
-              intensity={intensity}
               position={new THREE.Vector3().setFromSphericalCoords(
                 distance,
                 phi,
@@ -116,14 +116,16 @@ export function Env() {
               castShadow={false}
               receiveShadow={false}
             >
-              <LayerMaterial
+              <ScrimLightMaterial lightId={light.id} />
+              {/* <UmbrellaLightMaterial lightId={light.id} /> */}
+              {/* <LayerMaterial
                 alpha={opacity}
                 transparent
                 side={THREE.DoubleSide}
                 toneMapped={false}
               >
                 <LightformerLayers light={light} />
-              </LayerMaterial>
+              </LayerMaterial> */}
             </Lightformer>
           </Float>
         );

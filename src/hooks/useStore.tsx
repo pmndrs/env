@@ -31,6 +31,8 @@ type BaseLight = {
   animationRotationIntensity?: number;
   animationFloatIntensity?: number;
   animationFloatingRange?: [number, number];
+  lightPosition: { x: number; y: number };
+  lightDistance: number;
 };
 
 type SolidLight = BaseLight & {
@@ -38,31 +40,7 @@ type SolidLight = BaseLight & {
   color: string;
 };
 
-type GradientLight = BaseLight & {
-  type: "gradient";
-  colorA: string;
-  colorB: string;
-  contrast: number;
-  axes: "x" | "y" | "z";
-};
-
-type NoiseLight = BaseLight & {
-  type: "noise";
-  algorithm: "perlin" | "simplex" | "cell" | "curl";
-  colorA: string;
-  colorB: string;
-  colorC: string;
-  colorD: string;
-  noiseScale: number;
-  noiseType: "perlin" | "simplex" | "cell" | "curl";
-};
-
-type TextureLight = BaseLight & {
-  type: "texture";
-  map: THREE.Texture;
-};
-
-export type Light = SolidLight | GradientLight | NoiseLight | TextureLight;
+export type Light = SolidLight;
 
 type State = {
   mode: Record<"scene" | "code" | "hdri", boolean>;
@@ -82,6 +60,7 @@ type State = {
   setSelectedLightId: (id: string) => void;
   clearSelectedLight: () => void;
   getSelectedLight: () => Light | null;
+  getLightById: (id: string) => Light | null;
   addLight: (light: Light) => void;
   updateLight: (light: Partial<Light>) => void;
   setLightVisibleById: (id: string, visible: boolean) => void;
@@ -147,6 +126,8 @@ export const useStore = create<State>()(
               solo: false,
               opacity: 1,
               animate: false,
+              lightDistance: 0.3,
+              lightPosition: { x: 0, y: 0 },
             },
           ],
           selectedLightId: null,
@@ -160,6 +141,10 @@ export const useStore = create<State>()(
               return null;
             }
             return state.lights.find((l) => l.id === state.selectedLightId);
+          },
+          getLightById: (id: string) => {
+            const state = get();
+            return state.lights.find((l) => l.id === id);
           },
           addLight: (light: Light) =>
             set((state) => ({

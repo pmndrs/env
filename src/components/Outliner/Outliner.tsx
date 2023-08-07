@@ -68,6 +68,8 @@ export function Outliner() {
               solo: false,
               opacity: 1,
               animate: false,
+              lightDistance: 0.3,
+              lightPosition: { x: 0, y: 0 },
             });
           }}
         >

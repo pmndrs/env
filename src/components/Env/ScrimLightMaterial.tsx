@@ -8,7 +8,6 @@ import {
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import { useStore } from "../../hooks/useStore";
-import { PropertiesPanelTunnel } from "../Properties";
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -121,111 +120,26 @@ declare module "@react-three/fiber" {
 
 export function ScrimLightMaterial({ lightId }: { lightId: string }) {
   const ref = useRef<ThreeElements["scrimLightShaderMaterial"]>(null!);
-
-  const selectedLightId = useStore((state) => state.selectedLightId);
-
-  const [PARAMS] = useState(() => ({
-    color: "#ff0055",
-    intensity: 1,
-    opacity: 1,
-    lightPosition: { x: 0, y: 0 },
-    lightDistance: 0.5,
-  }));
+  const getLightById = useStore((state) => state.getLightById);
 
   const [color] = useState(() => new THREE.Color(0xffffff));
 
   useFrame(() => {
-    ref.current.uniforms.uColor.value = color.set(PARAMS.color);
-    ref.current.uniforms.uIntensity.value = PARAMS.intensity;
-    ref.current.uniforms.uOpacity.value = PARAMS.opacity;
+    const light = getLightById(lightId);
+    if (!light) {
+      return;
+    }
+    ref.current.uniforms.uColor.value = color.set(light.color);
+    ref.current.uniforms.uIntensity.value = light.intensity;
+    ref.current.uniforms.uOpacity.value = light.opacity;
     ref.current.uniforms.uLightPosition.value = new THREE.Vector2(
-      PARAMS.lightPosition.x,
-      PARAMS.lightPosition.y
+      light.lightPosition.x,
+      light.lightPosition.y
     );
-    ref.current.uniforms.uLightDistance.value = PARAMS.lightDistance;
+    ref.current.uniforms.uLightDistance.value = light.lightDistance;
   });
 
-  return (
-    <>
-      <scrimLightShaderMaterial ref={ref} transparent />
-
-      {lightId === selectedLightId && (
-        <PropertiesPanelTunnel.In>
-          <div className="flex flex-col gap-2">
-            <label className="flex flex-col gap-1">
-              <span>Color</span>
-              <input
-                key={`${lightId}-color`}
-                type="color"
-                defaultValue={PARAMS.color}
-                onChange={(e) => {
-                  PARAMS.color = e.target.value;
-                }}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span>Intensity</span>
-              <input
-                key={`${lightId}-intensity`}
-                type="range"
-                min={0}
-                max={10}
-                step={0.01}
-                defaultValue={PARAMS.intensity}
-                onChange={(e) => {
-                  PARAMS.intensity = Number(e.target.value);
-                }}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span>Opacity</span>
-              <input
-                key={`${lightId}-opacity`}
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                defaultValue={PARAMS.opacity}
-                onChange={(e) => {
-                  PARAMS.opacity = Number(e.target.value);
-                }}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span>Light Position</span>
-              <div className="flex flex-row gap-2">
-                <input
-                  key={`${lightId}-lightPosition-x`}
-                  type="range"
-                  min={-1}
-                  max={1}
-                  step={0.01}
-                  defaultValue={PARAMS.lightPosition.x}
-                  onChange={(e) => {
-                    PARAMS.lightPosition.x = Number(e.target.value);
-                  }}
-                />
-                <input
-                  key={`${lightId}-lightPosition-y`}
-                  type="range"
-                  min={-1}
-                  max={1}
-                  step={0.01}
-                  defaultValue={PARAMS.lightPosition.y}
-                  onChange={(e) => {
-                    PARAMS.lightPosition.y = Number(e.target.value);
-                  }}
-                />
-              </div>
-            </label>
-          </div>
-        </PropertiesPanelTunnel.In>
-      )}
-    </>
-  );
+  return <scrimLightShaderMaterial ref={ref} transparent />;
 }
 
 // Reload on HMR

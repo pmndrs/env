@@ -81,6 +81,7 @@ type State = {
   addCamera: (camera: Camera) => void;
   setSelectedLightId: (id: string) => void;
   clearSelectedLight: () => void;
+  getSelectedLight: () => Light | null;
   addLight: (light: Light) => void;
   updateLight: (light: Partial<Light>) => void;
   setLightVisibleById: (id: string, visible: boolean) => void;
@@ -152,6 +153,13 @@ export const useStore = create<State>()(
           setSelectedLightId: (id: string) => set({ selectedLightId: id }),
           clearSelectedLight: () => {
             set({ selectedLightId: null });
+          },
+          getSelectedLight: () => {
+            const state = get();
+            if (!state.selectedLightId) {
+              return null;
+            }
+            return state.lights.find((l) => l.id === state.selectedLightId);
           },
           addLight: (light: Light) =>
             set((state) => ({

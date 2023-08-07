@@ -24,9 +24,9 @@ export function ScenePreview() {
       }}
     >
       <PerformanceMonitor
-        threshold={1}
-        factor={1}
-        flipflops={0}
+        threshold={0.3}
+        factor={0.1}
+        flipflops={3}
         onFallback={() => {
           toast("Switching to low performance mode", {
             description:

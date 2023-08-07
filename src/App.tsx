@@ -8,11 +8,12 @@ import { Outliner } from "./components/Outliner/Outliner";
 import { Properties } from "./components/Properties";
 import { HDRIPreview } from "./components/HDRIPreview";
 import { ScenePreview } from "./components/ScenePreview";
-import { useStore } from "./hooks/useStore";
+import { modeAtom, useStore } from "./hooks/useStore";
 import { Code } from "./components/Code";
+import { useAtomValue } from "jotai";
 
 export default function App() {
-  const mode = useStore((state) => state.mode);
+  const mode = useAtomValue(modeAtom);
   return (
     <div className="h-full w-full flex flex-col from-neutral-900 to-neutral-800 bg-gradient-to-t overflow-hidden text-white">
       <Toaster theme="dark" />

@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { button, folder, useControls } from "leva";
-import { useStore } from "../../hooks/useStore";
 import { Effects } from "../Effects";
 import { Env } from "../Env";
 import { Model } from "../Model";
@@ -15,68 +13,6 @@ import { toast } from "sonner";
 import { BoltIcon } from "@heroicons/react/24/solid";
 
 export function ScenePreview() {
-  const mode = useStore((state) => state.mode);
-
-  const [{ ambientLightIntensity, debugMaterial, autoRotate }] = useControls(
-    () => ({
-      Preview: folder(
-        {
-          ambientLightIntensity: {
-            label: "Ambient Intensity",
-            value: 0.5,
-            min: 0,
-            max: 3,
-            render: () => mode.scene,
-          },
-          debugMaterial: {
-            label: "Debug Material",
-            value: false,
-            render: () => mode.scene,
-          },
-          autoRotate: {
-            label: "Auto Rotate",
-            value: false,
-            render: () => mode.scene,
-          },
-          Screenshot: button(() => {
-            const canvas = document.querySelector("canvas");
-            if (canvas) {
-              const link = document.createElement("a");
-              link.download = "screenshot.png";
-              link.href = canvas.toDataURL("image/png", 1);
-              link.click();
-            }
-          }),
-          "Upload Model": button(() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".glb";
-            input.onchange = (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const data = e.target?.result;
-                  if (typeof data === "string") {
-                    const modelUrl = data;
-                    useGLTF.preload(modelUrl);
-                    useStore.setState({ modelUrl });
-                  }
-                };
-                reader.readAsDataURL(file);
-              }
-            };
-            input.click();
-          }),
-        },
-        {
-          order: 1,
-          color: "limegreen",
-        }
-      ),
-    })
-  );
-
   return (
     <Canvas
       shadows
@@ -103,11 +39,11 @@ export function ScenePreview() {
 
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
-            <Model debugMaterial={debugMaterial} />
+            <Model debugMaterial={false} />
           </Bvh>
         </Suspense>
 
-        <Lights ambientLightIntensity={ambientLightIntensity} />
+        <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
           <Env />
@@ -117,7 +53,7 @@ export function ScenePreview() {
 
         <Debug />
 
-        <Controls autoRotate={autoRotate} />
+        <Controls autoRotate={false} />
 
         <LoadTextureMaps />
       </PerformanceMonitor>

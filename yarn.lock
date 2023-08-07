@@ -2859,8 +2859,8 @@ __metadata:
     clsx: ^1.2.1
     cmdk: ^0.2.0
     immer: ^9.0.15
+    jotai: ^2.3.0
     lamina: ^1.1.23
-    leva: ^0.9.34
     postcss: ^8.4.21
     prettier: ^2.8.4
     prism-react-renderer: ^1.3.5
@@ -3098,6 +3098,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jotai@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "jotai@npm:2.3.0"
+  peerDependencies:
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 21df579532a61e9b745584a17252560ca7267af363e4d9ea3283a1f1290aded33b33d96c5748b09f3e7c23fceae02055a8093647d841b57eb87e566995b89e4a
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -3177,28 +3192,6 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
   checksum: c3caff4249226c093315ad40fcaa5cdaa2aedca4fe580de526ecdf1260f169c23f6fdcc74665fa43c3c28d83619d1092b02378f265ac1a8c438b24782e9f7b66
-  languageName: node
-  linkType: hard
-
-"leva@npm:^0.9.34":
-  version: 0.9.34
-  resolution: "leva@npm:0.9.34"
-  dependencies:
-    "@radix-ui/react-portal": ^0.1.3
-    "@radix-ui/react-tooltip": 0.1.6
-    "@stitches/react": 1.2.8
-    "@use-gesture/react": ^10.2.5
-    colord: ^2.9.2
-    dequal: ^2.0.2
-    merge-value: ^1.0.0
-    react-colorful: ^5.5.1
-    react-dropzone: ^12.0.0
-    v8n: ^1.3.3
-    zustand: ^3.6.9
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-  checksum: 72461068ac01f174cff0eb4ea3dc4e50736c6e3cf9494bcb777662345dff6af1df512e7884dba803d7f567494cb04618d7104605fe7cf9a92e5b691f32f1f2b5
   languageName: node
   linkType: hard
 

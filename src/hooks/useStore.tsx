@@ -3,6 +3,19 @@ import create from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
+import { atom } from "jotai";
+
+export const modeAtom = atom({
+  scene: true,
+  hdri: true,
+  code: false,
+});
+
+export const activeModesAtom = atom((get) => {
+  const mode = get(modeAtom);
+  return Object.keys(mode).filter((key) => mode[key as keyof typeof mode]);
+});
+
 export type Camera = {
   id: string;
   name: string;
@@ -43,8 +56,6 @@ type ScrimLight = BaseLight & {
 export type Light = ScrimLight;
 
 type State = {
-  mode: Record<"scene" | "code" | "hdri", boolean>;
-  setMode: (mode: State["mode"]) => void;
   modelUrl: string;
   isSolo: boolean;
   textureMaps: THREE.Texture[];
@@ -77,8 +88,6 @@ export const useStore = create<State>()(
     immer(
       (set, get) =>
         ({
-          mode: { scene: true, hdri: true, code: false },
-          setMode: (mode) => set({ mode }),
           modelUrl: "/911-transformed.glb",
           isSolo: false,
           textureMaps: [],

@@ -5,12 +5,13 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/solid";
 import * as Toolbar from "@radix-ui/react-toolbar";
-import { useStore } from "../../hooks/useStore";
+import { activeModesAtom, modeAtom, useStore } from "../../hooks/useStore";
 import { Logo } from "./Logo";
+import { useAtomValue, useSetAtom } from "jotai";
 
 export function AppToolbar() {
-  const mode = useStore((state) => state.mode);
-  const setMode = useStore((state) => state.setMode);
+  const setMode = useSetAtom(modeAtom);
+  const activeModes = useAtomValue(activeModesAtom);
 
   return (
     <Toolbar.Root
@@ -26,9 +27,7 @@ export function AppToolbar() {
         type="multiple"
         aria-label="Tools"
         className="flex divide-x divide-white/10 bg-neutral-900 rounded-md overflow-hidden shadow-inner shadow-white/5 ring-offset-white/10 ring-offset-1 ring-1 ring-black/20"
-        value={Object.keys(mode).filter(
-          (key) => mode[key as keyof typeof mode]
-        )}
+        value={activeModes}
         onValueChange={(modes) =>
           setMode(
             modes.reduce((acc, mode) => ({ ...acc, [mode]: true }), {

@@ -1,10 +1,12 @@
 import { Resize, useGLTF } from "@react-three/drei";
+import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 import * as THREE from "three";
-import { useStore } from "../../hooks/useStore";
+import { modelUrlAtom } from "../../hooks/useStore";
 
 export function Model({ debugMaterial, ...props }: any) {
-  const modelUrl = useStore((state) => state.modelUrl);
+  const modelUrl = useAtomValue(modelUrlAtom);
+
   const {
     scene,
     // @ts-ignore

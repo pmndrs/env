@@ -1,12 +1,10 @@
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import convertCubemapToEquirectangular from "./convertCubemapToEquirectangular";
-import { useStore } from "../../hooks/useStore";
 import { encodeRGBE, HDRImageData } from "@derschmale/io-rgbe";
 
 export function DownloadHDRI({ texture }: { texture: THREE.CubeTexture }) {
   const renderer = useThree((state) => state.gl);
-  const selectedLightId = useStore((state) => state.selectedLightId);
 
   // useControls(
   //   () => ({

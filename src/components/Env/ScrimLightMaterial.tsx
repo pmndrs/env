@@ -7,7 +7,8 @@ import {
 } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
-import { useStore } from "../../hooks/useStore";
+import { Light } from "../../hooks/useStore";
+import { PrimitiveAtom, useAtomValue } from "jotai";
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -118,17 +119,18 @@ declare module "@react-three/fiber" {
   }
 }
 
-export function ScrimLightMaterial({ lightId }: { lightId: string }) {
+export function ScrimLightMaterial({
+  lightAtom,
+}: {
+  lightAtom: PrimitiveAtom<Light>;
+}) {
   const ref = useRef<ThreeElements["scrimLightShaderMaterial"]>(null!);
-  const getLightById = useStore((state) => state.getLightById);
+
+  const light = useAtomValue(lightAtom);
 
   const [color] = useState(() => new THREE.Color(0xffffff));
 
   useFrame(() => {
-    const light = getLightById(lightId);
-    if (!light) {
-      return;
-    }
     ref.current.uniforms.uColor.value = color.set(light.color);
     ref.current.uniforms.uIntensity.value = light.intensity;
     ref.current.uniforms.uOpacity.value = light.opacity;

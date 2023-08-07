@@ -9,43 +9,59 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { useStore, Light } from "../../hooks/useStore";
+import { useStore, Light, lightsAtom, isSoloAtom } from "../../hooks/useStore";
 import { PropertiesPanelTunnel } from "../Properties";
+import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import * as THREE from "three";
 
-export function LightListItem({ light }: { light: Light }) {
-  const { id, name, visible, solo } = light;
+export function LightListItem({
+  lightAtom,
+}: {
+  lightAtom: PrimitiveAtom<Light>;
+}) {
+  const setLights = useSetAtom(lightsAtom);
+  const isSolo = useAtomValue(isSoloAtom);
+  const [light, setLight] = useAtom(lightAtom);
 
-  const selectedLightId = useStore((state) => state.selectedLightId);
-  const toggleLightVisibilityById = useStore(
-    (state) => state.toggleLightVisibilityById
-  );
-  const setSelectedLightId = useStore((state) => state.setSelectedLightId);
-  const clearSelectedLight = useStore((state) => state.clearSelectedLight);
-  const updateLight = useStore((state) => state.updateLight);
-  const duplicateLightById = useStore((state) => state.duplicateLightById);
-  const removeLightById = useStore((state) => state.removeLightById);
-  const toggleSoloLightById = useStore((state) => state.toggleSoloLightById);
-  const isSolo = useStore((state) => state.isSolo);
+  const { id, name, visible, solo, selected } = light;
+
+  const toggleSelection = () =>
+    setLight((old) => ({ ...old, selected: !old.selected }));
+
+  const toggleVisibility = () =>
+    setLight((old) => ({ ...old, visible: !old.visible }));
+
+  const toggleSolo = () => setLight((old) => ({ ...old, solo: !old.solo }));
+
+  const updateLight = (light: Partial<Light>) =>
+    setLight((old) => ({ ...old, ...light }));
+
+  const duplicateLight = () =>
+    setLights((lights) => [
+      ...lights,
+      {
+        ...light,
+        id: THREE.MathUtils.generateUUID(),
+        name: `${light.name} (copy)`,
+      },
+    ]);
+
+  const deleteLight = () =>
+    setLights((lights) => lights.filter((l) => l.id !== id));
 
   return (
     <>
       <ContextMenu.Root>
-        <ContextMenu.Trigger>
+        <ContextMenu.Trigger asChild>
           <li
             key={id}
             role="button"
             className={clsx(
               "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
-              selectedLightId === id && "bg-white/20",
-              selectedLightId !== id && "hover:bg-white/10"
+              selected && "bg-white/20",
+              !selected && "hover:bg-white/10"
             )}
-            onClick={() => {
-              if (selectedLightId === id) {
-                clearSelectedLight();
-              } else {
-                setSelectedLightId(id);
-              }
-            }}
+            onClick={toggleSelection}
           >
             <LightBulbIcon
               className={clsx(
@@ -57,7 +73,7 @@ export function LightListItem({ light }: { light: Light }) {
               type="checkbox"
               hidden
               readOnly
-              checked={selectedLightId === id}
+              checked={selected}
               className="peer"
             />
 
@@ -73,7 +89,7 @@ export function LightListItem({ light }: { light: Light }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleSoloLightById(id);
+                toggleSolo();
               }}
               className={clsx(
                 "text-white opacity-40 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
@@ -90,7 +106,7 @@ export function LightListItem({ light }: { light: Light }) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleLightVisibilityById(id);
+                toggleVisibility();
               }}
               className={clsx(
                 "text-white opacity-40 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",
@@ -111,13 +127,13 @@ export function LightListItem({ light }: { light: Light }) {
           <ContextMenu.Content className="flex flex-col gap-1 bg-neutral-800 text-gray-50 font-light p-1.5 rounded-md shadow-xl">
             <ContextMenu.Item
               className="outline-none select-none rounded px-2 py-0.5 highlighted:bg-white highlighted:text-gray-900 text-sm"
-              onSelect={() => duplicateLightById(id)}
+              onSelect={duplicateLight}
             >
               Duplicate
             </ContextMenu.Item>
             <ContextMenu.Item
               className="outline-none select-none rounded px-2 py-0.5 text-white highlighted:bg-red-500 highlighted:text-white text-sm"
-              onSelect={() => removeLightById(id)}
+              onSelect={deleteLight}
             >
               Delete
             </ContextMenu.Item>
@@ -125,7 +141,7 @@ export function LightListItem({ light }: { light: Light }) {
         </ContextMenu.Portal>
       </ContextMenu.Root>
 
-      {id === selectedLightId && (
+      {selected && (
         <PropertiesPanelTunnel.In>
           <div className="flex flex-col gap-2">
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
@@ -155,7 +171,7 @@ export function LightListItem({ light }: { light: Light }) {
                 defaultValue={light.shape}
                 onChange={(e) => {
                   const shape = e.target.value as Light["shape"];
-                  updateLight({ id, shape });
+                  updateLight({ shape });
                 }}
               >
                 <option value="rect">Rectangle</option>
@@ -177,7 +193,7 @@ export function LightListItem({ light }: { light: Light }) {
                 step={0.01}
                 defaultValue={light.scale}
                 onChange={(e) => {
-                  updateLight({ id, scale: Number(e.target.value) });
+                  updateLight({ scale: Number(e.target.value) });
                 }}
               />
             </label>
@@ -192,7 +208,7 @@ export function LightListItem({ light }: { light: Light }) {
                 type="color"
                 defaultValue={light.color}
                 onChange={(e) => {
-                  updateLight({ id, color: e.target.value });
+                  updateLight({ color: e.target.value });
                 }}
               />
             </label>
@@ -210,7 +226,7 @@ export function LightListItem({ light }: { light: Light }) {
                 step={0.01}
                 defaultValue={light.intensity}
                 onChange={(e) => {
-                  updateLight({ id, intensity: Number(e.target.value) });
+                  updateLight({ intensity: Number(e.target.value) });
                 }}
               />
             </label>
@@ -228,7 +244,7 @@ export function LightListItem({ light }: { light: Light }) {
                 step={0.01}
                 defaultValue={light.opacity}
                 onChange={(e) => {
-                  updateLight({ id, opacity: Number(e.target.value) });
+                  updateLight({ opacity: Number(e.target.value) });
                 }}
               />
             </label>
@@ -249,7 +265,6 @@ export function LightListItem({ light }: { light: Light }) {
                 defaultValue={light.lightPosition.x}
                 onChange={(e) => {
                   updateLight({
-                    id,
                     lightPosition: {
                       x: Number(e.target.value),
                       y: light.lightPosition.y,
@@ -267,7 +282,6 @@ export function LightListItem({ light }: { light: Light }) {
                 defaultValue={light.lightPosition.y}
                 onChange={(e) => {
                   updateLight({
-                    id,
                     lightPosition: {
                       x: light.lightPosition.x,
                       y: Number(e.target.value),
@@ -290,7 +304,7 @@ export function LightListItem({ light }: { light: Light }) {
                 step={0.01}
                 defaultValue={light.lightDistance}
                 onChange={(e) => {
-                  updateLight({ id, lightDistance: Number(e.target.value) });
+                  updateLight({ lightDistance: Number(e.target.value) });
                 }}
               />
             </label>

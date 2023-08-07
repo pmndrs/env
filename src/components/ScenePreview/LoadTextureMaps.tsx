@@ -1,9 +1,10 @@
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useStore } from "../../hooks/useStore";
+import { textureMapsAtom } from "../../hooks/useStore";
+import { useSetAtom } from "jotai";
 
 export function LoadTextureMaps() {
-  const setTextureMaps = useStore((state) => state.setTextureMaps);
+  const setTextureMaps = useSetAtom(textureMapsAtom);
 
   useTexture({ checkerboard: "/textures/checkerboard.png" }, (textures) => {
     if (Array.isArray(textures)) {

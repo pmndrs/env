@@ -36,6 +36,7 @@ export function Outliner() {
           onClick={() => {
             addCamera({
               ...currentCamera,
+              selected: false,
               name: `Camera ${String.fromCharCode(cameraAtoms.length + 65)}`,
               id: THREE.MathUtils.generateUUID(),
             });

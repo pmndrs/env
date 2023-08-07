@@ -11,22 +11,27 @@ export type Camera = {
 };
 
 type BaseLight = {
-  selected?: boolean;
   id: string;
   name: string;
+
   shape: "rect" | "circle" | "ring";
   intensity: number;
+  opacity: number;
+
   scale: number;
   scaleX: number;
   scaleY: number;
   rotation: number;
   distance: number;
+
   phi: number;
   theta: number;
   target: [number, number, number];
+
+  selected: boolean;
   visible: boolean;
   solo: boolean;
-  opacity: number;
+
   animate: boolean;
   animationSpeed?: number;
   animationRotationIntensity?: number;
@@ -72,6 +77,7 @@ export const lightsAtom = atom<Light[]>([
     scaleX: 1,
     scaleY: 1,
     target: [0, 0, 0],
+    selected: false,
     visible: true,
     solo: false,
     opacity: 1,
@@ -87,6 +93,45 @@ export const isSoloAtom = atom((get) => {
   const lights = get(lightsAtom);
   return lights.length > 0 && lights.some((l) => l.solo);
 });
+
+export const toggleSoloAtom = atom(null, (get, set, lightId: Light["id"]) => {
+  const lights = get(lightsAtom);
+  const light = lights.find((l) => l.id === lightId)!;
+  const isSolo = get(isSoloAtom);
+
+  if (isSolo && light.solo) {
+    set(
+      lightsAtom,
+      lights.map((l) => ({
+        ...l,
+        solo: false,
+        visible: true,
+      }))
+    );
+  } else {
+    set(
+      lightsAtom,
+      lights.map((l) => ({
+        ...l,
+        solo: l.id === lightId,
+        visible: l.id === lightId,
+        selected: l.id === lightId,
+      }))
+    );
+  }
+});
+
+export const toggleLightSelectionAtom = atom(
+  null,
+  (get, set, lightId: Light["id"]) => {
+    set(lightsAtom, (lights) =>
+      lights.map((l) => ({
+        ...l,
+        selected: l.id === lightId ? !l.selected : false,
+      }))
+    );
+  }
+);
 
 export const camerasAtom = atom<Camera[]>([
   {
@@ -111,6 +156,30 @@ export const selectedCameraAtom = atom(
     set(
       camerasAtom,
       cameras.map((c) => (c.id === selectedCamera.id ? { ...c, ...value } : c))
+    );
+  }
+);
+
+export const toggleCameraSelectionAtom = atom(
+  null,
+  (get, set, cameraId: Camera["id"]) => {
+    set(camerasAtom, (cameras) =>
+      cameras.map((c) => ({
+        ...c,
+        selected: c.id === cameraId ? !c.selected : false,
+      }))
+    );
+  }
+);
+
+export const selectCameraAtom = atom(
+  null,
+  (get, set, cameraId: Camera["id"]) => {
+    set(camerasAtom, (cameras) =>
+      cameras.map((c) => ({
+        ...c,
+        selected: c.id === cameraId,
+      }))
     );
   }
 );

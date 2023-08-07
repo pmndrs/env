@@ -9,7 +9,13 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { Light, lightsAtom, isSoloAtom } from "../../store";
+import {
+  Light,
+  lightsAtom,
+  isSoloAtom,
+  toggleSoloAtom,
+  toggleLightSelectionAtom,
+} from "../../store";
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import * as THREE from "three";
@@ -19,19 +25,16 @@ export function LightListItem({
 }: {
   lightAtom: PrimitiveAtom<Light>;
 }) {
+  const [light, setLight] = useAtom(lightAtom);
   const setLights = useSetAtom(lightsAtom);
   const isSolo = useAtomValue(isSoloAtom);
-  const [light, setLight] = useAtom(lightAtom);
+  const toggleSolo = useSetAtom(toggleSoloAtom);
+  const toggleSelection = useSetAtom(toggleLightSelectionAtom);
 
   const { id, name, visible, solo, selected } = light;
 
-  const toggleSelection = () =>
-    setLight((old) => ({ ...old, selected: !old.selected }));
-
   const toggleVisibility = () =>
     setLight((old) => ({ ...old, visible: !old.visible }));
-
-  const toggleSolo = () => setLight((old) => ({ ...old, solo: !old.solo }));
 
   const updateLight = (light: Partial<Light>) =>
     setLight((old) => ({ ...old, ...light }));
@@ -61,7 +64,7 @@ export function LightListItem({
               selected && "bg-white/20",
               !selected && "hover:bg-white/10"
             )}
-            onClick={toggleSelection}
+            onClick={() => toggleSelection(light.id)}
           >
             <LightBulbIcon
               className={clsx(
@@ -89,7 +92,7 @@ export function LightListItem({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleSolo();
+                toggleSolo(light.id);
               }}
               className={clsx(
                 "text-white opacity-40 hover:opacity-100 group-hover:opacity-60 peer-checked:opacity-40 peer-checked:hover:opacity-100 transition-opacity",

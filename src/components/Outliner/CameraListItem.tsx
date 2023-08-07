@@ -1,8 +1,12 @@
 import { CameraIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { Camera } from "../../store";
+import {
+  Camera,
+  selectCameraAtom,
+  toggleCameraSelectionAtom,
+} from "../../store";
 import { useKeyPress } from "../../hooks/useKeyPress";
-import { PrimitiveAtom, useAtom } from "jotai";
+import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 
 export function CameraListItem({
   index,
@@ -11,16 +15,13 @@ export function CameraListItem({
   index: number;
   cameraAtom: PrimitiveAtom<Camera>;
 }) {
-  const [camera, setCamera] = useAtom(cameraAtom);
+  const camera = useAtomValue(cameraAtom);
 
-  const toggleCameraSelection = () =>
-    setCamera((camera) => ({ ...camera, selected: !camera.selected }));
-
-  const selectCamera = () =>
-    setCamera((camera) => ({ ...camera, selected: true }));
+  const toggleCameraSelection = useSetAtom(toggleCameraSelectionAtom);
+  const selectCamera = useSetAtom(selectCameraAtom);
 
   const key = String(index + 1);
-  useKeyPress(key, () => selectCamera());
+  useKeyPress(key, () => selectCamera(camera.id));
 
   return (
     <li
@@ -30,7 +31,7 @@ export function CameraListItem({
         camera.selected && "bg-white/20",
         !camera.selected && "hover:bg-white/10"
       )}
-      onClick={toggleCameraSelection}
+      onClick={() => toggleCameraSelection(camera.id)}
     >
       <CameraIcon className="w-4 h-4 text-green-400" />
       <input

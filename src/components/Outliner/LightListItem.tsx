@@ -200,6 +200,60 @@ export function LightListItem({
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Radius
+              </span>
+              <input
+                key={`${id}-scale`}
+                className="col-start-8 col-span-18"
+                type="range"
+                min={0}
+                max={10}
+                step={0.01}
+                defaultValue={light.distance}
+                onChange={(e) => {
+                  updateLight({ distance: Number(e.target.value) });
+                }}
+              />
+            </label>
+
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-5">
+                Lat-Lon
+              </span>
+              <input
+                key={`${id}-position-theta`}
+                className="col-start-8 col-span-8"
+                type="range"
+                min={-Math.PI}
+                max={Math.PI}
+                step={0.01}
+                defaultValue={light.theta}
+                onChange={(e) => {
+                  updateLight({
+                    theta: Number(e.target.value),
+                  });
+                }}
+              />
+              <input
+                key={`${id}-position-phi`}
+                className="col-start-17 col-span-8"
+                type="range"
+                min={-Math.PI}
+                max={0}
+                step={0.01}
+                defaultValue={light.phi}
+                onChange={(e) => {
+                  updateLight({
+                    phi: Number(e.target.value),
+                  });
+                }}
+              />
+            </label>
+
+            <hr className="border-white/10 my-2" />
+
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
                 Color
               </span>
               <input
@@ -253,7 +307,7 @@ export function LightListItem({
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                Light Position
+                Scrim Position
               </span>
               <input
                 key={`${id}-lightPosition-x`}
@@ -293,7 +347,7 @@ export function LightListItem({
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                Light Distance
+                Scrim Distance
               </span>
               <input
                 key={`${id}-lightDistance`}

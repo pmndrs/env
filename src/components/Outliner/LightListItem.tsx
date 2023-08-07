@@ -11,7 +11,6 @@ import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
 import { useStore, Light } from "../../hooks/useStore";
 import { PropertiesPanelTunnel } from "../Properties";
-import { useState } from "react";
 
 export function LightListItem({ light }: { light: Light }) {
   const { id, name, visible, solo } = light;
@@ -129,12 +128,14 @@ export function LightListItem({ light }: { light: Light }) {
       {id === selectedLightId && (
         <PropertiesPanelTunnel.In>
           <div className="flex flex-col gap-2">
-            <label className="flex flex-col gap-1">
-              <span>Name</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Name
+              </span>
               <input
                 key={`${id}-name`}
                 type="text"
-                className="w-full px-2 py-1 text-gray-300 bg-transparent border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
                 defaultValue={light.name}
                 onChange={(e) => {
                   updateLight({ id, name: e.target.value });
@@ -142,11 +143,15 @@ export function LightListItem({ light }: { light: Light }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Shape</span>
+            <hr className="border-white/10 my-2" />
+
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Shape
+              </span>
               <select
                 key={`${id}-shape`}
-                className="w-full px-2 py-1 text-gray-300 bg-transparent border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
                 defaultValue={light.shape}
                 onChange={(e) => {
                   const shape = e.target.value as Light["shape"];
@@ -159,10 +164,13 @@ export function LightListItem({ light }: { light: Light }) {
               </select>
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Scale</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Scale
+              </span>
               <input
                 key={`${id}-scale`}
+                className="col-start-8 col-span-18"
                 type="range"
                 min={0}
                 max={10}
@@ -174,10 +182,13 @@ export function LightListItem({ light }: { light: Light }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Color</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Color
+              </span>
               <input
                 key={`${id}-color`}
+                className="col-start-8 col-span-18"
                 type="color"
                 defaultValue={light.color}
                 onChange={(e) => {
@@ -186,10 +197,13 @@ export function LightListItem({ light }: { light: Light }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Intensity</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Intensity
+              </span>
               <input
                 key={`${id}-intensity`}
+                className="col-start-8 col-span-18"
                 type="range"
                 min={0}
                 max={10}
@@ -201,10 +215,13 @@ export function LightListItem({ light }: { light: Light }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Opacity</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Opacity
+              </span>
               <input
                 key={`${id}-opacity`}
+                className="col-start-8 col-span-18"
                 type="range"
                 min={0}
                 max={1}
@@ -216,50 +233,57 @@ export function LightListItem({ light }: { light: Light }) {
               />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Light Position</span>
-              <div className="flex flex-row gap-2">
-                <input
-                  key={`${id}-lightPosition-x`}
-                  type="range"
-                  min={-1}
-                  max={1}
-                  step={0.01}
-                  defaultValue={light.lightPosition.x}
-                  onChange={(e) => {
-                    updateLight({
-                      id,
-                      lightPosition: {
-                        x: Number(e.target.value),
-                        y: light.lightPosition.y,
-                      },
-                    });
-                  }}
-                />
-                <input
-                  key={`${id}-lightPosition-y`}
-                  type="range"
-                  min={-1}
-                  max={1}
-                  step={0.01}
-                  defaultValue={light.lightPosition.y}
-                  onChange={(e) => {
-                    updateLight({
-                      id,
-                      lightPosition: {
-                        x: light.lightPosition.x,
-                        y: Number(e.target.value),
-                      },
-                    });
-                  }}
-                />
-              </div>
+            <hr className="border-white/10 my-2" />
+
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
+                Light Position
+              </span>
+              <input
+                key={`${id}-lightPosition-x`}
+                className="col-start-11 col-span-6"
+                type="range"
+                min={-1}
+                max={1}
+                step={0.01}
+                defaultValue={light.lightPosition.x}
+                onChange={(e) => {
+                  updateLight({
+                    id,
+                    lightPosition: {
+                      x: Number(e.target.value),
+                      y: light.lightPosition.y,
+                    },
+                  });
+                }}
+              />
+              <input
+                key={`${id}-lightPosition-y`}
+                className="col-start-19 col-span-6"
+                type="range"
+                min={-1}
+                max={1}
+                step={0.01}
+                defaultValue={light.lightPosition.y}
+                onChange={(e) => {
+                  updateLight({
+                    id,
+                    lightPosition: {
+                      x: light.lightPosition.x,
+                      y: Number(e.target.value),
+                    },
+                  });
+                }}
+              />
             </label>
 
-            <label className="flex flex-col gap-1">
-              <span>Light Distance</span>
+            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
+                Light Distance
+              </span>
               <input
                 key={`${id}-lightDistance`}
+                className="col-start-11 col-span-14"
                 type="range"
                 min={0}
                 max={1}

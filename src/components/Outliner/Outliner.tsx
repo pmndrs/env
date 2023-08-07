@@ -53,7 +53,7 @@ export function Outliner() {
               name: `Light ${String.fromCharCode(lights.length + 65)}`,
               id: THREE.MathUtils.generateUUID(),
               shape: "rect",
-              type: "solid",
+              type: "scrim",
               color: "#fff",
               distance: 4,
               phi: Math.PI / 2,

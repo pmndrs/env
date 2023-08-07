@@ -27,7 +27,6 @@ export function LightListItem({ light }: { light: Light }) {
   const removeLightById = useStore((state) => state.removeLightById);
   const toggleSoloLightById = useStore((state) => state.toggleSoloLightById);
   const isSolo = useStore((state) => state.isSolo);
-  const textureMaps = useStore((state) => state.textureMaps);
 
   return (
     <>
@@ -130,6 +129,51 @@ export function LightListItem({ light }: { light: Light }) {
       {id === selectedLightId && (
         <PropertiesPanelTunnel.In>
           <div className="flex flex-col gap-2">
+            <label className="flex flex-col gap-1">
+              <span>Name</span>
+              <input
+                key={`${id}-name`}
+                type="text"
+                className="w-full px-2 py-1 text-gray-300 bg-transparent border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+                defaultValue={light.name}
+                onChange={(e) => {
+                  updateLight({ id, name: e.target.value });
+                }}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span>Shape</span>
+              <select
+                key={`${id}-shape`}
+                className="w-full px-2 py-1 text-gray-300 bg-transparent border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+                defaultValue={light.shape}
+                onChange={(e) => {
+                  const shape = e.target.value as Light["shape"];
+                  updateLight({ id, shape });
+                }}
+              >
+                <option value="rect">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="ring">Ring</option>
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span>Scale</span>
+              <input
+                key={`${id}-scale`}
+                type="range"
+                min={0}
+                max={10}
+                step={0.01}
+                defaultValue={light.scale}
+                onChange={(e) => {
+                  updateLight({ id, scale: Number(e.target.value) });
+                }}
+              />
+            </label>
+
             <label className="flex flex-col gap-1">
               <span>Color</span>
               <input

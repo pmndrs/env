@@ -31,16 +31,16 @@ type BaseLight = {
   animationRotationIntensity?: number;
   animationFloatIntensity?: number;
   animationFloatingRange?: [number, number];
+};
+
+type ScrimLight = BaseLight & {
+  type: "scrim";
+  color: string;
   lightPosition: { x: number; y: number };
   lightDistance: number;
 };
 
-type SolidLight = BaseLight & {
-  type: "solid";
-  color: string;
-};
-
-export type Light = SolidLight;
+export type Light = ScrimLight;
 
 type State = {
   mode: Record<"scene" | "code" | "hdri", boolean>;
@@ -111,7 +111,7 @@ export const useStore = create<State>()(
               name: `Light A`,
               id: THREE.MathUtils.generateUUID(),
               shape: "rect",
-              type: "solid",
+              type: "scrim",
               color: "#fff",
               distance: 4,
               phi: Math.PI / 2,

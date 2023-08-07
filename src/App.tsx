@@ -1,16 +1,18 @@
 import { Toaster } from "sonner";
-import { AppToolbar } from "./components/AppToolbar";
-import { CommandPalette } from "./components/CommandPalette";
 import { AppContent } from "./components/AppContent";
 import { AppLayout } from "./components/AppLayout";
+import { AppToolbar } from "./components/AppToolbar";
+import { CommandPalette } from "./components/CommandPalette";
 
 export default function App() {
   return (
-    <AppLayout>
-      <AppToolbar />
-      <AppContent />
-      <Toaster theme="dark" />
+    <>
+      <Toaster theme="dark" richColors position="bottom-center" />
       <CommandPalette />
-    </AppLayout>
+      <AppLayout>
+        <AppToolbar />
+        <AppContent />
+      </AppLayout>
+    </>
   );
 }

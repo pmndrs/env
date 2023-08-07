@@ -99,6 +99,15 @@ export const isLightSelectedAtom = atom((get) => {
   return lights.length > 0 && lights.some((l) => l.selected);
 });
 
+export const selectLightAtom = atom(null, (get, set, lightId: Light["id"]) => {
+  set(lightsAtom, (lights) =>
+    lights.map((l) => ({
+      ...l,
+      selected: l.id === lightId,
+    }))
+  );
+});
+
 export const toggleSoloAtom = atom(null, (get, set, lightId: Light["id"]) => {
   const lights = get(lightsAtom);
   const light = lights.find((l) => l.id === lightId)!;

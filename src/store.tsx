@@ -94,6 +94,11 @@ export const isSoloAtom = atom((get) => {
   return lights.length > 0 && lights.some((l) => l.solo);
 });
 
+export const isLightSelectedAtom = atom((get) => {
+  const lights = get(lightsAtom);
+  return lights.length > 0 && lights.some((l) => l.selected);
+});
+
 export const toggleSoloAtom = atom(null, (get, set, lightId: Light["id"]) => {
   const lights = get(lightsAtom);
   const light = lights.find((l) => l.id === lightId)!;
@@ -133,6 +138,45 @@ export const toggleLightSelectionAtom = atom(
   }
 );
 
+export const duplicateLightAtom = atom(
+  null,
+  (get, set, lightId: Light["id"]) => {
+    const lights = get(lightsAtom);
+    const light = lights.find((l) => l.id === lightId)!;
+    const isSolo = get(isSoloAtom);
+    const newLight = {
+      ...light,
+      visible: isSolo ? false : light.visible,
+      solo: false,
+      selected: false,
+      id: THREE.MathUtils.generateUUID(),
+      name: `${light.name} (copy)`,
+    };
+    set(lightsAtom, [...lights, newLight]);
+  }
+);
+
+export const deleteLightAtom = atom(null, (get, set, lightId: Light["id"]) => {
+  const lights = get(lightsAtom);
+  const light = lights.find((l) => l.id === lightId)!;
+  const isSolo = get(isSoloAtom);
+
+  const newLights = lights.filter((l) => l.id !== lightId);
+
+  if (isSolo && light.solo) {
+    set(
+      lightsAtom,
+      newLights.map((l) => ({
+        ...l,
+        solo: false,
+        visible: true,
+      }))
+    );
+  } else {
+    set(lightsAtom, newLights);
+  }
+});
+
 export const camerasAtom = atom<Camera[]>([
   {
     id: "default",
@@ -159,6 +203,11 @@ export const selectedCameraAtom = atom(
     );
   }
 );
+
+export const isCameraSelectedAtom = atom((get) => {
+  const cameras = get(camerasAtom);
+  return cameras.length > 0 && cameras.some((c) => c.selected);
+});
 
 export const toggleCameraSelectionAtom = atom(
   null,

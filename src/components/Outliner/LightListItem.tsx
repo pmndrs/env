@@ -15,6 +15,8 @@ import {
   isSoloAtom,
   toggleSoloAtom,
   toggleLightSelectionAtom,
+  deleteLightAtom,
+  duplicateLightAtom,
 } from "../../store";
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -26,10 +28,11 @@ export function LightListItem({
   lightAtom: PrimitiveAtom<Light>;
 }) {
   const [light, setLight] = useAtom(lightAtom);
-  const setLights = useSetAtom(lightsAtom);
   const isSolo = useAtomValue(isSoloAtom);
   const toggleSolo = useSetAtom(toggleSoloAtom);
   const toggleSelection = useSetAtom(toggleLightSelectionAtom);
+  const duplicateLight = useSetAtom(duplicateLightAtom);
+  const deleteLight = useSetAtom(deleteLightAtom);
 
   const { id, name, visible, solo, selected } = light;
 
@@ -38,19 +41,6 @@ export function LightListItem({
 
   const updateLight = (light: Partial<Light>) =>
     setLight((old) => ({ ...old, ...light }));
-
-  const duplicateLight = () =>
-    setLights((lights) => [
-      ...lights,
-      {
-        ...light,
-        id: THREE.MathUtils.generateUUID(),
-        name: `${light.name} (copy)`,
-      },
-    ]);
-
-  const deleteLight = () =>
-    setLights((lights) => lights.filter((l) => l.id !== id));
 
   return (
     <>
@@ -130,13 +120,13 @@ export function LightListItem({
           <ContextMenu.Content className="flex flex-col gap-1 bg-neutral-800 text-gray-50 font-light p-1.5 rounded-md shadow-xl">
             <ContextMenu.Item
               className="outline-none select-none rounded px-2 py-0.5 highlighted:bg-white highlighted:text-gray-900 text-sm"
-              onSelect={duplicateLight}
+              onSelect={() => duplicateLight(light.id)}
             >
               Duplicate
             </ContextMenu.Item>
             <ContextMenu.Item
               className="outline-none select-none rounded px-2 py-0.5 text-white highlighted:bg-red-500 highlighted:text-white text-sm"
-              onSelect={deleteLight}
+              onSelect={() => deleteLight(light.id)}
             >
               Delete
             </ContextMenu.Item>

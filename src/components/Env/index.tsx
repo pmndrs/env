@@ -11,8 +11,8 @@ export function Env() {
   const lights = useStore((state) => state.lights);
   const selectedLightId = useStore((state) => state.selectedLightId);
 
-  const [{ background, backgroundColor, preset, blur }] = useControls(
-    () => ({
+  const [{ background, backgroundColor, preset, blur }] = useControls(() => {
+    return {
       Background: folder(
         {
           background: {
@@ -53,11 +53,11 @@ export function Env() {
         {
           order: 0,
           color: "cyan",
+          collapsed: true,
         }
       ),
-    }),
-    [selectedLightId]
-  );
+    };
+  }, [selectedLightId]);
 
   const [resolution, setResolution] = useState(2048);
 

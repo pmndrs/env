@@ -72,6 +72,7 @@ export function ScenePreview() {
         {
           order: 1,
           color: "limegreen",
+          collapsed: true,
         }
       ),
     })

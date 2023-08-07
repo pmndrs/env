@@ -5,9 +5,10 @@ import {
   extend,
   useFrame,
 } from "@react-three/fiber";
+import { PrimitiveAtom, useAtomValue } from "jotai";
 import { useRef } from "react";
 import * as THREE from "three";
-import { useStore } from "../../hooks/useStore";
+import { Light } from "../../store";
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -70,18 +71,17 @@ declare module "@react-three/fiber" {
   }
 }
 
-export function UmbrellaLightMaterial({ lightId }: { lightId: string }) {
+export function UmbrellaLightMaterial({
+  lightAtom,
+}: {
+  lightAtom: PrimitiveAtom<Light>;
+}) {
+  const light = useAtomValue(lightAtom);
   const ref = useRef<ThreeElements["umbrellaLightShaderMaterial"]>(null!);
-  useFrame(({ clock }) => {
-    const light = useStore
-      .getState()
-      .lights.find((light) => light.id === lightId);
-    if (!light) return;
+  useFrame(() => {
     ref.current.uniforms.uOpacity.value = light.opacity;
     ref.current.uniforms.uIntensity.value = light.intensity;
-    if (light.type === "solid") {
-      ref.current.uniforms.uColor.value = new THREE.Color(light.color);
-    }
+    ref.current.uniforms.uColor.value = new THREE.Color(light.color);
   });
 
   return <umbrellaLightShaderMaterial ref={ref} transparent />;

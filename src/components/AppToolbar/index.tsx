@@ -5,7 +5,7 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/solid";
 import * as Toolbar from "@radix-ui/react-toolbar";
-import { activeModesAtom, modeAtom, useStore } from "../../hooks/useStore";
+import { activeModesAtom, modeAtom } from "../../store";
 import { Logo } from "./Logo";
 import { useAtomValue, useSetAtom } from "jotai";
 

@@ -8,7 +8,7 @@ import { Outliner } from "./components/Outliner/Outliner";
 import { Properties } from "./components/Properties";
 import { HDRIPreview } from "./components/HDRIPreview";
 import { ScenePreview } from "./components/ScenePreview";
-import { modeAtom, useStore } from "./hooks/useStore";
+import { modeAtom } from "./store";
 import { Code } from "./components/Code";
 import { useAtomValue } from "jotai";
 

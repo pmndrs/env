@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Gradient, Noise, Color, Texture } from "lamina";
-import { Light } from "../../hooks/useStore";
+import { Light } from "../../store";
 
 export function LightformerLayers({ light }: { light: Light }) {
   if (light.type === "solid") {

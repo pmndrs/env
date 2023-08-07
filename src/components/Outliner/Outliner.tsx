@@ -9,7 +9,7 @@ import {
   lightAtomsAtom,
   lightsAtom,
   selectedCameraAtom,
-} from "../../hooks/useStore";
+} from "../../store";
 import { LightListItem } from "./LightListItem";
 import { CameraListItem } from "./CameraListItem";
 import { useAtomValue, useSetAtom } from "jotai";

@@ -1,6 +1,6 @@
 import { CameraIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { Camera } from "../../hooks/useStore";
+import { Camera } from "../../store";
 import { useKeyPress } from "../../hooks/useKeyPress";
 import { PrimitiveAtom, useAtom } from "jotai";
 

@@ -1,6 +1,6 @@
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { textureMapsAtom } from "../../hooks/useStore";
+import { textureMapsAtom } from "../../store";
 import { useSetAtom } from "jotai";
 
 export function LoadTextureMaps() {

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Environment, Float, Lightformer } from "@react-three/drei";
-import { Light, lightAtomsAtom } from "../../hooks/useStore";
+import { Light, lightAtomsAtom } from "../../store";
 // import { UmbrellaLightMaterial } from "./UmbrellaLightMaterial";
 import { ScrimLightMaterial } from "./ScrimLightMaterial";
 import { PrimitiveAtom, useAtomValue } from "jotai";

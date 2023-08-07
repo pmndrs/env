@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
-import { useStore, Light, lightsAtom, isSoloAtom } from "../../hooks/useStore";
+import { Light, lightsAtom, isSoloAtom } from "../../store";
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import * as THREE from "three";

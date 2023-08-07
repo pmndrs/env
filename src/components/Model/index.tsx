@@ -2,7 +2,7 @@ import { Resize, useGLTF } from "@react-three/drei";
 import { useAtomValue } from "jotai";
 import { useMemo } from "react";
 import * as THREE from "three";
-import { modelUrlAtom } from "../../hooks/useStore";
+import { modelUrlAtom } from "../../store";
 
 export function Model({ debugMaterial, ...props }: any) {
   const modelUrl = useAtomValue(modelUrlAtom);

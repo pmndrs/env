@@ -1,11 +1,12 @@
-import { useStore } from "../../hooks/useStore";
 import { format } from "prettier";
 import parserBabel from "prettier/parser-babel";
 import theme from "prism-react-renderer/themes/vsDark";
 import Highlight, { defaultProps } from "prism-react-renderer";
+import { useAtomValue } from "jotai";
+import { lightsAtom } from "../../store";
 
 export function Code() {
-  const lights = useStore((state) => state.lights);
+  const lights = useAtomValue(lightsAtom);
 
   const code = `
 import React from "react";

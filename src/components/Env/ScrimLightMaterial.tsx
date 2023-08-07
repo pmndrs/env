@@ -7,7 +7,7 @@ import {
 } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
-import { Light } from "../../hooks/useStore";
+import { Light } from "../../store";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 
 const vertexShader = /* glsl */ `

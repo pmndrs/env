@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { OrbitControls } from "@react-three/drei";
-import { selectedCameraAtom } from "../../hooks/useStore";
+import { selectedCameraAtom } from "../../store";
 import { useSetAtom } from "jotai";
 
 export type ControlsProps = {

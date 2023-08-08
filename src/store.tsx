@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { atom } from "jotai";
-import { splitAtom } from "jotai/utils";
+import { splitAtom, atomWithStorage } from "jotai/utils";
 
 export type Camera = {
   id: string;
@@ -78,7 +78,7 @@ export const modelUrlAtom = atom("/911-transformed.glb");
 
 export const isCommandPaletteOpenAtom = atom(false);
 
-export const lightsAtom = atom<Light[]>([
+export const lightsAtom = atomWithStorage<Light[]>("lights", [
   {
     name: `Light A`,
     id: THREE.MathUtils.generateUUID(),
@@ -203,7 +203,7 @@ export const deleteLightAtom = atom(null, (get, set, lightId: Light["id"]) => {
   }
 });
 
-export const camerasAtom = atom<Camera[]>([
+export const camerasAtom = atomWithStorage<Camera[]>("cameras", [
   {
     id: "default",
     name: "Default",
@@ -258,5 +258,3 @@ export const selectCameraAtom = atom(
     );
   }
 );
-
-export const textureMapsAtom = atom<THREE.Texture[]>([]);

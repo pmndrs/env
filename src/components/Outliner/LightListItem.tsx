@@ -311,10 +311,11 @@ export function LightListItem({
               >
                 <option value="scrim">Scrim</option>
                 <option value="umbrella">Umbrella</option>
+                <option value="procedural_umbrella">Procedural Umbrella</option>
               </select>
             </label>
 
-            {light.type === "umbrella" && (
+            {light.type === "procedural_umbrella" && (
               <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
                 <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
                   Light Sides

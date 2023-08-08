@@ -46,13 +46,19 @@ export type ScrimLight = BaseLight & {
   lightDistance: number;
 };
 
-export type UmbrellaLight = BaseLight & {
-  type: "umbrella";
+export type TextureLight = BaseLight & {
+  type: "texture";
+  color: string;
+  map: string;
+};
+
+export type ProceduralUmbrellaLight = BaseLight & {
+  type: "procedural_umbrella";
   color: string;
   lightSides: number;
 };
 
-export type Light = ScrimLight | UmbrellaLight;
+export type Light = ScrimLight | TextureLight | ProceduralUmbrellaLight;
 
 export const modeAtom = atom({
   scene: true,
@@ -66,6 +72,8 @@ export const activeModesAtom = atom((get) => {
 });
 
 export const modelUrlAtom = atom("/911-transformed.glb");
+
+export const isCommandPaletteOpenAtom = atom(false);
 
 export const lightsAtom = atom<Light[]>([
   {

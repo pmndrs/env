@@ -7,7 +7,6 @@ import { Model } from "../Model";
 import { Cameras } from "./Cameras";
 import { Controls } from "./Controls";
 import { Debug } from "./Debug";
-import { LoadTextureMaps } from "./LoadTextureMaps";
 import { Lights } from "./Lights";
 import { toast } from "sonner";
 import { BoltIcon } from "@heroicons/react/24/solid";
@@ -54,8 +53,6 @@ export function ScenePreview() {
         <Debug />
 
         <Controls autoRotate={false} />
-
-        <LoadTextureMaps />
       </PerformanceMonitor>
     </Canvas>
   );

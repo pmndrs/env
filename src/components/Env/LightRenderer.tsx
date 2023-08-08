@@ -1,9 +1,15 @@
 import * as THREE from "three";
 import { Float, Lightformer } from "@react-three/drei";
-import { Light, ScrimLight, UmbrellaLight } from "../../store";
+import {
+  Light,
+  ProceduralUmbrellaLight,
+  ScrimLight,
+  TextureLight,
+} from "../../store";
 import { ScrimLightMaterial } from "./ScrimLightMaterial";
 import { PrimitiveAtom, useAtomValue } from "jotai";
-import { UmbrellaLightMaterial } from "./UmbrellaLightMaterial";
+import { TextureLightMaterial } from "./TextureLightMaterial";
+import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
 
 export function LightRenderer({
   lightAtom,
@@ -43,9 +49,14 @@ export function LightRenderer({
             lightAtom={lightAtom as PrimitiveAtom<ScrimLight>}
           />
         )}
-        {light.type === "umbrella" && (
-          <UmbrellaLightMaterial
-            lightAtom={lightAtom as PrimitiveAtom<UmbrellaLight>}
+        {light.type === "texture" && (
+          <TextureLightMaterial
+            lightAtom={lightAtom as PrimitiveAtom<TextureLight>}
+          />
+        )}
+        {light.type === "procedural_umbrella" && (
+          <ProceduralUmbrellaLightMaterial
+            lightAtom={lightAtom as PrimitiveAtom<ProceduralUmbrellaLight>}
           />
         )}
       </Lightformer>

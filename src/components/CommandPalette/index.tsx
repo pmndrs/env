@@ -9,17 +9,21 @@ import {
   SunIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
+import { useAtom, useSetAtom } from "jotai";
+import { Light, isCommandPaletteOpenAtom, lightsAtom } from "../../store";
+import * as THREE from "three";
 
 export function CommandPalette() {
+  const [open, setOpen] = useAtom(isCommandPaletteOpenAtom);
+
   const [value, setValue] = useState("softbox");
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(true);
       }
     };
 
@@ -40,7 +44,7 @@ export function CommandPalette() {
         <MagnifyingGlassIcon className="text-neutral-600 w-5 h-5 translate-y-[1px]" />
         <Command.Input
           autoFocus
-          placeholder="Find lights, backgrounds, and flags..."
+          placeholder="Add lights, backgrounds, and flags..."
           className="border-none bg-transparent flex-1 outline-none text-neutral-100 placeholder:text-neutral-600"
         />
       </div>
@@ -73,6 +77,30 @@ export function CommandPalette() {
                 label="Umbrella"
                 value="umbrella"
                 subtitle="Deflect light off umbrella"
+                colorTheme="orange"
+              >
+                <BoltIcon className="w-5 h-5 text-white" />
+              </Item>
+              <Item
+                label="Flash Head"
+                value="flash_head"
+                subtitle="Bright direct light"
+                colorTheme="orange"
+              >
+                <BoltIcon className="w-5 h-5 text-white" />
+              </Item>
+              <Item
+                label="Scrim"
+                value="scrim"
+                subtitle="Bounce light off scrim"
+                colorTheme="orange"
+              >
+                <LightBulbIcon className="w-5 h-5 text-white" />
+              </Item>
+              <Item
+                label="Procedural Umbrella"
+                value="procedural_umbrella"
+                subtitle="Simulated umbrella light"
                 colorTheme="orange"
               >
                 <BoltIcon className="w-5 h-5 text-white" />
@@ -120,7 +148,10 @@ export function CommandPalette() {
               <div className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute w-16 h-16 rounded-full bg-white blur-3xl" />
             )}
             {value === "softbox" && <Softbox />}
+            {value === "scrim" && <Softbox />}
             {value === "umbrella" && <Umbrella />}
+            {value === "procedural_umbrella" && <Umbrella />}
+            {value === "flash_head" && <Umbrella />}
             {value === "flood" && <Flood />}
             {value === "sky" && <Sky />}
             {value === "gradient" && <Gradient />}
@@ -144,10 +175,76 @@ function Item({
   subtitle: string;
   colorTheme?: "orange" | "blue" | "green" | "red" | "purple";
 }) {
+  const setOpen = useSetAtom(isCommandPaletteOpenAtom);
+  const [lights, setLights] = useAtom(lightsAtom);
+  const addLight = (light: Light) => setLights((lights) => [...lights, light]);
+
+  function handleSelect(value: string) {
+    const commonProps = {
+      name: `${value} ${String.fromCharCode(lights.length + 65)}`,
+      id: THREE.MathUtils.generateUUID(),
+      shape: "rect" as const,
+      distance: 4,
+      phi: Math.PI / 2,
+      theta: 0,
+      intensity: 1,
+      rotation: 0,
+      scale: 2,
+      scaleX: 1,
+      scaleY: 1,
+      target: [0, 0, 0] as [number, number, number],
+      visible: true,
+      solo: false,
+      selected: false,
+      opacity: 1,
+      animate: false,
+    };
+
+    if (value === "softbox") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/softbox-octagon.exr",
+      });
+    } else if (value === "scrim") {
+      addLight({
+        ...commonProps,
+        type: "scrim",
+        color: "#ffffff",
+        lightDistance: 0.3,
+        lightPosition: { x: 0, y: 0 },
+      });
+    } else if (value === "umbrella") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/umbrella.exr",
+      });
+    } else if (value === "flash_head") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/flash-head.exr",
+      });
+    } else if (value === "procedural_umbrella") {
+      addLight({
+        ...commonProps,
+        type: "procedural_umbrella",
+        color: "#ffffff",
+        lightSides: 3,
+      });
+    }
+
+    setOpen(false);
+  }
+
   return (
     <Command.Item
       value={value}
-      onSelect={() => {}}
+      onSelect={handleSelect}
       className="group cursor-pointer flex items-center rounded-lg text-sm gap-3 text-neutral-100 p-2 mr-2 font-medium transition-all transition-none data-[selected='true']:bg-blue-500 data-[selected='true']:text-white"
       style={{ contentVisibility: "auto" }}
     >

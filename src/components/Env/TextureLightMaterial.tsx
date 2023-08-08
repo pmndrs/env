@@ -4,11 +4,13 @@ import {
   ThreeElements,
   extend,
   useFrame,
+  useLoader,
 } from "@react-three/fiber";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 import { useRef } from "react";
 import * as THREE from "three";
-import { Light, UmbrellaLight } from "../../store";
+import { EXRLoader } from "three-stdlib";
+import { TextureLight } from "../../store";
 
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -26,66 +28,59 @@ const fragmentShader = /* glsl */ `
   uniform float uOpacity;
   uniform vec3 uColor;
   uniform float uIntensity;
-  uniform float uLightSides;
+  uniform sampler2D uTexture;
 
   varying vec2 vUv;
 
   void main() {
     vec2 uv = vUv;
-    uv = 2.0 * uv - 1.0;
 
-    vec2 p = uv;
-    float at = atan(p.y, p.x);
-    float angle = sin(fract(at / PI * uLightSides) * PI) * PI * 0.5;
-    float radius = length(p);
-    float intensity = 1.0 - smoothstep(0.8, 1.0, radius * radius);
+    vec4 tex = texture2D(uTexture, uv);
 
-    vec3 color = vec3(angle * intensity);
-    
-    // Apply intensity and color
-    color *= uColor * uIntensity;
-
-    gl_FragColor = vec4(color, uOpacity);
+    gl_FragColor = vec4(tex.rgb * uColor * uIntensity, tex.a * uOpacity);
   }
 `;
 
-const UmbrellaLightShaderMaterial = shaderMaterial(
+const TextureLightShaderMaterial = shaderMaterial(
   {
     uOpacity: 1,
     uColor: new THREE.Color(0xffffff),
     uIntensity: 1,
-    uLightSides: 4,
+    uTexture: new THREE.DataTexture(),
   },
   vertexShader,
   fragmentShader
 );
 
-extend({ UmbrellaLightShaderMaterial });
+extend({ TextureLightShaderMaterial });
 
 declare module "@react-three/fiber" {
   interface ThreeElements {
-    umbrellaLightShaderMaterial: MaterialNode<
+    textureLightShaderMaterial: MaterialNode<
       any,
-      typeof UmbrellaLightShaderMaterial
+      typeof TextureLightShaderMaterial
     >;
   }
 }
 
-export function UmbrellaLightMaterial({
+export function TextureLightMaterial({
   lightAtom,
 }: {
-  lightAtom: PrimitiveAtom<UmbrellaLight>;
+  lightAtom: PrimitiveAtom<TextureLight>;
 }) {
   const light = useAtomValue(lightAtom);
-  const ref = useRef<ThreeElements["umbrellaLightShaderMaterial"]>(null!);
+  const ref = useRef<ThreeElements["textureLightShaderMaterial"]>(null!);
+  const texture = useLoader(EXRLoader, light.map);
+
   useFrame(() => {
     ref.current.uniforms.uOpacity.value = light.opacity;
     ref.current.uniforms.uIntensity.value = light.intensity;
     ref.current.uniforms.uColor.value = new THREE.Color(light.color);
-    ref.current.uniforms.uLightSides.value = light.lightSides;
   });
 
-  return <umbrellaLightShaderMaterial ref={ref} transparent />;
+  return (
+    <textureLightShaderMaterial ref={ref} transparent uTexture={texture} />
+  );
 }
 
 // Reload on HMR

@@ -6,6 +6,7 @@ import {
   Light,
   cameraAtomsAtom,
   camerasAtom,
+  isCommandPaletteOpenAtom,
   lightAtomsAtom,
   lightsAtom,
   selectedCameraAtom,
@@ -15,10 +16,8 @@ import { CameraListItem } from "./CameraListItem";
 import { useAtomValue, useSetAtom } from "jotai";
 
 export function Outliner() {
+  const setIsCommandPaletteOpen = useSetAtom(isCommandPaletteOpenAtom);
   const lightAtoms = useAtomValue(lightAtomsAtom);
-  const setLights = useSetAtom(lightsAtom);
-  const addLight = (light: Light) => setLights((lights) => [...lights, light]);
-
   const cameraAtoms = useAtomValue(cameraAtomsAtom);
   const setCameras = useSetAtom(camerasAtom);
   const currentCamera = useAtomValue(selectedCameraAtom);
@@ -63,29 +62,7 @@ export function Outliner() {
         <button
           className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
           onClick={() => {
-            addLight({
-              name: `Light ${String.fromCharCode(lightAtoms.length + 65)}`,
-              id: THREE.MathUtils.generateUUID(),
-              shape: "rect",
-              type: "scrim",
-              color: "#fff",
-              distance: 4,
-              phi: Math.PI / 2,
-              theta: 0,
-              intensity: 1,
-              rotation: 0,
-              scale: 2,
-              scaleX: 1,
-              scaleY: 1,
-              target: [0, 0, 0],
-              visible: true,
-              solo: false,
-              selected: false,
-              opacity: 1,
-              animate: false,
-              lightDistance: 0.3,
-              lightPosition: { x: 0, y: 0 },
-            });
+            setIsCommandPaletteOpen(true);
           }}
         >
           <PlusIcon className="w-4 h-4" />

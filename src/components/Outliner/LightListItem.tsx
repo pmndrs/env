@@ -11,7 +11,6 @@ import * as ContextMenu from "@radix-ui/react-context-menu";
 import clsx from "clsx";
 import {
   Light,
-  lightsAtom,
   isSoloAtom,
   toggleSoloAtom,
   toggleLightSelectionAtom,
@@ -20,7 +19,6 @@ import {
 } from "../../store";
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import * as THREE from "three";
 
 export function LightListItem({
   lightAtom,
@@ -40,7 +38,7 @@ export function LightListItem({
     setLight((old) => ({ ...old, visible: !old.visible }));
 
   const updateLight = (light: Partial<Light>) =>
-    setLight((old) => ({ ...old, ...light }));
+    setLight((old) => ({ ...old, ...light } as any));
 
   return (
     <>
@@ -299,62 +297,104 @@ export function LightListItem({
             <hr className="border-white/10 my-2" />
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                Scrim Position
+              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                Light Type
               </span>
-              <input
-                key={`${id}-lightPosition-x`}
-                className="col-start-11 col-span-6"
-                type="range"
-                min={-1}
-                max={1}
-                step={0.01}
-                defaultValue={light.lightPosition.x}
+              <select
+                key={`${id}-shape`}
+                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                defaultValue={light.type}
                 onChange={(e) => {
-                  updateLight({
-                    lightPosition: {
-                      x: Number(e.target.value),
-                      y: light.lightPosition.y,
-                    },
-                  });
+                  const type = e.target.value as Light["type"];
+                  updateLight({ type });
                 }}
-              />
-              <input
-                key={`${id}-lightPosition-y`}
-                className="col-start-19 col-span-6"
-                type="range"
-                min={-1}
-                max={1}
-                step={0.01}
-                defaultValue={light.lightPosition.y}
-                onChange={(e) => {
-                  updateLight({
-                    lightPosition: {
-                      x: light.lightPosition.x,
-                      y: Number(e.target.value),
-                    },
-                  });
-                }}
-              />
+              >
+                <option value="scrim">Scrim</option>
+                <option value="umbrella">Umbrella</option>
+              </select>
             </label>
 
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                Scrim Distance
-              </span>
-              <input
-                key={`${id}-lightDistance`}
-                className="col-start-11 col-span-14"
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                defaultValue={light.lightDistance}
-                onChange={(e) => {
-                  updateLight({ lightDistance: Number(e.target.value) });
-                }}
-              />
-            </label>
+            {light.type === "umbrella" && (
+              <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+                <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                  Light Sides
+                </span>
+                <input
+                  key={`${id}-opacity`}
+                  className="col-start-8 col-span-18"
+                  type="range"
+                  min={3}
+                  max={20}
+                  step={1}
+                  defaultValue={light.lightSides}
+                  onChange={(e) => {
+                    updateLight({ lightSides: Number(e.target.value) });
+                  }}
+                />
+              </label>
+            )}
+
+            {light.type === "scrim" && (
+              <>
+                <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
+                    Scrim Position
+                  </span>
+                  <input
+                    key={`${id}-lightPosition-x`}
+                    className="col-start-11 col-span-6"
+                    type="range"
+                    min={-1}
+                    max={1}
+                    step={0.01}
+                    defaultValue={light.lightPosition.x}
+                    onChange={(e) => {
+                      updateLight({
+                        lightPosition: {
+                          x: Number(e.target.value),
+                          y: light.lightPosition.y,
+                        },
+                      });
+                    }}
+                  />
+                  <input
+                    key={`${id}-lightPosition-y`}
+                    className="col-start-19 col-span-6"
+                    type="range"
+                    min={-1}
+                    max={1}
+                    step={0.01}
+                    defaultValue={light.lightPosition.y}
+                    onChange={(e) => {
+                      updateLight({
+                        lightPosition: {
+                          x: light.lightPosition.x,
+                          y: Number(e.target.value),
+                        },
+                      });
+                    }}
+                  />
+                </label>
+
+                <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
+                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
+                    Scrim Distance
+                  </span>
+                  <input
+                    key={`${id}-lightDistance`}
+                    className="col-start-11 col-span-14"
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    defaultValue={light.lightDistance}
+                    onChange={(e) => {
+                      updateLight({ lightDistance: Number(e.target.value) });
+                    }}
+                  />
+                </label>
+              </>
+            )}
           </div>
         </PropertiesPanelTunnel.In>
       )}

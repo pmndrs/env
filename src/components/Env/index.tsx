@@ -1,6 +1,5 @@
 import { Environment } from "@react-three/drei";
 import { lightAtomsAtom } from "../../store";
-// import { UmbrellaLightMaterial } from "./UmbrellaLightMaterial";
 import { useAtomValue } from "jotai";
 import { LightRenderer } from "./LightRenderer";
 

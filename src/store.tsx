@@ -39,14 +39,20 @@ type BaseLight = {
   animationFloatingRange?: [number, number];
 };
 
-type ScrimLight = BaseLight & {
+export type ScrimLight = BaseLight & {
   type: "scrim";
   color: string;
   lightPosition: { x: number; y: number };
   lightDistance: number;
 };
 
-export type Light = ScrimLight;
+export type UmbrellaLight = BaseLight & {
+  type: "umbrella";
+  color: string;
+  lightSides: number;
+};
+
+export type Light = ScrimLight | UmbrellaLight;
 
 export const modeAtom = atom({
   scene: true,

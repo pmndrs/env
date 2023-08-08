@@ -7,7 +7,7 @@ import {
 } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
-import { Light } from "../../store";
+import { Light, ScrimLight } from "../../store";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 
 const vertexShader = /* glsl */ `
@@ -122,7 +122,7 @@ declare module "@react-three/fiber" {
 export function ScrimLightMaterial({
   lightAtom,
 }: {
-  lightAtom: PrimitiveAtom<Light>;
+  lightAtom: PrimitiveAtom<ScrimLight>;
 }) {
   const ref = useRef<ThreeElements["scrimLightShaderMaterial"]>(null!);
 

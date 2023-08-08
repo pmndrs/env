@@ -7,7 +7,7 @@ import {
 } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import * as THREE from "three";
-import { Light, ScrimLight } from "../../store";
+import { Light, ProceduralScrimLight } from "../../store";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 
 const vertexShader = /* glsl */ `
@@ -96,7 +96,7 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
-const ScrimLightShaderMaterial = shaderMaterial(
+const ProceduralScrimLightShaderMaterial = shaderMaterial(
   {
     uOpacity: 1,
     uColor: new THREE.Color(0xffffff),
@@ -108,23 +108,25 @@ const ScrimLightShaderMaterial = shaderMaterial(
   fragmentShader
 );
 
-extend({ ScrimLightShaderMaterial });
+extend({ ProceduralScrimLightShaderMaterial });
 
 declare module "@react-three/fiber" {
   interface ThreeElements {
-    scrimLightShaderMaterial: MaterialNode<
+    proceduralScrimLightShaderMaterial: MaterialNode<
       any,
-      typeof ScrimLightShaderMaterial
+      typeof ProceduralScrimLightShaderMaterial
     >;
   }
 }
 
-export function ScrimLightMaterial({
+export function ProceduralScrimLightMaterial({
   lightAtom,
 }: {
-  lightAtom: PrimitiveAtom<ScrimLight>;
+  lightAtom: PrimitiveAtom<ProceduralScrimLight>;
 }) {
-  const ref = useRef<ThreeElements["scrimLightShaderMaterial"]>(null!);
+  const ref = useRef<ThreeElements["proceduralScrimLightShaderMaterial"]>(
+    null!
+  );
 
   const light = useAtomValue(lightAtom);
 
@@ -141,7 +143,7 @@ export function ScrimLightMaterial({
     ref.current.uniforms.uLightDistance.value = light.lightDistance;
   });
 
-  return <scrimLightShaderMaterial ref={ref} transparent />;
+  return <proceduralScrimLightShaderMaterial ref={ref} transparent />;
 }
 
 // Reload on HMR

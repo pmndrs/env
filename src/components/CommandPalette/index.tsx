@@ -1,12 +1,10 @@
 import { Command } from "cmdk";
 import { useEffect, useState } from "react";
 import {
-  BoltIcon,
   ChartBarIcon,
   LightBulbIcon,
   MagnifyingGlassIcon,
   PhotoIcon,
-  SunIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { useAtom, useSetAtom } from "jotai";
@@ -79,7 +77,7 @@ export function CommandPalette() {
                 subtitle="Deflect light off umbrella"
                 colorTheme="orange"
               >
-                <BoltIcon className="w-5 h-5 text-white" />
+                <LightBulbIcon className="w-5 h-5 text-white" />
               </Item>
               <Item
                 label="Flash Head"
@@ -87,12 +85,12 @@ export function CommandPalette() {
                 subtitle="Bright direct light"
                 colorTheme="orange"
               >
-                <BoltIcon className="w-5 h-5 text-white" />
+                <LightBulbIcon className="w-5 h-5 text-white" />
               </Item>
               <Item
-                label="Scrim"
-                value="scrim"
-                subtitle="Bounce light off scrim"
+                label="Procedural Scrim"
+                value="procedural_scrim"
+                subtitle="Simulated scrim light"
                 colorTheme="orange"
               >
                 <LightBulbIcon className="w-5 h-5 text-white" />
@@ -103,15 +101,7 @@ export function CommandPalette() {
                 subtitle="Simulated umbrella light"
                 colorTheme="orange"
               >
-                <BoltIcon className="w-5 h-5 text-white" />
-              </Item>
-              <Item
-                label="Flood"
-                value="flood"
-                subtitle="High-intensity direct light"
-                colorTheme="orange"
-              >
-                <SunIcon className="w-5 h-5 text-white" />
+                <LightBulbIcon className="w-5 h-5 text-white" />
               </Item>
             </Command.Group>
 
@@ -148,11 +138,10 @@ export function CommandPalette() {
               <div className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute w-16 h-16 rounded-full bg-white blur-3xl" />
             )}
             {value === "softbox" && <Softbox />}
-            {value === "scrim" && <Softbox />}
+            {value === "procedural_scrim" && <Scrim />}
             {value === "umbrella" && <Umbrella />}
             {value === "procedural_umbrella" && <Umbrella />}
-            {value === "flash_head" && <Umbrella />}
-            {value === "flood" && <Flood />}
+            {value === "flash_head" && <FlashHead />}
             {value === "sky" && <Sky />}
             {value === "gradient" && <Gradient />}
           </div>
@@ -207,10 +196,10 @@ function Item({
         color: "#ffffff",
         map: "/textures/softbox-octagon.exr",
       });
-    } else if (value === "scrim") {
+    } else if (value === "procedural_scrim") {
       addLight({
         ...commonProps,
-        type: "scrim",
+        type: "procedural_scrim",
         color: "#ffffff",
         lightDistance: 0.3,
         lightPosition: { x: 0, y: 0 },
@@ -273,7 +262,29 @@ function Item({
 function Softbox() {
   return (
     <img
-      src="https://cdn.shopify.com/s/files/1/0089/0093/5765/products/aputure-light-octadome-120-octagonal-softbox-vitopal-3.png?v=1681377047&width=1000"
+      src="/textures/softbox-octagon.png"
+      alt="Softbox"
+      className="w-48 h-48"
+      loading="lazy"
+    />
+  );
+}
+
+function Scrim() {
+  return (
+    <img
+      src="/textures/scrim.png"
+      alt="Scrim"
+      className="w-48 h-48"
+      loading="lazy"
+    />
+  );
+}
+
+function FlashHead() {
+  return (
+    <img
+      src="/textures/flash-head.png"
       alt="Softbox"
       className="w-48 h-48"
       loading="lazy"
@@ -284,19 +295,8 @@ function Softbox() {
 function Umbrella() {
   return (
     <img
-      src="https://www.rogueflash.com/cdn/shop/files/38UmbrellawithDiffuser1_1000x.png?v=1687891262"
+      src="/textures/umbrella.png"
       alt="Umbrella"
-      className="w-48 h-48"
-      loading="lazy"
-    />
-  );
-}
-
-function Flood() {
-  return (
-    <img
-      src="https://i.shgcdn.com/2f03bbfc-4f99-490b-a1d7-e5a7e2056731/-/format/auto/-/preview/3000x3000/-/quality/lighter/"
-      alt="Flood"
       className="w-48 h-48"
       loading="lazy"
     />

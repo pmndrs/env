@@ -39,17 +39,17 @@ type BaseLight = {
   animationFloatingRange?: [number, number];
 };
 
-export type ScrimLight = BaseLight & {
-  type: "scrim";
-  color: string;
-  lightPosition: { x: number; y: number };
-  lightDistance: number;
-};
-
 export type TextureLight = BaseLight & {
   type: "texture";
   color: string;
   map: string;
+};
+
+export type ProceduralScrimLight = BaseLight & {
+  type: "procedural_scrim";
+  color: string;
+  lightPosition: { x: number; y: number };
+  lightDistance: number;
 };
 
 export type ProceduralUmbrellaLight = BaseLight & {
@@ -58,7 +58,10 @@ export type ProceduralUmbrellaLight = BaseLight & {
   lightSides: number;
 };
 
-export type Light = ScrimLight | TextureLight | ProceduralUmbrellaLight;
+export type Light =
+  | TextureLight
+  | ProceduralScrimLight
+  | ProceduralUmbrellaLight;
 
 export const modeAtom = atom({
   scene: true,
@@ -80,7 +83,7 @@ export const lightsAtom = atom<Light[]>([
     name: `Light A`,
     id: THREE.MathUtils.generateUUID(),
     shape: "rect",
-    type: "scrim",
+    type: "procedural_scrim",
     color: "#fff",
     distance: 4,
     phi: Math.PI / 2,

@@ -300,19 +300,12 @@ export function LightListItem({
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
                 Light Type
               </span>
-              <select
-                key={`${id}-shape`}
-                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                defaultValue={light.type}
-                onChange={(e) => {
-                  const type = e.target.value as Light["type"];
-                  updateLight({ type });
-                }}
-              >
-                <option value="scrim">Scrim</option>
-                <option value="umbrella">Umbrella</option>
-                <option value="procedural_umbrella">Procedural Umbrella</option>
-              </select>
+
+              <span className="col-start-11 col-span-12 font-mono text-xs">
+                {light.type === "texture" && "Texture"}
+                {light.type === "procedural_scrim" && "Procedural Scrim"}
+                {light.type === "procedural_umbrella" && "Procedural Umbrella"}
+              </span>
             </label>
 
             {light.type === "procedural_umbrella" && (
@@ -335,7 +328,7 @@ export function LightListItem({
               </label>
             )}
 
-            {light.type === "scrim" && (
+            {light.type === "procedural_scrim" && (
               <>
                 <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
                   <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">

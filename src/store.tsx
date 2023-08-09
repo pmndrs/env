@@ -100,6 +100,8 @@ export const lightsAtom = atomWithStorage<Light[]>("lights", [
   },
 ]);
 
+export const lightIdsAtom = atom((get) => get(lightsAtom).map((l) => l.id));
+
 export const lightAtomsAtom = splitAtom(lightsAtom);
 
 export const isSoloAtom = atom((get) => {

@@ -1,6 +1,20 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import * as THREE from "three";
-
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import {
   Camera,
   Light,
@@ -8,6 +22,7 @@ import {
   camerasAtom,
   isCommandPaletteOpenAtom,
   lightAtomsAtom,
+  lightIdsAtom,
   lightsAtom,
   selectedCameraAtom,
 } from "../../store";
@@ -16,6 +31,8 @@ import { CameraListItem } from "./CameraListItem";
 import { useAtomValue, useSetAtom } from "jotai";
 
 export function Outliner() {
+  const lightIds = useAtomValue(lightIdsAtom);
+  const setLights = useSetAtom(lightsAtom);
   const setIsCommandPaletteOpen = useSetAtom(isCommandPaletteOpenAtom);
   const lightAtoms = useAtomValue(lightAtomsAtom);
   const cameraAtoms = useAtomValue(cameraAtomsAtom);
@@ -23,6 +40,26 @@ export function Outliner() {
   const currentCamera = useAtomValue(selectedCameraAtom);
   const addCamera = (camera: Camera) =>
     setCameras((cameras) => [...cameras, camera]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (active && over && active.id !== over.id) {
+      setLights((lights) => {
+        const oldIndex = lights.findIndex((light) => light.id === active.id);
+        const newIndex = lights.findIndex((light) => light.id === over.id);
+
+        return arrayMove(lights, oldIndex, newIndex);
+      });
+    }
+  }
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -70,9 +107,20 @@ export function Outliner() {
       </div>
 
       <ul className="m-0 p-2 flex flex-col flex-1 gap-1">
-        {lightAtoms.map((lightAtom) => (
-          <LightListItem key={lightAtom.toString()} lightAtom={lightAtom} />
-        ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={lightIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {lightAtoms.map((lightAtom) => (
+              <LightListItem key={lightAtom.toString()} lightAtom={lightAtom} />
+            ))}
+          </SortableContext>
+        </DndContext>
       </ul>
     </div>
   );

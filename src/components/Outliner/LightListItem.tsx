@@ -1,4 +1,6 @@
 import {
+  Bars2Icon,
+  ChevronUpDownIcon,
   EyeSlashIcon,
   FlagIcon,
   LightBulbIcon,
@@ -20,6 +22,9 @@ import {
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { LightProperties } from "./LightProperties";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { DragHandleIcon } from "./DragHandleIcon";
 
 export function LightListItem({
   lightAtom,
@@ -41,20 +46,40 @@ export function LightListItem({
   const updateLight = (light: Partial<Light>) =>
     setLight((old) => ({ ...old, ...light } as any));
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: light.id, transition: null });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <>
       <ContextMenu.Root>
         <ContextMenu.Trigger asChild>
-          <li
+          <button
             key={id}
-            role="button"
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
             className={clsx(
-              "group flex list-none p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
+              "group flex text-left p-2 gap-2 rounded-md bg-transparent cursor-pointer transition-colors",
               selected && "bg-white/20",
               !selected && "hover:bg-white/10"
             )}
             onClick={() => toggleSelection(light.id)}
           >
+            <button ref={setActivatorNodeRef} {...listeners}>
+              <DragHandleIcon className="w-4 h-4 text-neutral-300/50" />
+            </button>
+
             <LightBulbIcon
               className={clsx(
                 "w-4 h-4 text-yellow-400",
@@ -112,7 +137,7 @@ export function LightListItem({
                 <EyeSlashIcon className="w-4 h-4 " />
               )}
             </button>
-          </li>
+          </button>
         </ContextMenu.Trigger>
 
         <ContextMenu.Portal>

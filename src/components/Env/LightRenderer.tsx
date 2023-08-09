@@ -18,6 +18,16 @@ export function LightRenderer({
 }) {
   const light = useAtomValue(lightAtom);
 
+  // Convert lat/lon to phi/theta
+  const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, 0, Math.PI);
+  const theta = THREE.MathUtils.mapLinear(
+    light.latlon.x,
+    -1,
+    1,
+    0.5 * Math.PI,
+    -1.5 * Math.PI
+  );
+
   return (
     <Float
       enabled={light.animate}
@@ -31,8 +41,8 @@ export function LightRenderer({
         form={light.shape}
         position={new THREE.Vector3().setFromSphericalCoords(
           light.distance,
-          light.phi,
-          light.theta
+          phi,
+          theta
         )}
         rotation={[light.rotation, 0, 0]}
         scale={[

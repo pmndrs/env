@@ -26,15 +26,18 @@ export function LightProperties({
 
     pane.addBlade({ view: "separator" });
 
-    pane.addBinding(light, "scale", { min: 0 }).on("change", handleChange);
     pane
-      .addBinding(light, "distance", { min: 0, max: 10 })
+      .addBinding(light, "scale", { min: 0, step: 0.1 })
       .on("change", handleChange);
     pane
-      .addBinding(light, "phi", { min: 0, max: Math.PI, step: 0.01 })
+      .addBinding(light, "distance", { min: 0, max: 10, step: 0.1 })
       .on("change", handleChange);
     pane
-      .addBinding(light, "theta", { min: -Math.PI, max: Math.PI, step: 0.01 })
+      .addBinding(light, "latlon", {
+        min: -1,
+        max: 1,
+        step: 0.01,
+      })
       .on("change", handleChange);
 
     pane.addBlade({ view: "separator" });

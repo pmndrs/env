@@ -12,7 +12,7 @@ body,
 }
 
 :root {
-  --tp-base-background-color: transparent;
+  --tp-base-background-color: theme("colors.neutral.900");
   --tp-base-shadow-color: transparent;
 
   --tp-button-background-color: theme("colors.blue.500");

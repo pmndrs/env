@@ -24,8 +24,7 @@ type BaseLight = {
   rotation: number;
   distance: number;
 
-  phi: number;
-  theta: number;
+  latlon: { x: number; y: number };
   target: [number, number, number];
 
   selected: boolean;
@@ -86,8 +85,7 @@ export const lightsAtom = atomWithStorage<Light[]>("lights", [
     type: "procedural_scrim",
     color: "#fff",
     distance: 4,
-    phi: Math.PI / 2,
-    theta: 0,
+    latlon: { x: 0, y: 0 },
     intensity: 1,
     rotation: 0,
     scale: 2,

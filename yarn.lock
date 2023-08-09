@@ -1346,6 +1346,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tweakpane/core@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@tweakpane/core@npm:2.0.0"
+  checksum: c92cb9d1d12717e5d7eea1e8440b63ef1edeff3cd0304fd1a23229ef79348951c9a2bea13a15d612330d22dca690534cd342d7823135ab8acee90222523ccc3d
+  languageName: node
+  linkType: hard
+
 "@tweenjs/tween.js@npm:~18.6.4":
   version: 18.6.4
   resolution: "@tweenjs/tween.js@npm:18.6.4"
@@ -2393,6 +2400,7 @@ __metadata:
     "@react-three/drei": ^9.74.8
     "@react-three/fiber": ^8.13.1
     "@react-three/postprocessing": ^2.14.9
+    "@tweakpane/core": ^2.0.0
     "@types/prettier": ^2.7.2
     "@types/react": ^18.0.19
     "@types/react-dom": ^18.0.6
@@ -2414,6 +2422,7 @@ __metadata:
     three: ^0.153.0
     three-stdlib: ^2.23.9
     tunnel-rat: ^0.1.2
+    tweakpane: ^4.0.0
     typescript: ^5.1.3
     vite: ^4.3.9
   languageName: unknown
@@ -3911,6 +3920,13 @@ __metadata:
   dependencies:
     zustand: ^4.3.2
   checksum: 9d5975d589db705e7707dcfd2bdb9f1773b014179a7e56a9cd5aaa1824ee28143efcfea30e826f3fccc0a9cb7a8631b4fd490a5849a20893e37e93e122bd9430
+  languageName: node
+  linkType: hard
+
+"tweakpane@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "tweakpane@npm:4.0.0"
+  checksum: a7f0839556b7b7f40528cded3c29163f45e319b16f74b4bedd38dda13e161756b1e33f5cd595a2e93bb3f98b069db27e574a1cc58388a53b14e47c3a525a5877
   languageName: node
   linkType: hard
 

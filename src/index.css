@@ -8,9 +8,35 @@ body,
   height: 100%;
   width: 100%;
   margin: 0;
+  overscroll-behavior: none;
 }
 
-html,
-body {
-  overscroll-behavior: none;
+:root {
+  --tp-base-background-color: transparent;
+  --tp-base-shadow-color: transparent;
+
+  --tp-button-background-color: theme("colors.blue.500");
+  --tp-button-background-color-active: theme("colors.blue.600");
+  --tp-button-background-color-focus: theme("colors.blue.400");
+  --tp-button-background-color-hover: theme("colors.blue.400");
+  --tp-button-foreground-color: theme("colors.white");
+
+  --tp-container-background-color: hsla(0, 0%, 0%, 0.3);
+  --tp-container-background-color-active: hsla(0, 0%, 0%, 0.6);
+  --tp-container-background-color-focus: hsla(0, 0%, 0%, 0.5);
+  --tp-container-background-color-hover: hsla(0, 0%, 0%, 0.4);
+  --tp-container-foreground-color: hsla(0, 0%, 100%, 0.5);
+
+  --tp-groove-foreground-color: theme("colors.neutral.800");
+
+  --tp-input-background-color: theme("colors.neutral.800");
+  --tp-input-background-color-active: theme("colors.neutral.900");
+  --tp-input-background-color-focus: theme("colors.neutral.700");
+  --tp-input-background-color-hover: theme("colors.neutral.700");
+  --tp-input-foreground-color: theme("colors.neutral.400");
+
+  --tp-label-foreground-color: theme("colors.neutral.400");
+
+  --tp-monitor-background-color: theme("colors.neutral.800");
+  --tp-monitor-foreground-color: theme("colors.neutral.400");
 }

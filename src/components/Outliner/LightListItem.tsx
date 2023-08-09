@@ -19,6 +19,7 @@ import {
 } from "../../store";
 import { PropertiesPanelTunnel } from "../Properties";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { LightProperties } from "./LightProperties";
 
 export function LightListItem({
   lightAtom,
@@ -57,7 +58,7 @@ export function LightListItem({
             <LightBulbIcon
               className={clsx(
                 "w-4 h-4 text-yellow-400",
-                !visible && "text-gray-300/50"
+                !visible && "text-neutral-300/50"
               )}
             />
             <input
@@ -70,8 +71,8 @@ export function LightListItem({
 
             <span
               className={clsx(
-                "flex-1 text-xs font-mono text-gray-300 text-ellipsis overflow-hidden whitespace-nowrap",
-                !visible && "text-gray-300/50 line-through"
+                "flex-1 text-xs font-mono text-neutral-300 text-ellipsis overflow-hidden whitespace-nowrap",
+                !visible && "text-neutral-300/50 line-through"
               )}
             >
               {name}
@@ -115,9 +116,9 @@ export function LightListItem({
         </ContextMenu.Trigger>
 
         <ContextMenu.Portal>
-          <ContextMenu.Content className="flex flex-col gap-1 bg-neutral-800 text-gray-50 font-light p-1.5 rounded-md shadow-xl">
+          <ContextMenu.Content className="flex flex-col gap-1 bg-neutral-800 text-neutral-50 font-light p-1.5 rounded-md shadow-xl">
             <ContextMenu.Item
-              className="outline-none select-none rounded px-2 py-0.5 highlighted:bg-white highlighted:text-gray-900 text-sm"
+              className="outline-none select-none rounded px-2 py-0.5 highlighted:bg-white highlighted:text-neutral-900 text-sm"
               onSelect={() => duplicateLight(light.id)}
             >
               Duplicate
@@ -134,307 +135,7 @@ export function LightListItem({
 
       {selected && (
         <PropertiesPanelTunnel.In>
-          <div className="flex flex-col gap-2">
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Name
-              </span>
-              <input
-                key={`${id}-name`}
-                type="text"
-                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                value={light.name}
-                onChange={(e) => {
-                  updateLight({ id, name: e.target.value });
-                }}
-              />
-            </label>
-
-            <hr className="border-white/10 my-2" />
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Scale
-              </span>
-              <input
-                key={`${id}-scale-input`}
-                type="number"
-                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                min={0}
-                max={10}
-                step={0.1}
-                value={light.scale}
-                onChange={(e) => {
-                  updateLight({ scale: Number(e.target.value) });
-                }}
-              />
-              <input
-                key={`${id}-scale-slider`}
-                className="col-start-15 col-span-10"
-                type="range"
-                min={0}
-                max={10}
-                step={0.1}
-                value={light.scale}
-                onChange={(e) => {
-                  updateLight({ scale: Number(e.target.value) });
-                }}
-              />
-            </label>
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Distance
-              </span>
-              <input
-                key={`${id}-distance-input`}
-                type="number"
-                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                min={0.1}
-                max={10}
-                step={0.1}
-                value={light.distance}
-                onChange={(e) => {
-                  updateLight({ distance: Number(e.target.value) });
-                }}
-              />
-              <input
-                key={`${id}-distance-slider`}
-                className="col-start-15 col-span-10"
-                type="range"
-                min={0}
-                max={10}
-                step={0.01}
-                value={light.distance}
-                onChange={(e) => {
-                  updateLight({ distance: Number(e.target.value) });
-                }}
-              />
-            </label>
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-5">
-                Lat-Lon
-              </span>
-
-              <button className="col-start-8 col-span-2 w-8 h-8 bg-black">
-                +
-              </button>
-
-              <input
-                key={`${id}-position-theta`}
-                className="col-start-11 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                type="number"
-                min={-Math.PI}
-                max={Math.PI}
-                step={0.01}
-                value={light.theta}
-                onChange={(e) => {
-                  updateLight({
-                    theta: Number(e.target.value),
-                  });
-                }}
-              />
-              <input
-                key={`${id}-position-phi`}
-                className="col-start-18 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                type="number"
-                min={-Math.PI}
-                max={0}
-                step={0.01}
-                value={light.phi}
-                onChange={(e) => {
-                  updateLight({
-                    phi: Number(e.target.value),
-                  });
-                }}
-              />
-            </label>
-
-            <hr className="border-white/10 my-2" />
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Color
-              </span>
-              <input
-                key={`${id}-color`}
-                className="col-start-8 col-span-18"
-                type="color"
-                value={light.color}
-                onChange={(e) => {
-                  updateLight({ color: e.target.value });
-                }}
-              />
-            </label>
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Intensity
-              </span>
-              <input
-                key={`${id}-intensity-input`}
-                type="number"
-                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                min={0}
-                step={0.1}
-                value={light.intensity}
-                onChange={(e) => {
-                  updateLight({ intensity: Number(e.target.value) });
-                }}
-              />
-              <input
-                key={`${id}-intensity-slider`}
-                className="col-start-15 col-span-10"
-                type="range"
-                min={0}
-                max={10}
-                step={0.1}
-                value={light.intensity}
-                onChange={(e) => {
-                  updateLight({ intensity: Number(e.target.value) });
-                }}
-              />
-            </label>
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Opacity
-              </span>
-              <input
-                key={`${id}-opacity-input`}
-                type="number"
-                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                min={0}
-                max={1}
-                step={0.01}
-                value={light.opacity}
-                onChange={(e) => {
-                  updateLight({ opacity: Number(e.target.value) });
-                }}
-              />
-              <input
-                key={`${id}-opacity-slider`}
-                className="col-start-15 col-span-10"
-                type="range"
-                min={0}
-                max={1}
-                step={0.01}
-                value={light.opacity}
-                onChange={(e) => {
-                  updateLight({ opacity: Number(e.target.value) });
-                }}
-              />
-            </label>
-
-            <hr className="border-white/10 my-2" />
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Light Type
-              </span>
-
-              <span className="col-start-8 col-span-12 font-mono text-xs">
-                {light.type === "texture" && "Texture"}
-                {light.type === "procedural_scrim" && "Procedural Scrim"}
-                {light.type === "procedural_umbrella" && "Procedural Umbrella"}
-              </span>
-            </label>
-
-            {light.type === "procedural_umbrella" && (
-              <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-                <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                  Light Sides
-                </span>
-                <input
-                  key={`${id}-opacity`}
-                  className="col-start-8 col-span-18"
-                  type="range"
-                  min={3}
-                  max={20}
-                  step={1}
-                  value={light.lightSides}
-                  onChange={(e) => {
-                    updateLight({ lightSides: Number(e.target.value) });
-                  }}
-                />
-              </label>
-            )}
-
-            {light.type === "procedural_scrim" && (
-              <>
-                <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                    Scrim XY
-                  </span>
-                  <input
-                    key={`${id}-lightPosition-x`}
-                    className="col-start-8 col-span-8"
-                    type="range"
-                    min={-1}
-                    max={1}
-                    step={0.01}
-                    value={light.lightPosition.x}
-                    onChange={(e) => {
-                      updateLight({
-                        lightPosition: {
-                          x: Number(e.target.value),
-                          y: light.lightPosition.y,
-                        },
-                      });
-                    }}
-                  />
-                  <input
-                    key={`${id}-lightPosition-y`}
-                    className="col-start-17 col-span-8"
-                    type="range"
-                    min={-1}
-                    max={1}
-                    step={0.01}
-                    value={light.lightPosition.y}
-                    onChange={(e) => {
-                      updateLight({
-                        lightPosition: {
-                          x: light.lightPosition.x,
-                          y: Number(e.target.value),
-                        },
-                      });
-                    }}
-                  />
-                </label>
-
-                <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                    Spread
-                  </span>
-                  <input
-                    key={`${id}-lightDistance-input`}
-                    type="number"
-                    className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={light.lightDistance}
-                    onChange={(e) => {
-                      updateLight({ lightDistance: Number(e.target.value) });
-                    }}
-                  />
-                  <input
-                    key={`${id}-lightDistance-slider`}
-                    className="col-start-15 col-span-10"
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    value={light.lightDistance}
-                    onChange={(e) => {
-                      updateLight({ lightDistance: Number(e.target.value) });
-                    }}
-                  />
-                </label>
-              </>
-            )}
-          </div>
+          <LightProperties lightAtom={lightAtom} />
         </PropertiesPanelTunnel.In>
       )}
     </>

@@ -32,9 +32,11 @@
     "sonner": "^0.4.0",
     "three": "^0.153.0",
     "three-stdlib": "^2.23.9",
-    "tunnel-rat": "^0.1.2"
+    "tunnel-rat": "^0.1.2",
+    "tweakpane": "^4.0.0"
   },
   "devDependencies": {
+    "@tweakpane/core": "^2.0.0",
     "@types/prettier": "^2.7.2",
     "@types/react": "^18.0.19",
     "@types/react-dom": "^18.0.6",

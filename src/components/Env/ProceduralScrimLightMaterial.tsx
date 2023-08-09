@@ -143,7 +143,13 @@ export function ProceduralScrimLightMaterial({
     ref.current.uniforms.uLightDistance.value = light.lightDistance;
   });
 
-  return <proceduralScrimLightShaderMaterial ref={ref} transparent />;
+  return (
+    <proceduralScrimLightShaderMaterial
+      ref={ref}
+      transparent={true}
+      depthFunc={THREE.AlwaysDepth}
+    />
+  );
 }
 
 // Reload on HMR

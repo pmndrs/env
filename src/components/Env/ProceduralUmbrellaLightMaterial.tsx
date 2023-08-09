@@ -89,7 +89,13 @@ export function ProceduralUmbrellaLightMaterial({
     ref.current.uniforms.uLightSides.value = light.lightSides;
   });
 
-  return <proceduralUmbrellaLightShaderMaterial ref={ref} transparent />;
+  return (
+    <proceduralUmbrellaLightShaderMaterial
+      ref={ref}
+      transparent={true}
+      depthFunc={THREE.AlwaysDepth}
+    />
+  );
 }
 
 // Reload on HMR

@@ -173,7 +173,6 @@ function Item({
       name: `${value} ${String.fromCharCode(lights.length + 65)}`,
       id: THREE.MathUtils.generateUUID(),
       shape: "rect" as const,
-      distance: 4,
       latlon: { x: 0, y: 0 },
       intensity: 1,
       rotation: 0,

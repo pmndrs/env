@@ -15,8 +15,12 @@ export function Env() {
       background
     >
       <color attach="background" args={["black"]} />
-      {lightAtoms.map((lightAtom) => (
-        <LightRenderer key={lightAtom.toString()} lightAtom={lightAtom} />
+      {lightAtoms.map((lightAtom, i) => (
+        <LightRenderer
+          key={lightAtom.toString()}
+          index={i}
+          lightAtom={lightAtom}
+        />
       ))}
     </Environment>
   );

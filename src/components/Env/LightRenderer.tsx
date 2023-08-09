@@ -12,8 +12,10 @@ import { TextureLightMaterial } from "./TextureLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
 
 export function LightRenderer({
+  index,
   lightAtom,
 }: {
+  index: number;
   lightAtom: PrimitiveAtom<Light>;
 }) {
   const light = useAtomValue(lightAtom);
@@ -39,11 +41,7 @@ export function LightRenderer({
       <Lightformer
         visible={light.visible}
         form={light.shape}
-        position={new THREE.Vector3().setFromSphericalCoords(
-          light.distance,
-          phi,
-          theta
-        )}
+        position={new THREE.Vector3().setFromSphericalCoords(1, phi, theta)}
         rotation={[light.rotation, 0, 0]}
         scale={[
           light.scale * light.scaleX,
@@ -53,6 +51,7 @@ export function LightRenderer({
         target={[0, 0, 0]}
         castShadow={false}
         receiveShadow={false}
+        renderOrder={index}
       >
         {light.type === "procedural_scrim" && (
           <ProceduralScrimLightMaterial

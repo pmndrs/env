@@ -30,9 +30,6 @@ export function LightProperties({
       .addBinding(light, "scale", { min: 0, step: 0.1 })
       .on("change", handleChange);
     pane
-      .addBinding(light, "distance", { min: 0, max: 10, step: 0.1 })
-      .on("change", handleChange);
-    pane
       .addBinding(light, "latlon", {
         min: -1,
         max: 1,

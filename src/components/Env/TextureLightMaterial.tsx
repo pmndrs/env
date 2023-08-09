@@ -79,7 +79,12 @@ export function TextureLightMaterial({
   });
 
   return (
-    <textureLightShaderMaterial ref={ref} transparent uTexture={texture} />
+    <textureLightShaderMaterial
+      ref={ref}
+      uTexture={texture}
+      transparent={true}
+      depthFunc={THREE.AlwaysDepth}
+    />
   );
 }
 

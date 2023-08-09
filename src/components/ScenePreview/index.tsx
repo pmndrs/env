@@ -48,7 +48,7 @@ export function ScenePreview() {
           <Env />
         </Suspense>
 
-        {/* <Effects /> */}
+        <Effects />
 
         <Debug />
 

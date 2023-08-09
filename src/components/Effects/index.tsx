@@ -17,17 +17,17 @@ export function Effects() {
       {enabled ? (
         <>
           <AutoFocusDOF resolution={2048} />
-          <Bloom
-            mipmapBlur
-            luminanceThreshold={0.5}
-            luminanceSmoothing={0.9}
-            height={500}
-          />
-          <Noise opacity={0.03} />
         </>
       ) : (
         <></>
       )}
+      <Bloom
+        mipmapBlur
+        luminanceThreshold={0.5}
+        luminanceSmoothing={0.9}
+        height={500}
+      />
+      <Noise opacity={0.03} />
     </EffectComposer>
   );
 }

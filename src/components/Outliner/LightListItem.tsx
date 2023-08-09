@@ -143,7 +143,7 @@ export function LightListItem({
                 key={`${id}-name`}
                 type="text"
                 className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                defaultValue={light.name}
+                value={light.name}
                 onChange={(e) => {
                   updateLight({ id, name: e.target.value });
                 }}
@@ -154,35 +154,28 @@ export function LightListItem({
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Shape
-              </span>
-              <select
-                key={`${id}-shape`}
-                className="col-start-8 col-span-18 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
-                defaultValue={light.shape}
-                onChange={(e) => {
-                  const shape = e.target.value as Light["shape"];
-                  updateLight({ shape });
-                }}
-              >
-                <option value="rect">Rectangle</option>
-                <option value="circle">Circle</option>
-                <option value="ring">Ring</option>
-              </select>
-            </label>
-
-            <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-              <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
                 Scale
               </span>
               <input
-                key={`${id}-scale`}
-                className="col-start-8 col-span-18"
+                key={`${id}-scale-input`}
+                type="number"
+                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                min={0}
+                max={10}
+                step={0.1}
+                value={light.scale}
+                onChange={(e) => {
+                  updateLight({ scale: Number(e.target.value) });
+                }}
+              />
+              <input
+                key={`${id}-scale-slider`}
+                className="col-start-15 col-span-10"
                 type="range"
                 min={0}
                 max={10}
-                step={0.01}
-                defaultValue={light.scale}
+                step={0.1}
+                value={light.scale}
                 onChange={(e) => {
                   updateLight({ scale: Number(e.target.value) });
                 }}
@@ -191,16 +184,28 @@ export function LightListItem({
 
             <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
-                Radius
+                Distance
               </span>
               <input
-                key={`${id}-scale`}
-                className="col-start-8 col-span-18"
+                key={`${id}-distance-input`}
+                type="number"
+                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                min={0.1}
+                max={10}
+                step={0.1}
+                value={light.distance}
+                onChange={(e) => {
+                  updateLight({ distance: Number(e.target.value) });
+                }}
+              />
+              <input
+                key={`${id}-distance-slider`}
+                className="col-start-15 col-span-10"
                 type="range"
                 min={0}
                 max={10}
                 step={0.01}
-                defaultValue={light.distance}
+                value={light.distance}
                 onChange={(e) => {
                   updateLight({ distance: Number(e.target.value) });
                 }}
@@ -211,14 +216,19 @@ export function LightListItem({
               <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-5">
                 Lat-Lon
               </span>
+
+              <button className="col-start-8 col-span-2 w-8 h-8 bg-black">
+                +
+              </button>
+
               <input
                 key={`${id}-position-theta`}
-                className="col-start-8 col-span-8"
-                type="range"
+                className="col-start-11 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                type="number"
                 min={-Math.PI}
                 max={Math.PI}
                 step={0.01}
-                defaultValue={light.theta}
+                value={light.theta}
                 onChange={(e) => {
                   updateLight({
                     theta: Number(e.target.value),
@@ -227,12 +237,12 @@ export function LightListItem({
               />
               <input
                 key={`${id}-position-phi`}
-                className="col-start-17 col-span-8"
-                type="range"
+                className="col-start-18 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                type="number"
                 min={-Math.PI}
                 max={0}
                 step={0.01}
-                defaultValue={light.phi}
+                value={light.phi}
                 onChange={(e) => {
                   updateLight({
                     phi: Number(e.target.value),
@@ -251,7 +261,7 @@ export function LightListItem({
                 key={`${id}-color`}
                 className="col-start-8 col-span-18"
                 type="color"
-                defaultValue={light.color}
+                value={light.color}
                 onChange={(e) => {
                   updateLight({ color: e.target.value });
                 }}
@@ -263,13 +273,24 @@ export function LightListItem({
                 Intensity
               </span>
               <input
-                key={`${id}-intensity`}
-                className="col-start-8 col-span-18"
+                key={`${id}-intensity-input`}
+                type="number"
+                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                min={0}
+                step={0.1}
+                value={light.intensity}
+                onChange={(e) => {
+                  updateLight({ intensity: Number(e.target.value) });
+                }}
+              />
+              <input
+                key={`${id}-intensity-slider`}
+                className="col-start-15 col-span-10"
                 type="range"
                 min={0}
                 max={10}
-                step={0.01}
-                defaultValue={light.intensity}
+                step={0.1}
+                value={light.intensity}
                 onChange={(e) => {
                   updateLight({ intensity: Number(e.target.value) });
                 }}
@@ -281,13 +302,25 @@ export function LightListItem({
                 Opacity
               </span>
               <input
-                key={`${id}-opacity`}
-                className="col-start-8 col-span-18"
+                key={`${id}-opacity-input`}
+                type="number"
+                className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                min={0}
+                max={1}
+                step={0.01}
+                value={light.opacity}
+                onChange={(e) => {
+                  updateLight({ opacity: Number(e.target.value) });
+                }}
+              />
+              <input
+                key={`${id}-opacity-slider`}
+                className="col-start-15 col-span-10"
                 type="range"
                 min={0}
                 max={1}
                 step={0.01}
-                defaultValue={light.opacity}
+                value={light.opacity}
                 onChange={(e) => {
                   updateLight({ opacity: Number(e.target.value) });
                 }}
@@ -301,7 +334,7 @@ export function LightListItem({
                 Light Type
               </span>
 
-              <span className="col-start-11 col-span-12 font-mono text-xs">
+              <span className="col-start-8 col-span-12 font-mono text-xs">
                 {light.type === "texture" && "Texture"}
                 {light.type === "procedural_scrim" && "Procedural Scrim"}
                 {light.type === "procedural_umbrella" && "Procedural Umbrella"}
@@ -320,7 +353,7 @@ export function LightListItem({
                   min={3}
                   max={20}
                   step={1}
-                  defaultValue={light.lightSides}
+                  value={light.lightSides}
                   onChange={(e) => {
                     updateLight({ lightSides: Number(e.target.value) });
                   }}
@@ -331,17 +364,17 @@ export function LightListItem({
             {light.type === "procedural_scrim" && (
               <>
                 <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                    Scrim Position
+                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                    Scrim XY
                   </span>
                   <input
                     key={`${id}-lightPosition-x`}
-                    className="col-start-11 col-span-6"
+                    className="col-start-8 col-span-8"
                     type="range"
                     min={-1}
                     max={1}
                     step={0.01}
-                    defaultValue={light.lightPosition.x}
+                    value={light.lightPosition.x}
                     onChange={(e) => {
                       updateLight({
                         lightPosition: {
@@ -353,12 +386,12 @@ export function LightListItem({
                   />
                   <input
                     key={`${id}-lightPosition-y`}
-                    className="col-start-19 col-span-6"
+                    className="col-start-17 col-span-8"
                     type="range"
                     min={-1}
                     max={1}
                     step={0.01}
-                    defaultValue={light.lightPosition.y}
+                    value={light.lightPosition.y}
                     onChange={(e) => {
                       updateLight({
                         lightPosition: {
@@ -371,17 +404,29 @@ export function LightListItem({
                 </label>
 
                 <label className="grid [grid-template-columns:repeat(24,1fr)] [grid-template-rows:32px] items-center">
-                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-10">
-                    Scrim Distance
+                  <span className="text-[10px] font-medium text-gray-400 tracking-wider uppercase col-span-6">
+                    Spread
                   </span>
                   <input
-                    key={`${id}-lightDistance`}
-                    className="col-start-11 col-span-14"
+                    key={`${id}-lightDistance-input`}
+                    type="number"
+                    className="col-start-8 col-span-6 h-8 px-2 py-1 text-gray-100 bg-black/25 border border-gray-400/20 rounded-sm focus:outline-none focus:border-gray-100/20 "
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={light.lightDistance}
+                    onChange={(e) => {
+                      updateLight({ lightDistance: Number(e.target.value) });
+                    }}
+                  />
+                  <input
+                    key={`${id}-lightDistance-slider`}
+                    className="col-start-15 col-span-10"
                     type="range"
                     min={0}
                     max={1}
                     step={0.01}
-                    defaultValue={light.lightDistance}
+                    value={light.lightDistance}
                     onChange={(e) => {
                       updateLight({ lightDistance: Number(e.target.value) });
                     }}

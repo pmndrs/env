@@ -1,15 +1,17 @@
 import * as THREE from "three";
-import { Float, Lightformer } from "@react-three/drei";
+import { Float, Lightformer, Sphere } from "@react-three/drei";
 import {
   Light,
   ProceduralUmbrellaLight,
   ProceduralScrimLight,
   TextureLight,
+  SkyGradientLight,
 } from "../../store";
 import { ProceduralScrimLightMaterial } from "./ProceduralScrimLightMaterial";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 import { TextureLightMaterial } from "./TextureLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
+import { SkyGradientLightMaterial } from "./SkyGradientLightMaterial";
 
 export function LightRenderer({
   index,
@@ -21,7 +23,7 @@ export function LightRenderer({
   const light = useAtomValue(lightAtom);
 
   // Convert lat/lon to phi/theta
-  const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, 0, Math.PI);
+  const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, Math.PI, 0);
   const theta = THREE.MathUtils.mapLinear(
     light.latlon.x,
     -1,
@@ -29,6 +31,22 @@ export function LightRenderer({
     0.5 * Math.PI,
     -1.5 * Math.PI
   );
+
+  if (light.type === "sky_gradient") {
+    return (
+      <Sphere
+        visible={light.visible}
+        args={[100, 64, 64]}
+        castShadow={false}
+        receiveShadow={false}
+        renderOrder={index}
+      >
+        <SkyGradientLightMaterial
+          lightAtom={lightAtom as PrimitiveAtom<SkyGradientLight>}
+        />
+      </Sphere>
+    );
+  }
 
   return (
     <Float

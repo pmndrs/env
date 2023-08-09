@@ -122,7 +122,7 @@ export function CommandPalette() {
               </Item>
               <Item
                 label="Gradient"
-                value="gradient"
+                value="sky_gradient"
                 subtitle="Two-stop color ramp"
                 colorTheme="green"
               >
@@ -143,7 +143,7 @@ export function CommandPalette() {
             {value === "procedural_umbrella" && <Umbrella />}
             {value === "flash_head" && <FlashHead />}
             {value === "sky" && <Sky />}
-            {value === "gradient" && <Gradient />}
+            {value === "sky_gradient" && <Gradient />}
           </div>
         </div>
       </Command.List>
@@ -222,6 +222,13 @@ function Item({
         type: "procedural_umbrella",
         color: "#ffffff",
         lightSides: 3,
+      });
+    } else if (value === "sky_gradient") {
+      addLight({
+        ...commonProps,
+        type: "sky_gradient",
+        color: "#ff0000",
+        color2: "#0000ff",
       });
     }
 

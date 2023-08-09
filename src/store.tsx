@@ -56,10 +56,17 @@ export type ProceduralUmbrellaLight = BaseLight & {
   lightSides: number;
 };
 
+export type SkyGradientLight = BaseLight & {
+  type: "sky_gradient";
+  color: string;
+  color2: string;
+};
+
 export type Light =
   | TextureLight
   | ProceduralScrimLight
-  | ProceduralUmbrellaLight;
+  | ProceduralUmbrellaLight
+  | SkyGradientLight;
 
 export const modeAtom = atom({
   scene: true,
@@ -169,7 +176,7 @@ export const duplicateLightAtom = atom(
     const light = lights.find((l) => l.id === lightId)!;
     const isSolo = get(isSoloAtom);
     const newLight = {
-      ...light,
+      ...structuredClone(light),
       visible: isSolo ? false : light.visible,
       solo: false,
       selected: false,

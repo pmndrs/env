@@ -33,6 +33,15 @@ export function LightProperties({
       .addBinding(light, "scale", { min: 0, step: 0.1 })
       .on("change", handleChange);
     pane
+      .addBinding(light, "scaleX", { label: "width", min: 0, step: 0.1 })
+      .on("change", handleChange);
+    pane
+      .addBinding(light, "scaleY", { label: "height", min: 0, step: 0.1 })
+      .on("change", handleChange);
+    pane
+      .addBinding(light, "rotation", { step: 0.1 })
+      .on("change", handleChange);
+    pane
       .addBinding(light, "latlon", {
         x: { min: -1, max: 1, step: 0.01 },
         y: { inverted: true, min: -1, max: 1, step: 0.01 },

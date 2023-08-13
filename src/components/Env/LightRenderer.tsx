@@ -1,17 +1,19 @@
+import { Sphere } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { PrimitiveAtom, useAtomValue } from "jotai";
+import { useRef } from "react";
 import * as THREE from "three";
-import { Float, Lightformer, Sphere } from "@react-three/drei";
 import {
   Light,
-  ProceduralUmbrellaLight,
   ProceduralScrimLight,
-  TextureLight,
+  ProceduralUmbrellaLight,
   SkyGradientLight,
+  TextureLight,
 } from "../../store";
 import { ProceduralScrimLightMaterial } from "./ProceduralScrimLightMaterial";
-import { PrimitiveAtom, useAtomValue } from "jotai";
-import { TextureLightMaterial } from "./TextureLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
 import { SkyGradientLightMaterial } from "./SkyGradientLightMaterial";
+import { TextureLightMaterial } from "./TextureLightMaterial";
 
 export function LightRenderer({
   index,
@@ -20,17 +22,34 @@ export function LightRenderer({
   index: number;
   lightAtom: PrimitiveAtom<Light>;
 }) {
+  const meshRef = useRef<THREE.Mesh>(null);
   const light = useAtomValue(lightAtom);
 
-  // Convert lat/lon to phi/theta
-  const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, Math.PI, 0);
-  const theta = THREE.MathUtils.mapLinear(
-    light.latlon.x,
-    -1,
-    1,
-    0.5 * Math.PI,
-    -1.5 * Math.PI
-  );
+  useFrame(() => {
+    if (!meshRef.current) {
+      return;
+    }
+
+    // Convert lat/lon to phi/theta
+    const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, Math.PI, 0);
+    const theta = THREE.MathUtils.mapLinear(
+      light.latlon.x,
+      -1,
+      1,
+      0.5 * Math.PI,
+      -1.5 * Math.PI
+    );
+
+    meshRef.current.position.setFromSphericalCoords(1, phi, theta);
+
+    meshRef.current.scale.setX(light.scale * light.scaleX);
+    meshRef.current.scale.setY(light.scale * light.scaleY);
+    meshRef.current.scale.setZ(light.scale);
+
+    meshRef.current.lookAt(0, 0, 0);
+    meshRef.current.rotateZ(light.rotation);
+    meshRef.current.updateMatrix();
+  });
 
   if (light.type === "sky_gradient") {
     return (
@@ -49,44 +68,29 @@ export function LightRenderer({
   }
 
   return (
-    <Float
-      enabled={light.animate}
-      speed={light.animationSpeed} // Animation speed, defaults to 1
-      rotationIntensity={light.animationRotationIntensity} // XYZ rotation intensity, defaults to 1
-      floatIntensity={light.animationFloatIntensity} // Up/down float intensity, works like a multiplier with floatingRange,defaults to 1
-      floatingRange={light.animationFloatingRange}
+    <mesh
+      ref={meshRef}
+      visible={light.visible}
+      castShadow={false}
+      receiveShadow={false}
+      renderOrder={index}
     >
-      <Lightformer
-        visible={light.visible}
-        form={light.shape}
-        position={new THREE.Vector3().setFromSphericalCoords(1, phi, theta)}
-        rotation={[light.rotation, 0, 0]}
-        scale={[
-          light.scale * light.scaleX,
-          light.scale * light.scaleY,
-          light.scale,
-        ]}
-        target={[0, 0, 0]}
-        castShadow={false}
-        receiveShadow={false}
-        renderOrder={index}
-      >
-        {light.type === "procedural_scrim" && (
-          <ProceduralScrimLightMaterial
-            lightAtom={lightAtom as PrimitiveAtom<ProceduralScrimLight>}
-          />
-        )}
-        {light.type === "texture" && (
-          <TextureLightMaterial
-            lightAtom={lightAtom as PrimitiveAtom<TextureLight>}
-          />
-        )}
-        {light.type === "procedural_umbrella" && (
-          <ProceduralUmbrellaLightMaterial
-            lightAtom={lightAtom as PrimitiveAtom<ProceduralUmbrellaLight>}
-          />
-        )}
-      </Lightformer>
-    </Float>
+      <planeGeometry args={[1, 1, 1, 1]} />
+      {light.type === "procedural_scrim" && (
+        <ProceduralScrimLightMaterial
+          lightAtom={lightAtom as PrimitiveAtom<ProceduralScrimLight>}
+        />
+      )}
+      {light.type === "texture" && (
+        <TextureLightMaterial
+          lightAtom={lightAtom as PrimitiveAtom<TextureLight>}
+        />
+      )}
+      {light.type === "procedural_umbrella" && (
+        <ProceduralUmbrellaLightMaterial
+          lightAtom={lightAtom as PrimitiveAtom<ProceduralUmbrellaLight>}
+        />
+      )}
+    </mesh>
   );
 }

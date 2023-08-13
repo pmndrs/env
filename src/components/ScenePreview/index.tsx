@@ -1,5 +1,10 @@
 import { Suspense } from "react";
-import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
+import {
+  Bvh,
+  Environment,
+  PerformanceMonitor,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Effects } from "../Effects";
 import { Env } from "../Env";
@@ -45,7 +50,15 @@ export function ScenePreview() {
         <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
-          <Env />
+          <Environment
+            resolution={2048}
+            far={100}
+            near={0.01}
+            frames={Infinity}
+            background
+          >
+            <Env />
+          </Environment>
         </Suspense>
 
         <Effects />

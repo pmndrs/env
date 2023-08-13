@@ -5,6 +5,7 @@ import { CubeMaterial } from "./CubeMaterial";
 import { Env } from "../Env";
 import { DownloadHDRI } from "./DownloadHDRI";
 import { SaveBackgroundTexture } from "./SaveBackgroundTexture";
+import { Environment } from "@react-three/drei";
 
 export function EnvMapPlane() {
   const [texture, setTexture] = useState(() => new THREE.CubeTexture());
@@ -16,7 +17,15 @@ export function EnvMapPlane() {
         <>
           <SaveBackgroundTexture setTexture={setTexture} />
           <DownloadHDRI texture={texture} />
-          <Env />
+          <Environment
+            resolution={2048}
+            far={100}
+            near={0.01}
+            frames={Infinity}
+            background
+          >
+            <Env />
+          </Environment>
         </>,
         scene
       )}

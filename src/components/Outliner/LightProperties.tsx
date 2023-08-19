@@ -79,7 +79,7 @@ export function LightProperties({
         .on("change", handleChange);
       pane
         .addBinding(light, "lightDistance", {
-          min: 0,
+          min: 0.01,
           max: 1,
           label: "spread",
         })
@@ -93,7 +93,7 @@ export function LightProperties({
     return () => {
       pane.dispose();
     };
-  }, [light.id]);
+  }, [light.id, light.ts]);
 
   return <div ref={ref} />;
 }

@@ -172,6 +172,7 @@ function Item({
     const commonProps = {
       name: `${value} ${String.fromCharCode(lights.length + 65)}`,
       id: THREE.MathUtils.generateUUID(),
+      ts: Date.now(),
       shape: "rect" as const,
       latlon: { x: 0, y: 0 },
       intensity: 1,

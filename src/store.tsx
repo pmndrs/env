@@ -12,6 +12,7 @@ export type Camera = {
 
 type BaseLight = {
   id: string;
+  ts: number;
   name: string;
 
   shape: "rect" | "circle" | "ring";
@@ -68,6 +69,8 @@ export type Light =
   | ProceduralUmbrellaLight
   | SkyGradientLight;
 
+export const debugAtom = atom(false);
+
 export const modeAtom = atom({
   scene: true,
   hdri: true,
@@ -87,6 +90,7 @@ export const lightsAtom = atomWithStorage<Light[]>("lights", [
   {
     name: `Light A`,
     id: THREE.MathUtils.generateUUID(),
+    ts: Date.now(),
     shape: "rect",
     type: "procedural_scrim",
     color: "#fff",

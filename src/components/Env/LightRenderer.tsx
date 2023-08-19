@@ -40,7 +40,7 @@ export function LightRenderer({
       -1.5 * Math.PI
     );
 
-    meshRef.current.position.setFromSphericalCoords(1, phi, theta);
+    meshRef.current.position.setFromSphericalCoords(3, phi, theta);
 
     meshRef.current.scale.setX(light.scale * light.scaleX);
     meshRef.current.scale.setY(light.scale * light.scaleY);

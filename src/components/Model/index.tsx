@@ -37,7 +37,7 @@ export function Model({ debugMaterial, ...props }: any) {
 
   return (
     <group {...props} dispose={null}>
-      <Resize scale={2}>
+      <Resize scale={1}>
         <primitive object={scene} />
       </Resize>
     </group>

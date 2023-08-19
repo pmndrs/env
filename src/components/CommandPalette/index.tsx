@@ -176,7 +176,7 @@ function Item({
       latlon: { x: 0, y: 0 },
       intensity: 1,
       rotation: 0,
-      scale: 2,
+      scale: 1,
       scaleX: 1,
       scaleY: 1,
       target: { x: 0, y: 0, z: 0 },

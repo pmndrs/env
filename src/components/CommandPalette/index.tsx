@@ -179,7 +179,7 @@ function Item({
       scale: 2,
       scaleX: 1,
       scaleY: 1,
-      target: [0, 0, 0] as [number, number, number],
+      target: { x: 0, y: 0, z: 0 },
       visible: true,
       solo: false,
       selected: false,

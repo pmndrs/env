@@ -36,8 +36,10 @@ export function Model({ debugMaterial, ...props }: any) {
   }, [nodes, materials, debugMaterial]);
 
   return (
-    <Resize scale={2}>
-      <primitive object={scene} {...props} />
-    </Resize>
+    <group {...props} dispose={null}>
+      <Resize scale={2}>
+        <primitive object={scene} />
+      </Resize>
+    </group>
   );
 }

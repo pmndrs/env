@@ -1,22 +1,59 @@
-import { Suspense } from "react";
-import {
-  Bvh,
-  Environment,
-  PerformanceMonitor,
-  useGLTF,
-} from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { Effects } from "../Effects";
+import { BoltIcon } from "@heroicons/react/24/solid";
+import { Bvh, Environment, PerformanceMonitor } from "@react-three/drei";
+import { Canvas, ThreeEvent } from "@react-three/fiber";
+import { useSetAtom } from "jotai";
+import { PointerEvent, Suspense, useCallback } from "react";
+import { toast } from "sonner";
+import * as THREE from "three";
+import { lightsAtom } from "../../store";
 import { Env } from "../Env";
 import { Model } from "../Model";
 import { Cameras } from "./Cameras";
 import { Controls } from "./Controls";
 import { Debug } from "./Debug";
 import { Lights } from "./Lights";
-import { toast } from "sonner";
-import { BoltIcon } from "@heroicons/react/24/solid";
 
 export function ScenePreview() {
+  const setLights = useSetAtom(lightsAtom);
+
+  const handleModelClick = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      e.stopPropagation();
+
+      const cameraPosition = e.camera.position.clone();
+      const point = e.point.clone();
+      const normal =
+        e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
+        new THREE.Vector3(0, 0, 1);
+
+      // Reflect the camera position across the normal so that the
+      // light is visible in the reflection.
+      const cameraToPoint = point.clone().sub(cameraPosition).normalize();
+      const reflected = cameraToPoint.reflect(normal);
+
+      const spherical = new THREE.Spherical().setFromVector3(reflected);
+
+      const lat = THREE.MathUtils.mapLinear(spherical.phi, 0, Math.PI, 1, -1);
+      const lon = THREE.MathUtils.mapLinear(
+        spherical.theta,
+        0.5 * Math.PI,
+        -1.5 * Math.PI,
+        -1,
+        1
+      );
+
+      const { x, y, z } = point;
+      setLights((lights) =>
+        lights.map((l) => ({
+          ...l,
+          target: l.selected ? { x, y, z } : l.target,
+          latlon: l.selected ? { x: lon, y: lat } : l.latlon,
+        }))
+      );
+    },
+    [setLights]
+  );
+
   return (
     <Canvas
       shadows
@@ -26,6 +63,7 @@ export function ScenePreview() {
         logarithmicDepthBuffer: true,
         antialias: true,
       }}
+      style={{ touchAction: "none" }}
     >
       <PerformanceMonitor
         threshold={0.3}
@@ -42,8 +80,8 @@ export function ScenePreview() {
         <Cameras />
 
         <Suspense fallback={null}>
-          <Bvh firstHitOnly>
-            <Model debugMaterial={false} />
+          <Bvh firstHitOnly verbose>
+            <Model debugMaterial={false} onClick={handleModelClick} />
           </Bvh>
         </Suspense>
 
@@ -61,7 +99,7 @@ export function ScenePreview() {
           </Environment>
         </Suspense>
 
-        <Effects />
+        {/* <Effects /> */}
 
         <Debug />
 

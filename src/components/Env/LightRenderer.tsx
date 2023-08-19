@@ -46,7 +46,7 @@ export function LightRenderer({
     meshRef.current.scale.setY(light.scale * light.scaleY);
     meshRef.current.scale.setZ(light.scale);
 
-    meshRef.current.lookAt(0, 0, 0);
+    meshRef.current.lookAt(light.target.x, light.target.y, light.target.z);
     meshRef.current.rotateZ(light.rotation);
     meshRef.current.updateMatrix();
   });

@@ -47,6 +47,7 @@ export function LightProperties({
         y: { inverted: true, min: -1, max: 1, step: 0.01 },
       })
       .on("change", handleChange);
+    pane.addBinding(light, "target").on("change", handleChange);
 
     pane.addBlade({ view: "separator" });
 

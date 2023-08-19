@@ -24,7 +24,7 @@ type BaseLight = {
   rotation: number;
 
   latlon: { x: number; y: number };
-  target: [number, number, number];
+  target: { x: number; y: number; z: number };
 
   selected: boolean;
   visible: boolean;
@@ -96,7 +96,7 @@ export const lightsAtom = atomWithStorage<Light[]>("lights", [
     scale: 2,
     scaleX: 1,
     scaleY: 1,
-    target: [0, 0, 0],
+    target: { x: 0, y: 0, z: 0 },
     selected: false,
     visible: true,
     solo: false,

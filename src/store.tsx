@@ -71,7 +71,7 @@ export type Light =
 
 export const debugAtom = atom(false);
 
-export const modeAtom = atom({
+export const modeAtom = atomWithStorage("mode", {
   scene: true,
   hdri: true,
   code: false,

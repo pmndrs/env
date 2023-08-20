@@ -79,14 +79,13 @@ export function ScenePreview() {
         }}
       >
         <Cameras />
+        <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
           <Bvh firstHitOnly verbose>
             <Model debugMaterial={false} onClick={handleModelClick} />
           </Bvh>
         </Suspense>
-
-        <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
           <Environment

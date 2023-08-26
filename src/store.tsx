@@ -86,6 +86,11 @@ export const modelUrlAtom = atom("/911-transformed.glb");
 
 export const isCommandPaletteOpenAtom = atom(false);
 
+export const pointerAtom = atom({
+  point: new THREE.Vector3(),
+  normal: new THREE.Vector3(),
+});
+
 export const lightsAtom = atomWithStorage<Light[]>("lights", [
   {
     name: `Light A`,

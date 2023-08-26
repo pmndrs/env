@@ -5,7 +5,7 @@ import { useSetAtom } from "jotai";
 import { PointerEvent, Suspense, useCallback } from "react";
 import { toast } from "sonner";
 import * as THREE from "three";
-import { lightsAtom } from "../../store";
+import { lightsAtom, pointerAtom } from "../../store";
 import { Env } from "../Env";
 import { Model } from "../Model";
 import { Cameras } from "./Cameras";
@@ -55,6 +55,21 @@ export function ScenePreview() {
     [setLights]
   );
 
+  const setPointer = useSetAtom(pointerAtom);
+  const handleModelPointerMove = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      e.stopPropagation();
+
+      const point = e.point.clone();
+      const normal =
+        e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
+        new THREE.Vector3(0, 0, 1);
+
+      setPointer({ point, normal });
+    },
+    [setPointer]
+  );
+
   return (
     <Canvas
       shadows
@@ -82,8 +97,12 @@ export function ScenePreview() {
         <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
-          <Bvh firstHitOnly verbose>
-            <Model debugMaterial={false} onClick={handleModelClick} />
+          <Bvh firstHitOnly>
+            <Model
+              debugMaterial={false}
+              onClick={handleModelClick}
+              onPointerMove={handleModelPointerMove}
+            />
           </Bvh>
         </Suspense>
 
@@ -92,7 +111,7 @@ export function ScenePreview() {
             resolution={2048}
             far={100}
             near={0.01}
-            // frames={Infinity}
+            frames={Infinity}
             background
           >
             <Env />

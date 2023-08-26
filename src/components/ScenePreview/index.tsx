@@ -92,7 +92,7 @@ export function ScenePreview() {
             resolution={2048}
             far={100}
             near={0.01}
-            frames={Infinity}
+            // frames={Infinity}
             background
           >
             <Env />

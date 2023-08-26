@@ -4,6 +4,7 @@ import theme from "prism-react-renderer/themes/vsDark";
 import Highlight, { defaultProps } from "prism-react-renderer";
 import { useAtomValue } from "jotai";
 import { lightsAtom } from "../../store";
+import { latlonToPhiTheta } from "../../utils/coordinates";
 
 export function Code() {
   const lights = useAtomValue(lightsAtom);
@@ -22,6 +23,7 @@ export function Env() {
             {/* Lights */}
             ${lights
               .map((light) => {
+                const { phi, theta } = latlonToPhiTheta(light.latlon);
                 return `
 {/* ${light.name} */}
 <Lightformer
@@ -29,9 +31,9 @@ export function Env() {
     form="${light.shape}"
     intensity={${light.intensity}}
     position={new THREE.Vector3().setFromSphericalCoords(
-        ${light.distance}, // distance
-        ${light.phi},    // phi
-        ${light.theta}  // theta
+        3, // distance
+        ${phi},    // phi
+        ${theta}  // theta
     )}
     rotation={[${light.rotation}, 0, 0]}
     scale={[${light.scale * light.scaleX}, ${light.scale * light.scaleY}, ${

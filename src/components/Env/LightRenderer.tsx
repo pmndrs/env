@@ -14,6 +14,7 @@ import { ProceduralScrimLightMaterial } from "./ProceduralScrimLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
 import { SkyGradientLightMaterial } from "./SkyGradientLightMaterial";
 import { TextureLightMaterial } from "./TextureLightMaterial";
+import { latlonToPhiTheta } from "../../utils/coordinates";
 
 export function LightRenderer({
   index,
@@ -30,15 +31,7 @@ export function LightRenderer({
       return;
     }
 
-    // Convert lat/lon to phi/theta
-    const phi = THREE.MathUtils.mapLinear(light.latlon.y, -1, 1, Math.PI, 0);
-    const theta = THREE.MathUtils.mapLinear(
-      light.latlon.x,
-      -1,
-      1,
-      0.5 * Math.PI,
-      -1.5 * Math.PI
-    );
+    const { phi, theta } = latlonToPhiTheta(light.latlon);
 
     meshRef.current.position.setFromSphericalCoords(3, phi, theta);
 

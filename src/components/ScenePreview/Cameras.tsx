@@ -1,21 +1,21 @@
 import { PerspectiveCamera } from "@react-three/drei";
-import React from "react";
-import { useStore } from "../../hooks/useStore";
+import { camerasAtom } from "../../store";
+import { useAtomValue } from "jotai";
 
 export function Cameras() {
-  const cameras = useStore((state) => state.cameras);
-  const selectedCameraId = useStore((state) => state.selectedCameraId);
+  const cameras = useAtomValue(camerasAtom);
 
   return (
     <>
       {cameras.map((camera) => (
         <PerspectiveCamera
           key={camera.id}
-          makeDefault={camera.id === selectedCameraId}
+          makeDefault={camera.selected}
           position={camera.position}
           rotation={camera.rotation}
           near={0.001}
-          far={100} />
+          far={100}
+        />
       ))}
     </>
   );

@@ -34,7 +34,7 @@ void main()  {
 	normalize( dir );
 	gl_FragColor = textureCube( map, dir );
 
-  // #include <tonemapping_fragment>
+  #include <tonemapping_fragment>
   #include <encodings_fragment>
 }
 `;

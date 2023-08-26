@@ -1,25 +1,27 @@
 import { Command } from "cmdk";
 import { useEffect, useState } from "react";
 import {
-  BoltIcon,
   ChartBarIcon,
   LightBulbIcon,
   MagnifyingGlassIcon,
   PhotoIcon,
-  SunIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
+import { useAtom, useSetAtom } from "jotai";
+import { Light, isCommandPaletteOpenAtom, lightsAtom } from "../../store";
+import * as THREE from "three";
 
 export function CommandPalette() {
+  const [open, setOpen] = useAtom(isCommandPaletteOpenAtom);
+
   const [value, setValue] = useState("softbox");
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(true);
       }
     };
 
@@ -40,7 +42,7 @@ export function CommandPalette() {
         <MagnifyingGlassIcon className="text-neutral-600 w-5 h-5 translate-y-[1px]" />
         <Command.Input
           autoFocus
-          placeholder="Find lights, backgrounds, and flags..."
+          placeholder="Add lights, backgrounds, and flags..."
           className="border-none bg-transparent flex-1 outline-none text-neutral-100 placeholder:text-neutral-600"
         />
       </div>
@@ -75,15 +77,31 @@ export function CommandPalette() {
                 subtitle="Deflect light off umbrella"
                 colorTheme="orange"
               >
-                <BoltIcon className="w-5 h-5 text-white" />
+                <LightBulbIcon className="w-5 h-5 text-white" />
               </Item>
               <Item
-                label="Flood"
-                value="flood"
-                subtitle="High-intensity direct light"
+                label="Flash Head"
+                value="flash_head"
+                subtitle="Bright direct light"
                 colorTheme="orange"
               >
-                <SunIcon className="w-5 h-5 text-white" />
+                <LightBulbIcon className="w-5 h-5 text-white" />
+              </Item>
+              <Item
+                label="Procedural Scrim"
+                value="procedural_scrim"
+                subtitle="Simulated scrim light"
+                colorTheme="orange"
+              >
+                <LightBulbIcon className="w-5 h-5 text-white" />
+              </Item>
+              <Item
+                label="Procedural Umbrella"
+                value="procedural_umbrella"
+                subtitle="Simulated umbrella light"
+                colorTheme="orange"
+              >
+                <LightBulbIcon className="w-5 h-5 text-white" />
               </Item>
             </Command.Group>
 
@@ -104,7 +122,7 @@ export function CommandPalette() {
               </Item>
               <Item
                 label="Gradient"
-                value="gradient"
+                value="sky_gradient"
                 subtitle="Two-stop color ramp"
                 colorTheme="green"
               >
@@ -120,10 +138,12 @@ export function CommandPalette() {
               <div className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute w-16 h-16 rounded-full bg-white blur-3xl" />
             )}
             {value === "softbox" && <Softbox />}
+            {value === "procedural_scrim" && <Scrim />}
             {value === "umbrella" && <Umbrella />}
-            {value === "flood" && <Flood />}
+            {value === "procedural_umbrella" && <Umbrella />}
+            {value === "flash_head" && <FlashHead />}
             {value === "sky" && <Sky />}
-            {value === "gradient" && <Gradient />}
+            {value === "sky_gradient" && <Gradient />}
           </div>
         </div>
       </Command.List>
@@ -144,10 +164,82 @@ function Item({
   subtitle: string;
   colorTheme?: "orange" | "blue" | "green" | "red" | "purple";
 }) {
+  const setOpen = useSetAtom(isCommandPaletteOpenAtom);
+  const [lights, setLights] = useAtom(lightsAtom);
+  const addLight = (light: Light) => setLights((lights) => [...lights, light]);
+
+  function handleSelect(value: string) {
+    const commonProps = {
+      name: `${value} ${String.fromCharCode(lights.length + 65)}`,
+      id: THREE.MathUtils.generateUUID(),
+      ts: Date.now(),
+      shape: "rect" as const,
+      latlon: { x: 0, y: 0 },
+      intensity: 1,
+      rotation: 0,
+      scale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      target: { x: 0, y: 0, z: 0 },
+      visible: true,
+      solo: false,
+      selected: false,
+      opacity: 1,
+      animate: false,
+    };
+
+    if (value === "softbox") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/softbox-octagon.exr",
+      });
+    } else if (value === "procedural_scrim") {
+      addLight({
+        ...commonProps,
+        type: "procedural_scrim",
+        color: "#ffffff",
+        lightDistance: 0.3,
+        lightPosition: { x: 0, y: 0 },
+      });
+    } else if (value === "umbrella") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/umbrella.exr",
+      });
+    } else if (value === "flash_head") {
+      addLight({
+        ...commonProps,
+        type: "texture",
+        color: "#ffffff",
+        map: "/textures/flash-head.exr",
+      });
+    } else if (value === "procedural_umbrella") {
+      addLight({
+        ...commonProps,
+        type: "procedural_umbrella",
+        color: "#ffffff",
+        lightSides: 3,
+      });
+    } else if (value === "sky_gradient") {
+      addLight({
+        ...commonProps,
+        type: "sky_gradient",
+        color: "#ff0000",
+        color2: "#0000ff",
+      });
+    }
+
+    setOpen(false);
+  }
+
   return (
     <Command.Item
       value={value}
-      onSelect={() => {}}
+      onSelect={handleSelect}
       className="group cursor-pointer flex items-center rounded-lg text-sm gap-3 text-neutral-100 p-2 mr-2 font-medium transition-all transition-none data-[selected='true']:bg-blue-500 data-[selected='true']:text-white"
       style={{ contentVisibility: "auto" }}
     >
@@ -176,7 +268,29 @@ function Item({
 function Softbox() {
   return (
     <img
-      src="https://cdn.shopify.com/s/files/1/0089/0093/5765/products/aputure-light-octadome-120-octagonal-softbox-vitopal-3.png?v=1681377047&width=1000"
+      src="/textures/softbox-octagon.png"
+      alt="Softbox"
+      className="w-48 h-48"
+      loading="lazy"
+    />
+  );
+}
+
+function Scrim() {
+  return (
+    <img
+      src="/textures/scrim.png"
+      alt="Scrim"
+      className="w-48 h-48"
+      loading="lazy"
+    />
+  );
+}
+
+function FlashHead() {
+  return (
+    <img
+      src="/textures/flash-head.png"
       alt="Softbox"
       className="w-48 h-48"
       loading="lazy"
@@ -187,19 +301,8 @@ function Softbox() {
 function Umbrella() {
   return (
     <img
-      src="https://www.rogueflash.com/cdn/shop/files/38UmbrellawithDiffuser1_1000x.png?v=1687891262"
+      src="/textures/umbrella.png"
       alt="Umbrella"
-      className="w-48 h-48"
-      loading="lazy"
-    />
-  );
-}
-
-function Flood() {
-  return (
-    <img
-      src="https://i.shgcdn.com/2f03bbfc-4f99-490b-a1d7-e5a7e2056731/-/format/auto/-/preview/3000x3000/-/quality/lighter/"
-      alt="Flood"
       className="w-48 h-48"
       loading="lazy"
     />

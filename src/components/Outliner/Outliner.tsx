@@ -1,21 +1,68 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import * as THREE from "three";
-
-import { useStore } from "../../hooks/useStore";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
+  Camera,
+  Light,
+  cameraAtomsAtom,
+  camerasAtom,
+  isCommandPaletteOpenAtom,
+  lightAtomsAtom,
+  lightIdsAtom,
+  lightsAtom,
+  selectedCameraAtom,
+} from "../../store";
 import { LightListItem } from "./LightListItem";
 import { CameraListItem } from "./CameraListItem";
+import { useAtomValue, useSetAtom } from "jotai";
 
 export function Outliner() {
-  const lights = useStore((state) => state.lights);
-  const cameras = useStore((state) => state.cameras);
-  const addLight = useStore((state) => state.addLight);
-  const addCamera = useStore((state) => state.addCamera);
+  const lightIds = useAtomValue(lightIdsAtom);
+  const setLights = useSetAtom(lightsAtom);
+  const setIsCommandPaletteOpen = useSetAtom(isCommandPaletteOpenAtom);
+  const lightAtoms = useAtomValue(lightAtomsAtom);
+  const cameraAtoms = useAtomValue(cameraAtomsAtom);
+  const setCameras = useSetAtom(camerasAtom);
+  const currentCamera = useAtomValue(selectedCameraAtom);
+  const addCamera = (camera: Camera) =>
+    setCameras((cameras) => [...cameras, camera]);
 
-  const selectedCameraId = useStore((state) => state.selectedCameraId);
-  const currentCamera = cameras.find((c) => c.id === selectedCameraId);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (active && over && active.id !== over.id) {
+      setLights((lights) => {
+        const oldIndex = lights.findIndex((light) => light.id === active.id);
+        const newIndex = lights.findIndex((light) => light.id === over.id);
+
+        return arrayMove(lights, oldIndex, newIndex);
+      });
+    }
+  }
 
   return (
-    <div>
+    <div className="w-full h-full flex flex-col">
       <div className="flex justify-between items-center p-4 border-b border-white/10">
         <h2 className="uppercase font-light text-xs tracking-widest text-gray-300">
           Cameras
@@ -24,10 +71,9 @@ export function Outliner() {
           className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
           onClick={() => {
             addCamera({
-              rotation: [0, 0, 0],
-              position: [0, 0, 5],
               ...currentCamera,
-              name: `Camera ${String.fromCharCode(cameras.length + 65)}`,
+              selected: false,
+              name: `Camera ${String.fromCharCode(cameraAtoms.length + 65)}`,
               id: THREE.MathUtils.generateUUID(),
             });
           }}
@@ -37,8 +83,12 @@ export function Outliner() {
       </div>
 
       <ul className="m-0 p-2 flex flex-col gap-1">
-        {cameras.map((camera, index) => (
-          <CameraListItem key={camera.id} index={index} camera={camera} />
+        {cameraAtoms.map((cameraAtom, index) => (
+          <CameraListItem
+            key={cameraAtom.toString()}
+            index={index}
+            cameraAtom={cameraAtom}
+          />
         ))}
       </ul>
 
@@ -49,36 +99,28 @@ export function Outliner() {
         <button
           className="rounded p-1 -m-1 hover:bg-white/20 transition-colors"
           onClick={() => {
-            addLight({
-              name: `Light ${String.fromCharCode(lights.length + 65)}`,
-              id: THREE.MathUtils.generateUUID(),
-              shape: "rect",
-              type: "solid",
-              color: "#fff",
-              distance: 4,
-              phi: Math.PI / 2,
-              theta: 0,
-              intensity: 1,
-              rotation: 0,
-              scale: 2,
-              scaleX: 1,
-              scaleY: 1,
-              target: [0, 0, 0],
-              visible: true,
-              solo: false,
-              opacity: 1,
-              animate: false,
-            });
+            setIsCommandPaletteOpen(true);
           }}
         >
           <PlusIcon className="w-4 h-4" />
         </button>
       </div>
 
-      <ul className="m-0 p-2 flex flex-col gap-1">
-        {lights.map((light) => (
-          <LightListItem key={light.id} light={light} />
-        ))}
+      <ul className="m-0 p-2 flex flex-col flex-1 gap-1">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={lightIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {lightAtoms.map((lightAtom) => (
+              <LightListItem key={lightAtom.toString()} lightAtom={lightAtom} />
+            ))}
+          </SortableContext>
+        </DndContext>
       </ul>
     </div>
   );

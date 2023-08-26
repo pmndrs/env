@@ -1,81 +1,73 @@
-import { Suspense } from "react";
-import { Bvh, PerformanceMonitor, useGLTF } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import { button, folder, useControls } from "leva";
-import { useStore } from "../../hooks/useStore";
-import { Effects } from "../Effects";
+import { BoltIcon } from "@heroicons/react/24/solid";
+import { Bvh, Environment, PerformanceMonitor } from "@react-three/drei";
+import { Canvas, ThreeEvent } from "@react-three/fiber";
+import { useSetAtom } from "jotai";
+import { PointerEvent, Suspense, useCallback } from "react";
+import { toast } from "sonner";
+import * as THREE from "three";
+import { lightsAtom, pointerAtom } from "../../store";
 import { Env } from "../Env";
 import { Model } from "../Model";
 import { Cameras } from "./Cameras";
 import { Controls } from "./Controls";
 import { Debug } from "./Debug";
-import { LoadTextureMaps } from "./LoadTextureMaps";
 import { Lights } from "./Lights";
-import { toast } from "sonner";
-import { BoltIcon } from "@heroicons/react/24/solid";
 
 export function ScenePreview() {
-  const mode = useStore((state) => state.mode);
+  const setLights = useSetAtom(lightsAtom);
 
-  const [{ ambientLightIntensity, debugMaterial, autoRotate }] = useControls(
-    () => ({
-      Preview: folder(
-        {
-          ambientLightIntensity: {
-            label: "Ambient Intensity",
-            value: 0.5,
-            min: 0,
-            max: 3,
-            render: () => mode.scene,
-          },
-          debugMaterial: {
-            label: "Debug Material",
-            value: false,
-            render: () => mode.scene,
-          },
-          autoRotate: {
-            label: "Auto Rotate",
-            value: false,
-            render: () => mode.scene,
-          },
-          Screenshot: button(() => {
-            const canvas = document.querySelector("canvas");
-            if (canvas) {
-              const link = document.createElement("a");
-              link.download = "screenshot.png";
-              link.href = canvas.toDataURL("image/png", 1);
-              link.click();
-            }
-          }),
-          "Upload Model": button(() => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".glb";
-            input.onchange = (e) => {
-              const file = (e.target as HTMLInputElement).files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                  const data = e.target?.result;
-                  if (typeof data === "string") {
-                    const modelUrl = data;
-                    useGLTF.preload(modelUrl);
-                    useStore.setState({ modelUrl });
-                  }
-                };
-                reader.readAsDataURL(file);
-              }
-            };
-            input.click();
-          }),
-        },
-        {
-          order: 1,
-          color: "limegreen",
-          collapsed: true,
-        }
-      ),
-    })
+  const handleModelClick = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      e.stopPropagation();
+
+      const cameraPosition = e.camera.position.clone();
+      const point = e.point.clone();
+      const normal =
+        e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
+        new THREE.Vector3(0, 0, 1);
+
+      // Reflect the camera position across the normal so that the
+      // light is visible in the reflection.
+      const cameraToPoint = point.clone().sub(cameraPosition).normalize();
+      const reflected = cameraToPoint.reflect(normal);
+
+      const spherical = new THREE.Spherical().setFromVector3(reflected);
+
+      const lat = THREE.MathUtils.mapLinear(spherical.phi, 0, Math.PI, 1, -1);
+      const lon = THREE.MathUtils.mapLinear(
+        spherical.theta,
+        0.5 * Math.PI,
+        -1.5 * Math.PI,
+        -1,
+        1
+      );
+
+      const { x, y, z } = point;
+      setLights((lights) =>
+        lights.map((l) => ({
+          ...l,
+          target: l.selected ? { x, y, z } : l.target,
+          latlon: l.selected ? { x: lon, y: lat } : l.latlon,
+          ts: Date.now(),
+        }))
+      );
+    },
+    [setLights]
+  );
+
+  const setPointer = useSetAtom(pointerAtom);
+  const handleModelPointerMove = useCallback(
+    (e: ThreeEvent<PointerEvent>) => {
+      e.stopPropagation();
+
+      const point = e.point.clone();
+      const normal =
+        e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
+        new THREE.Vector3(0, 0, 1);
+
+      setPointer({ point, normal });
+    },
+    [setPointer]
   );
 
   return (
@@ -87,11 +79,12 @@ export function ScenePreview() {
         logarithmicDepthBuffer: true,
         antialias: true,
       }}
+      style={{ touchAction: "none" }}
     >
       <PerformanceMonitor
-        threshold={1}
-        factor={1}
-        flipflops={0}
+        threshold={0.3}
+        factor={0.1}
+        flipflops={3}
         onFallback={() => {
           toast("Switching to low performance mode", {
             description:
@@ -101,26 +94,35 @@ export function ScenePreview() {
         }}
       >
         <Cameras />
+        <Lights ambientLightIntensity={0.2} />
 
         <Suspense fallback={null}>
           <Bvh firstHitOnly>
-            <Model debugMaterial={debugMaterial} />
+            <Model
+              debugMaterial={false}
+              onClick={handleModelClick}
+              onPointerMove={handleModelPointerMove}
+            />
           </Bvh>
         </Suspense>
 
-        <Lights ambientLightIntensity={ambientLightIntensity} />
-
         <Suspense fallback={null}>
-          <Env />
+          <Environment
+            resolution={2048}
+            far={100}
+            near={0.01}
+            frames={Infinity}
+            background
+          >
+            <Env />
+          </Environment>
         </Suspense>
 
         {/* <Effects /> */}
 
         <Debug />
 
-        <Controls autoRotate={autoRotate} />
-
-        <LoadTextureMaps />
+        <Controls autoRotate={false} />
       </PerformanceMonitor>
     </Canvas>
   );

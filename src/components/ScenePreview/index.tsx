@@ -108,7 +108,7 @@ export function ScenePreview() {
 
         <Suspense fallback={null}>
           <Environment
-            resolution={2048}
+            resolution={512}
             far={100}
             near={0.01}
             frames={Infinity}

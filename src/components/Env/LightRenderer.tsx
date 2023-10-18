@@ -1,6 +1,6 @@
 import { Sphere, useCursor } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { PrimitiveAtom, useAtomValue, useSetAtom } from "jotai";
+import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import {
@@ -27,7 +27,7 @@ export function LightRenderer({
   enableEvents?: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const light = useAtomValue(lightAtom);
+  const [light, setLight] = useAtom(lightAtom);
   const toggleSelection = useSetAtom(toggleLightSelectionAtom);
 
   const [hovered, setHovered] = useState(false);
@@ -77,6 +77,25 @@ export function LightRenderer({
       onPointerOver={enableEvents ? () => setHovered(true) : undefined}
       onPointerOut={enableEvents ? () => setHovered(false) : undefined}
       onClick={enableEvents ? () => toggleSelection(light.id) : undefined}
+      onWheel={(e) => {
+        if (!enableEvents) {
+          return;
+        }
+
+        if (!light.selected) {
+          return;
+        }
+
+        e.stopPropagation();
+
+        const { deltaY } = e;
+
+        if (e.altKey) {
+          setLight((l) => ({ ...l, intensity: l.intensity + deltaY * 0.001 }));
+        } else if (e.shiftKey) {
+          setLight((l) => ({ ...l, scale: l.scale + deltaY * 0.001 }));
+        }
+      }}
     >
       <planeGeometry args={[1, 1, 1, 1]} />
       {light.type === "procedural_scrim" && (

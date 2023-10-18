@@ -5,6 +5,9 @@ import { Env } from "../Env";
 import { CubeMaterial } from "./CubeMaterial";
 import { useRef } from "react";
 
+const zero = new THREE.Vector3(0, 0, 0);
+const dir = new THREE.Vector3(0, 0, 0);
+
 export function EnvMapPlane() {
   const ref = useRef<THREE.Mesh>(null!);
   const viewport = useThree((state) => state.viewport);
@@ -33,14 +36,13 @@ export function EnvMapPlane() {
     const latitude = uv.y * Math.PI;
 
     // Convert lat/lon to direction
-    const dir = new THREE.Vector3(
+    dir.set(
       -Math.sin(longitude) * Math.sin(latitude),
       Math.cos(latitude),
       -Math.cos(longitude) * Math.sin(latitude)
     );
-    dir.normalize();
 
-    state.raycaster.set(new THREE.Vector3(0, 0, 0), dir);
+    state.raycaster.set(zero, dir);
 
     return undefined;
   };

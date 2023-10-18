@@ -1,6 +1,6 @@
 import { Sphere, useCursor } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import {
@@ -9,7 +9,7 @@ import {
   ProceduralUmbrellaLight,
   SkyGradientLight,
   TextureLight,
-  toggleLightSelectionAtom,
+  selectLightAtom,
 } from "../../store";
 import { ProceduralScrimLightMaterial } from "./ProceduralScrimLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
@@ -29,7 +29,7 @@ export function LightRenderer({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [light, setLight] = useAtom(lightAtom);
-  const toggleSelection = useSetAtom(toggleLightSelectionAtom);
+  const selectLight = useSetAtom(selectLightAtom);
 
   const [hovered, setHovered] = useState(false);
   useCursor(hovered, light.selected ? "move" : "pointer", "default");
@@ -38,20 +38,24 @@ export function LightRenderer({
   const bind = useGesture(
     {
       onHover: ({ hovering }) => setHovered(hovering ?? false),
-      onClick: () => toggleSelection(light.id),
-      onDrag: ({ offset: [x, y] }) => {
+      onClick: () => {
+        selectLight(light.id);
+      },
+      onDrag: ({ delta: [x, y] }) => {
         setLight((l) => {
-          // Convert to lat/lon
-          const lat = THREE.MathUtils.mapLinear(y, 0, size.height, 1, -1);
-          const lon = THREE.MathUtils.mapLinear(x, 0, size.width, -1, 1);
+          const lat = -y / (size.height / 2);
+          const lon = x / (size.width / 2);
           return {
             ...l,
-            latlon: { x: lon, y: lat },
+            latlon: { x: l.latlon.x + lon, y: l.latlon.y + lat },
             ts: Date.now(),
           };
         });
       },
-      onWheel: ({ delta: [x, y], event: { altKey, shiftKey } }) => {
+      onDragEnd: (e) => {
+        selectLight(light.id);
+      },
+      onWheel: ({ delta: [_, y], event: { altKey, metaKey } }) => {
         if (!enableEvents) {
           return;
         }
@@ -63,13 +67,13 @@ export function LightRenderer({
         if (altKey) {
           setLight((l) => ({
             ...l,
-            intensity: l.intensity + y * 0.001,
+            intensity: Math.max(0, l.intensity + y * 0.001),
             ts: Date.now(),
           }));
-        } else if (shiftKey) {
+        } else if (metaKey) {
           setLight((l) => ({
             ...l,
-            scale: l.scale + y * 0.001,
+            scale: Math.max(0, l.scale + y * 0.001),
             ts: Date.now(),
           }));
         }
@@ -77,15 +81,7 @@ export function LightRenderer({
     },
     {
       enabled: enableEvents,
-      drag: {
-        enabled: enableEvents && light.selected,
-      },
-      hover: {
-        enabled: enableEvents,
-      },
-      wheel: {
-        enabled: enableEvents && light.selected,
-      },
+      wheel: { axis: "y", eventOptions: { passive: true } },
     }
   );
 

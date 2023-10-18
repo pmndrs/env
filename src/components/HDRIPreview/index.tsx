@@ -17,6 +17,7 @@ export function HDRIPreview() {
       <Canvas
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
+        raycaster={{ firstHitOnly: true }}
         onPointerMissed={() => deselectLights()}
       >
         <EnvMapPlane />

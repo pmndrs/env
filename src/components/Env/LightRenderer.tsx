@@ -1,6 +1,6 @@
 import { Sphere, useCursor } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { PrimitiveAtom, useAtomValue } from "jotai";
+import { PrimitiveAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import {
@@ -9,6 +9,7 @@ import {
   ProceduralUmbrellaLight,
   SkyGradientLight,
   TextureLight,
+  toggleLightSelectionAtom,
 } from "../../store";
 import { ProceduralScrimLightMaterial } from "./ProceduralScrimLightMaterial";
 import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMaterial";
@@ -25,6 +26,7 @@ export function LightRenderer({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const light = useAtomValue(lightAtom);
+  const toggleSelection = useSetAtom(toggleLightSelectionAtom);
 
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
@@ -72,6 +74,7 @@ export function LightRenderer({
       renderOrder={index}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
+      onClick={() => toggleSelection(light.id)}
     >
       <planeGeometry args={[1, 1, 1, 1]} />
       {light.type === "procedural_scrim" && (

@@ -64,7 +64,7 @@ export function LightListItem({
     <>
       <ContextMenu.Root>
         <ContextMenu.Trigger asChild>
-          <button
+          <div
             key={id}
             ref={setNodeRef}
             style={style}
@@ -137,7 +137,7 @@ export function LightListItem({
                 <EyeSlashIcon className="w-4 h-4 " />
               )}
             </button>
-          </button>
+          </div>
         </ContextMenu.Trigger>
 
         <ContextMenu.Portal>

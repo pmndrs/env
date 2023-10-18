@@ -1,7 +1,7 @@
-import { Sphere } from "@react-three/drei";
+import { Sphere, useCursor } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { PrimitiveAtom, useAtomValue } from "jotai";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 import {
   Light,
@@ -25,6 +25,9 @@ export function LightRenderer({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const light = useAtomValue(lightAtom);
+
+  const [hovered, setHovered] = useState(false);
+  useCursor(hovered);
 
   useFrame(() => {
     if (!meshRef.current) {
@@ -67,6 +70,8 @@ export function LightRenderer({
       castShadow={false}
       receiveShadow={false}
       renderOrder={index}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
     >
       <planeGeometry args={[1, 1, 1, 1]} />
       {light.type === "procedural_scrim" && (

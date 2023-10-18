@@ -5,6 +5,7 @@ import {
   fragmentShader,
   vertexShader,
 } from "./convertCubemapToEquirectangular";
+import { ComponentProps } from "react";
 
 const CubeMapMaterialImpl = shaderMaterial(
   {
@@ -29,15 +30,14 @@ declare global {
   }
 }
 
-export function CubeMaterial({ map }: { map: THREE.Texture }) {
+export function CubeMaterial({ ...props }: ComponentProps<"cubeMapMaterial">) {
   return (
     <cubeMapMaterial
       key={(CubeMapMaterialImpl as any).key}
       attach="material"
-      // @ts-ignore
-      map={map}
       transparent
       side={THREE.DoubleSide}
+      {...props}
     />
   );
 }

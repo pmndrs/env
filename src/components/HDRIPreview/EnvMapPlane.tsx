@@ -1,41 +1,63 @@
-import { createPortal, useThree } from "@react-three/fiber";
-import { useMemo, useState } from "react";
 import * as THREE from "three";
-import { CubeMaterial } from "./CubeMaterial";
+import { RenderCubeTexture } from "@react-three/drei";
+import { ComputeFunction, useThree } from "@react-three/fiber";
 import { Env } from "../Env";
-import { DownloadHDRI } from "./DownloadHDRI";
-import { SaveBackgroundTexture } from "./SaveBackgroundTexture";
-import { Environment } from "@react-three/drei";
+import { CubeMaterial } from "./CubeMaterial";
+import { useRef } from "react";
 
 export function EnvMapPlane() {
-  const [texture, setTexture] = useState(() => new THREE.CubeTexture());
-  const scene = useMemo(() => new THREE.Scene(), []);
+  const ref = useRef<THREE.Mesh>(null!);
   const viewport = useThree((state) => state.viewport);
+
+  const compute: ComputeFunction = (event, state) => {
+    state.pointer.set(
+      (event.offsetX / state.size.width) * 2 - 1,
+      -(event.offsetY / state.size.height) * 2 + 1
+    );
+    state.raycaster.setFromCamera(state.pointer, state.camera);
+
+    const [intersection] = state.raycaster.intersectObject(ref.current);
+
+    if (!intersection) {
+      return false;
+    }
+
+    const { uv } = intersection;
+
+    if (!uv) {
+      return false;
+    }
+
+    // Convert UV to lat/lon (invert x to match texture)
+    const longitude = (1 - uv.x) * 2 * Math.PI - Math.PI + Math.PI / 2;
+    const latitude = uv.y * Math.PI;
+
+    // Convert lat/lon to direction
+    const dir = new THREE.Vector3(
+      -Math.sin(longitude) * Math.sin(latitude),
+      Math.cos(latitude),
+      -Math.cos(longitude) * Math.sin(latitude)
+    );
+    dir.normalize();
+
+    state.raycaster.set(new THREE.Vector3(0, 0, 0), dir);
+
+    return undefined;
+  };
 
   return (
     <>
-      {createPortal(
-        <>
-          <SaveBackgroundTexture setTexture={setTexture} />
-          <DownloadHDRI texture={texture} />
-          <Environment
-            resolution={2048}
-            far={100}
-            near={0.01}
-            frames={Infinity}
-            background
-          >
-            <Env />
-          </Environment>
-        </>,
-        scene
-      )}
       <mesh
+        ref={ref}
         scale={[viewport.width, viewport.height, 1]}
         rotation={[Math.PI, 0, 0]}
       >
         <planeGeometry />
-        <CubeMaterial map={texture} />
+        <CubeMaterial>
+          <RenderCubeTexture attach="map" compute={compute}>
+            <Env />
+          </RenderCubeTexture>
+        </CubeMaterial>
       </mesh>
     </>
   );

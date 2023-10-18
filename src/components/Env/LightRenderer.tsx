@@ -32,7 +32,7 @@ export function LightRenderer({
   const toggleSelection = useSetAtom(toggleLightSelectionAtom);
 
   const [hovered, setHovered] = useState(false);
-  useCursor(hovered);
+  useCursor(hovered, light.selected ? "move" : "pointer", "default");
 
   const size = useThree((state) => state.size);
   const bind = useGesture(

@@ -1,5 +1,5 @@
 import { Sphere, useCursor } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { PrimitiveAtom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useRef, useState } from "react";
 import * as THREE from "three";
@@ -16,6 +16,7 @@ import { ProceduralUmbrellaLightMaterial } from "./ProceduralUmbrellaLightMateri
 import { SkyGradientLightMaterial } from "./SkyGradientLightMaterial";
 import { TextureLightMaterial } from "./TextureLightMaterial";
 import { latlonToPhiTheta } from "../../utils/coordinates";
+import { useGesture } from "@use-gesture/react";
 
 export function LightRenderer({
   index,
@@ -32,6 +33,61 @@ export function LightRenderer({
 
   const [hovered, setHovered] = useState(false);
   useCursor(hovered);
+
+  const size = useThree((state) => state.size);
+  const bind = useGesture(
+    {
+      onHover: ({ hovering }) => setHovered(hovering ?? false),
+      onClick: () => toggleSelection(light.id),
+      onDrag: ({ offset: [x, y] }) => {
+        setLight((l) => {
+          // Convert to lat/lon
+          const lat = THREE.MathUtils.mapLinear(y, 0, size.height, 1, -1);
+          const lon = THREE.MathUtils.mapLinear(x, 0, size.width, -1, 1);
+          return {
+            ...l,
+            latlon: { x: lon, y: lat },
+            ts: Date.now(),
+          };
+        });
+      },
+      onWheel: ({ delta: [x, y], event: { altKey, shiftKey } }) => {
+        if (!enableEvents) {
+          return;
+        }
+
+        if (!light.selected) {
+          return;
+        }
+
+        if (altKey) {
+          setLight((l) => ({
+            ...l,
+            intensity: l.intensity + y * 0.001,
+            ts: Date.now(),
+          }));
+        } else if (shiftKey) {
+          setLight((l) => ({
+            ...l,
+            scale: l.scale + y * 0.001,
+            ts: Date.now(),
+          }));
+        }
+      },
+    },
+    {
+      enabled: enableEvents,
+      drag: {
+        enabled: enableEvents && light.selected,
+      },
+      hover: {
+        enabled: enableEvents,
+      },
+      wheel: {
+        enabled: enableEvents && light.selected,
+      },
+    }
+  );
 
   useFrame(() => {
     if (!meshRef.current) {
@@ -69,33 +125,12 @@ export function LightRenderer({
 
   return (
     <mesh
+      {...(bind() as any)}
       ref={meshRef}
       visible={light.visible}
       castShadow={false}
       receiveShadow={false}
       renderOrder={index}
-      onPointerOver={enableEvents ? () => setHovered(true) : undefined}
-      onPointerOut={enableEvents ? () => setHovered(false) : undefined}
-      onClick={enableEvents ? () => toggleSelection(light.id) : undefined}
-      onWheel={(e) => {
-        if (!enableEvents) {
-          return;
-        }
-
-        if (!light.selected) {
-          return;
-        }
-
-        e.stopPropagation();
-
-        const { deltaY } = e;
-
-        if (e.altKey) {
-          setLight((l) => ({ ...l, intensity: l.intensity + deltaY * 0.001 }));
-        } else if (e.shiftKey) {
-          setLight((l) => ({ ...l, scale: l.scale + deltaY * 0.001 }));
-        }
-      }}
     >
       <planeGeometry args={[1, 1, 1, 1]} />
       {light.type === "procedural_scrim" && (

@@ -22,6 +22,7 @@
     "@react-three/drei": "^9.88.3",
     "@react-three/fiber": "^8.14.6",
     "@react-three/postprocessing": "^2.15.1",
+    "@use-gesture/react": "^10.3.0",
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
     "jotai": "^2.3.0",

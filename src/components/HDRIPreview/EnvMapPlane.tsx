@@ -54,7 +54,7 @@ export function EnvMapPlane() {
       >
         <planeGeometry />
         <CubeMaterial>
-          <RenderCubeTexture attach="map" compute={compute}>
+          <RenderCubeTexture attach="map" compute={compute} frames={Infinity}>
             <Env enableEvents />
           </RenderCubeTexture>
         </CubeMaterial>

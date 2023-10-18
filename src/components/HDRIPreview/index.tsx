@@ -1,7 +1,10 @@
 import { Canvas } from "@react-three/fiber";
 import { EnvMapPlane } from "./EnvMapPlane";
+import { useSetAtom } from "jotai";
+import { deselectLightsAtom } from "../../store";
 
 export function HDRIPreview() {
+  const deselectLights = useSetAtom(deselectLightsAtom);
   return (
     <div
       className="w-full h-full overflow-hidden relative"
@@ -11,7 +14,11 @@ export function HDRIPreview() {
           "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
       }}
     >
-      <Canvas dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+      <Canvas
+        dpr={[1, 2]}
+        gl={{ antialias: true, alpha: true }}
+        onPointerMissed={() => deselectLights()}
+      >
         <EnvMapPlane />
       </Canvas>
     </div>

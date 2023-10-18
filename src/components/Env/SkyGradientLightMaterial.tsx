@@ -6,7 +6,7 @@ import {
   useFrame,
 } from "@react-three/fiber";
 import { PrimitiveAtom, useAtomValue } from "jotai";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 import { SkyGradientLight } from "../../store";
 
@@ -67,11 +67,14 @@ export function SkyGradientLightMaterial({
   const light = useAtomValue(lightAtom);
   const ref = useRef<ThreeElements["skyGradientLightShaderMaterial"]>(null!);
 
+  const [color] = useState(() => new THREE.Color(0xffffff));
+  const [color2] = useState(() => new THREE.Color(0xffffff));
+
   useFrame(() => {
     ref.current.uniforms.uOpacity.value = light.opacity;
     ref.current.uniforms.uIntensity.value = light.intensity;
-    ref.current.uniforms.uColor.value = new THREE.Color(light.color);
-    ref.current.uniforms.uColor2.value = new THREE.Color(light.color2);
+    ref.current.uniforms.uColor.value = color.set(light.color);
+    ref.current.uniforms.uColor2.value = color2.set(light.color2);
   });
 
   return (

@@ -131,12 +131,13 @@ export function ProceduralScrimLightMaterial({
   const light = useAtomValue(lightAtom);
 
   const [color] = useState(() => new THREE.Color(0xffffff));
+  const [lightPosition] = useState(() => new THREE.Vector2(0, 0));
 
   useFrame(() => {
     ref.current.uniforms.uColor.value = color.set(light.color);
     ref.current.uniforms.uIntensity.value = light.intensity;
     ref.current.uniforms.uOpacity.value = light.opacity;
-    ref.current.uniforms.uLightPosition.value = new THREE.Vector2(
+    ref.current.uniforms.uLightPosition.value = lightPosition.set(
       light.lightPosition.x,
       light.lightPosition.y
     );

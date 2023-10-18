@@ -6,7 +6,7 @@ import {
   useFrame,
 } from "@react-three/fiber";
 import { PrimitiveAtom, useAtomValue } from "jotai";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 import { ProceduralUmbrellaLight } from "../../store";
 
@@ -82,10 +82,12 @@ export function ProceduralUmbrellaLightMaterial({
     null!
   );
 
+  const [color] = useState(() => new THREE.Color(0xffffff));
+
   useFrame(() => {
     ref.current.uniforms.uOpacity.value = light.opacity;
     ref.current.uniforms.uIntensity.value = light.intensity;
-    ref.current.uniforms.uColor.value = new THREE.Color(light.color);
+    ref.current.uniforms.uColor.value = color.set(light.color);
     ref.current.uniforms.uLightSides.value = light.lightSides;
   });
 

@@ -13,6 +13,9 @@ import { Controls } from "./Controls";
 import { Debug } from "./Debug";
 import { Lights } from "./Lights";
 
+const plusZ = new THREE.Vector3(0, 0, 1);
+const spherical = new THREE.Spherical();
+
 export function ScenePreview() {
   const setLights = useSetAtom(lightsAtom);
   const isLightPainting = useAtomValue(isLightPaintingAtom);
@@ -29,14 +32,14 @@ export function ScenePreview() {
       const point = e.point.clone();
       const normal =
         e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
-        new THREE.Vector3(0, 0, 1);
+        plusZ;
 
       // Reflect the camera position across the normal so that the
       // light is visible in the reflection.
       const cameraToPoint = point.clone().sub(cameraPosition).normalize();
       const reflected = cameraToPoint.reflect(normal);
 
-      const spherical = new THREE.Spherical().setFromVector3(reflected);
+      spherical.setFromVector3(reflected);
 
       const lat = THREE.MathUtils.mapLinear(spherical.phi, 0, Math.PI, 1, -1);
       const lon = THREE.MathUtils.mapLinear(
@@ -72,7 +75,7 @@ export function ScenePreview() {
       const point = e.point.clone();
       const normal =
         e.face?.normal?.clone()?.transformDirection(e.object.matrixWorld) ??
-        new THREE.Vector3(0, 0, 1);
+        plusZ;
 
       setPointer({ point, normal });
     },

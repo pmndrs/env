@@ -4,6 +4,12 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { modelUrlAtom } from "../../store";
 
+const material = new THREE.MeshStandardMaterial({
+  color: "black",
+  roughness: 0.1,
+  metalness: 0,
+});
+
 export function Model({ debugMaterial, ...props }: any) {
   const modelUrl = useAtomValue(modelUrlAtom);
 
@@ -20,11 +26,7 @@ export function Model({ debugMaterial, ...props }: any) {
       (node: any) =>
         node.isMesh && (node.receiveShadow = node.castShadow = true)
     );
-    const material = new THREE.MeshStandardMaterial({
-      color: "black",
-      roughness: 0.1,
-      metalness: 0,
-    });
+
     Object.values(nodes).forEach((node: any) => {
       if (node.isMesh && debugMaterial) {
         node.userData.material = node.material;

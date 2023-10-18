@@ -20,9 +20,11 @@ import { latlonToPhiTheta } from "../../utils/coordinates";
 export function LightRenderer({
   index,
   lightAtom,
+  enableEvents = false,
 }: {
   index: number;
   lightAtom: PrimitiveAtom<Light>;
+  enableEvents?: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const light = useAtomValue(lightAtom);
@@ -72,9 +74,9 @@ export function LightRenderer({
       castShadow={false}
       receiveShadow={false}
       renderOrder={index}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      onClick={() => toggleSelection(light.id)}
+      onPointerOver={enableEvents ? () => setHovered(true) : undefined}
+      onPointerOut={enableEvents ? () => setHovered(false) : undefined}
+      onClick={enableEvents ? () => toggleSelection(light.id) : undefined}
     >
       <planeGeometry args={[1, 1, 1, 1]} />
       {light.type === "procedural_scrim" && (

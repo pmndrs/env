@@ -2,7 +2,7 @@ import { lightAtomsAtom } from "../../store";
 import { useAtomValue } from "jotai";
 import { LightRenderer } from "./LightRenderer";
 
-export function Env() {
+export function Env({ enableEvents = false }: { enableEvents?: boolean }) {
   const lightAtoms = useAtomValue(lightAtomsAtom);
 
   return (
@@ -13,6 +13,7 @@ export function Env() {
           key={lightAtom.toString()}
           index={i}
           lightAtom={lightAtom}
+          enableEvents={enableEvents}
         />
       ))}
     </>

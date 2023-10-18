@@ -1,4 +1,4 @@
-import { createPortal } from "@react-three/fiber";
+import { createPortal, useThree } from "@react-three/fiber";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 import { CubeMaterial } from "./CubeMaterial";
@@ -10,6 +10,7 @@ import { Environment } from "@react-three/drei";
 export function EnvMapPlane() {
   const [texture, setTexture] = useState(() => new THREE.CubeTexture());
   const scene = useMemo(() => new THREE.Scene(), []);
+  const viewport = useThree((state) => state.viewport);
 
   return (
     <>
@@ -29,8 +30,11 @@ export function EnvMapPlane() {
         </>,
         scene
       )}
-      <mesh rotation={[Math.PI, 0, 0]}>
-        <planeGeometry args={[2, 1, 1, 1]} />
+      <mesh
+        scale={[viewport.width, viewport.height, 1]}
+        rotation={[Math.PI, 0, 0]}
+      >
+        <planeGeometry />
         <CubeMaterial map={texture} />
       </mesh>
     </>

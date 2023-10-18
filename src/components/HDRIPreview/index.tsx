@@ -1,4 +1,3 @@
-import { Bounds } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { EnvMapPlane } from "./EnvMapPlane";
 
@@ -12,15 +11,8 @@ export function HDRIPreview() {
           "linear-gradient(to right, #222222 1px, transparent 1px), linear-gradient(to bottom, #222222 1px, transparent 1px)",
       }}
     >
-      <Canvas
-        dpr={[1, 2]}
-        gl={{
-          antialias: true,
-        }}
-      >
-        <Bounds fit clip observe margin={0.45}>
-          <EnvMapPlane />
-        </Bounds>
+      <Canvas dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
+        <EnvMapPlane />
       </Canvas>
     </div>
   );

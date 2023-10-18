@@ -1,13 +1,16 @@
-import { Light } from "../../store";
+import { CursorArrowRippleIcon } from "@heroicons/react/24/outline";
+import { Light, isLightPaintingAtom } from "../../store";
 import { PrimitiveAtom, useAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import { Pane } from "tweakpane";
+import { toast } from "sonner";
+import { ButtonApi, Pane } from "tweakpane";
 
 export function LightProperties({
   lightAtom,
 }: {
   lightAtom: PrimitiveAtom<Light>;
 }) {
+  const [isLightPainting, setLightPainting] = useAtom(isLightPaintingAtom);
   const [light, setLight] = useAtom(lightAtom);
   const ref = useRef<HTMLDivElement>(null!);
   const pane = useRef<Pane>(null!);
@@ -57,6 +60,20 @@ export function LightProperties({
       })
       .on("change", handleChange);
     pane.current.addBinding(light, "target").on("change", handleChange);
+    pane.current
+      .addButton({ title: "Paint Light", label: "", disabled: isLightPainting })
+      .on("click", () => {
+        setLightPainting(true);
+        toast("Light Paint Mode Activated", {
+          duration: Infinity,
+          action: {
+            label: "Done",
+            onClick: () => setLightPainting(false),
+          },
+          icon: <CursorArrowRippleIcon className="w-4 h-4" />,
+          description: "Click on the model to paint the light.",
+        });
+      });
 
     pane.current.addBlade({ view: "separator" });
 
@@ -102,7 +119,7 @@ export function LightProperties({
     return () => {
       pane.current.dispose();
     };
-  }, [light.id]);
+  }, [light.id, isLightPainting]);
 
   return <div ref={ref} />;
 }

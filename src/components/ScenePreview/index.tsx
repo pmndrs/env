@@ -1,11 +1,11 @@
 import { BoltIcon } from "@heroicons/react/24/solid";
 import { Bvh, Environment, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { PointerEvent, Suspense, useCallback } from "react";
 import { toast } from "sonner";
 import * as THREE from "three";
-import { lightsAtom, pointerAtom } from "../../store";
+import { isLightPaintingAtom, lightsAtom, pointerAtom } from "../../store";
 import { Env } from "../Env";
 import { Model } from "../Model";
 import { Cameras } from "./Cameras";
@@ -15,10 +15,15 @@ import { Lights } from "./Lights";
 
 export function ScenePreview() {
   const setLights = useSetAtom(lightsAtom);
+  const isLightPainting = useAtomValue(isLightPaintingAtom);
 
   const handleModelClick = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
+
+      if (!isLightPainting) {
+        return;
+      }
 
       const cameraPosition = e.camera.position.clone();
       const point = e.point.clone();
@@ -52,13 +57,17 @@ export function ScenePreview() {
         }))
       );
     },
-    [setLights]
+    [setLights, isLightPainting]
   );
 
   const setPointer = useSetAtom(pointerAtom);
   const handleModelPointerMove = useCallback(
     (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
+
+      if (!isLightPainting) {
+        return;
+      }
 
       const point = e.point.clone();
       const normal =
@@ -67,7 +76,7 @@ export function ScenePreview() {
 
       setPointer({ point, normal });
     },
-    [setPointer]
+    [setPointer, isLightPainting]
   );
 
   return (

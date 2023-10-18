@@ -82,6 +82,8 @@ export const activeModesAtom = atom((get) => {
   return Object.keys(mode).filter((key) => mode[key as keyof typeof mode]);
 });
 
+export const isLightPaintingAtom = atom(false);
+
 export const modelUrlAtom = atom("/911-transformed.glb");
 
 export const isCommandPaletteOpenAtom = atom(false);
